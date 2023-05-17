@@ -6,6 +6,6 @@ Collaborators:
 - 陈绍文
 - 胡梓敬
 ```
-Based on flex, bison, LLVM, this project implements a compiler that can compile a C-like language into binary codes. 
+Based on flex, bison, LLVM, this project implements a compiler that can compile SysY language into binary codes. 
 
 
