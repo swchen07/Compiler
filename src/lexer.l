@@ -2,12 +2,18 @@
 %option nounput
 %option noinput
 
-
 %{
+
+
+#include <cstdlib>
+#include <string>
+
+#include "parser.hpp"
 
 /* use a “SAVE_TOKEN” macro to keep the text of identifiers and numbers somewhere safe */
 #define SAVE_TOKEN yylval.string = new std::string(yytext, yyleng)
 #define TOKEN(t) (yylval.token = t)
+
 %}
 
 /* 空白符和注释 */
@@ -25,11 +31,10 @@ REAL                    [0-9]+\.[0-9]+
 
 /* 字符串 */
 STRING                  \"(\\.|[^"\\])*\"
-
+CHAR                    \'.\'|\'\\.\'
 
 /* 标识符 */
 IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
-
 
 %%
 
@@ -37,9 +42,6 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 {WHTIESPACE}            {;}
 {LINECOMMET}            {;}
 {BLOCKCOMMET}           {;}
-
-    /* 标识符 */
-{IDENTIFIER}            {SAVE_TOKEN; return IDENTIFIER;}
 
     /* 运算符 */
     /* 关系运算符 */
@@ -78,14 +80,12 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 ";"                     {return TOKEN(SEMI);}
 
     /* 赋值运算符 */
-"="                     {return TOKEN(ASSIN);}
+"="                     {return TOKEN(ASSIGN);}
 
     /* 特殊符号 */
 "."                     {return TOKEN(DOT);}
 ":"                     {return TOKEN(COLON);}
 "?"                     {return TOKEN(QUES);}
-
-
 
     /* 关键字 */
     /* 数据类型 */
@@ -95,7 +95,7 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "void"                  {SAVE_TOKEN; return VOID;}
 "string"                {SAVE_TOKEN; return STRING;}
 
-    /* 挑战结构 */
+    /* 跳转结构 */
 "return"                {SAVE_TOKEN; return RETURN;}
 "continue"              {SAVE_TOKEN; return CONTINUE;}
 "break"                 {SAVE_TOKEN; return BREAK;}
@@ -109,14 +109,24 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "while"                 {SAVE_TOKEN; return WHILE;}
 
 
+    /* 暂时参考北大在线文档给的demo */
+    /* 标识符 */
+    /* yylval 用来向 parser 传递 lexer 读取到的内容 */
+    /* 遇到整数字面量, 先把读取到的字符串转换成整数, 然后存起来, 并返回对应的 token. */
+{IDENTIFIER}            {SAVE_TOKEN; return IDENTIFIER;}
+
+{CHAR}                  {SAVE_TOKEN; return CONST_CHAR;}
+{STRING}                {SAVE_TOKEN; return CONST_STR;}
+
     /*  */
-{DECIMAL}               {;}
-{OCTAL}                 {;}
-{HEXADECIMAL}           {;}
+{DECIMAL}               {yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT;}
+{OCTAL}                 {yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT;}
+{HEXADECIMAL}           {yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT;}
 
-{REAL}                  {;}
+{REAL}                  {yylval.floatVal = strtol(yytext, nullptr, 0); return CONST_FLOAT;}
 
-{STRING}                {;}
 
+
+.                       { printf("Unknown token!/n");}
 
 %%
