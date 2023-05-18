@@ -33,6 +33,24 @@ A record file for Chen Shaowen.
 1. EBNF
 这种使用大写蛇形命名法的符号, 或者被双引号引起的字符串, 被称为终结符, 它们不能进一步被其他符号所替换, 你也不会在 EBNF 中看到它们出现在规则的左侧. 我们的目标是, 利用 EBNF 中的规则, 把开始符号推导成一系列终结符.
 
-
 简化词法分析器和语法分析器，需要先选定编译语言，设计CFG。
+
+### parser开发日志
+
+1. 首先需要手写语法
+```
+参考sysY语言的文法，由于文法是EBNF，所以首先需要对[]和{}进行处理：
+`term -> term { op term }` becomes:
+    term -> term new_symbol
+    new-symbol -> e | new_symbol op term
+
+`if_stm -> if exp statement [else_statement]` becomes:
+    if_stm -> if exp statement new_symbol
+    new-symbol -> e | else_statement
+
+
+同时由于结合性和优先级可以通过yacc声明实现，所以可以对文法进行简化
+
+```
+2. 优先级和结核性通过yacc实现
 
