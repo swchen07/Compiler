@@ -51,6 +51,73 @@ A record file for Chen Shaowen.
 
 同时由于结合性和优先级可以通过yacc声明实现，所以可以对文法进行简化
 
+CompUnit --> FuncDef
+
+FuncDef --> FuncType IDENTIFIER ( FuncParaLists ) Block
+
+FuncType --> int | void | char
+
+FuncParaLists --> FuncParams | e
+
+FuncParams --> FuncParams , FuncParam | FuncParam
+
+FuncParam --> VarType IDENTIFIER
+
+Decl --> VarDecl
+
+VarDecl --> VarType VarDef VarList SEMI
+
+VarType --> int | void | char
+
+VarList --> VarList COMMA VarDef | e
+
+VarDef --> IDENTIFIER | IDENTIFIER ASSIGN Exp
+
+Block --> { BlockItemNew }
+
+BlockItemNew --> BlockItemNew BlockItem | e
+
+BlockItem --> Decl | Stmt
+
+Stmt --> LeftVal ASSIGN Exp SEMI
+        | Exp SEMI
+        | SEMI
+        | IF LPAREN Exp RPAREN Stmt ElseState
+        | WHILE LPAREN Exp RPAREN Stmt
+        | BREAK SEMI
+        | CONTINUE SEMI
+        | RETURN RetState SEMI
+
+LeftVal --> IDENTIFIER
+
+ElseState --> ELSE Stmt | e
+
+RetState --> Exp | e
+
+Exp
+    : + Exp 
+    | - Exp
+    | Exp + Exp
+    | Exp - Exp
+    | Exp * Exp
+    | Exp / Exp
+    | Exp % Exp
+
+    | Exp == Exp
+    | Exp != Exp
+    | Exp <  Exp
+    | Exp <= Exp
+    | Exp >  Exp
+    | Exp >= Exp
+
+    | Exp && Exp
+    | Exp || Exp
+    | ! Exp
+
+    | Exp &  Exp
+    | Exp |  Exp
+    | Exp ^  Exp
+
 ```
 2. 优先级和结核性通过yacc实现
 
