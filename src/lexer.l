@@ -53,8 +53,8 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 ">="                    {return TOKEN(GEQ);}
 
     /* 算术运算符 */
-"+"                     {return TOKEN(PLUS);}
-"-"                     {return TOKEN(MINUS);}
+"+"                     {return TOKEN(ADD);}
+"-"                     {return TOKEN(SUB);}
 "*"                     {return TOKEN(MUL);}
 "/"                     {return TOKEN(DIV);}
 "%"                     {return TOKEN(MOD);}
