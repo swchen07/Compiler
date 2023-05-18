@@ -166,6 +166,8 @@ RetState
 Exp
     : ADD Exp 
     | SUB Exp
+    | NOT Exp
+    
     | Exp ADD Exp
     | Exp SUB Exp
     | Exp MUL Exp
@@ -181,7 +183,6 @@ Exp
 
     | Exp AND Exp
     | Exp OR  Exp
-    | Exp NOT Exp
 
     | Exp BAND Exp
     | Exp BOR  Exp
