@@ -78,6 +78,8 @@ using namespace std;
 %left	ADD SUB
 %left	MUL DIV MOD
 
+%start Program
+
 %%
 
 /* CompUnit      ::= [CompUnit] (Decl | FuncDef); */

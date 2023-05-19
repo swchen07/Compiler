@@ -6,7 +6,9 @@ https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/cont
 ```
 
 ## Naming
-整体采用驼峰式命名规则（除第一个单词之外，其他单词首字母大写。）
+1. 变量采用小驼峰命名规则
+2. 类和函数命名采用大驼峰命名规则
+
 
 ### lexer.l & parser.y
 

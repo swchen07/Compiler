@@ -24,6 +24,7 @@ class BaseAST {
 public:
     virtual ~BaseAST() = default;
     virtual llvm::Value* codeGen(CodeGenContext& context) { }
+    virtual void Dump() const = 0;
 };
 
 class CompUnitAST : public BaseAST {
@@ -31,28 +32,55 @@ public:
 
 }
 
-class StmtAST : public BaseAST {
-
+/**
+ * @brief Decl基类
+ * 
+ */
+class DeclAST : public BaseAST {
+public:
+    virtual llvm::Value* codeGen(CodeGenContext& context) { }
+    virtual void Dump() const = 0;
 }
 
-class ExpAST : public BaseAST {
-
+/**
+ * @brief Stmt基类和他的子类
+ * 
+ */
+class StmtAST : public BaseAST {
+public:
+    virtual llvm::Value* codeGen(CodeGenContext& context) { }
+    virtual void Dump() const = 0;
 }
 
 class ReturnAST : public StmtAST {
-
-}
-
-class VarDecl : public StmtAST {
-
+public: 
+    ExpAST* retVal_;
+    llvm::Value* codeGen(CodeGenContext& context) { }
+    void Dump();
 }
 
 class BlockAST : public StmtAST {
+public:
+
+    /* the content */
+}
+
+class ForAST : public StmtAST {
 
 }
 
+class IfAST : public StmtAST {
+public:
+    
+}
 
+/**
+ * @brief Exp基类和他的子类
+ * 
+ */
+class ExpAST : public BaseAST {
 
+}
 
 class BinaryOpAST : public ExpAST {
 
