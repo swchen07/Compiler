@@ -4,3 +4,4 @@
 /llvm-project
 /tests/toyCompiler
 /.DS_Store
+/tests/Test1/llvm.cpp
