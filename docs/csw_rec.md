@@ -51,73 +51,67 @@ A record file for Chen Shaowen.
 
 同时由于结合性和优先级可以通过yacc声明实现，所以可以对文法进行简化
 
-CompUnit --> FuncDef
+CompUnit      ::= [CompUnit] (Decl | FuncDef);
 
-FuncDef --> FuncType IDENTIFIER ( FuncParaLists ) Block
+Decl          ::= ConstDecl | VarDecl;
+ConstDecl     ::= "const" BType ConstDef {"," ConstDef} ";";
+BType         ::= "int";
+ConstDef      ::= IDENT "=" ConstInitVal;
+ConstInitVal  ::= ConstExp;
+VarDecl       ::= BType VarDef {"," VarDef} ";";
+VarDef        ::= IDENT | IDENT "=" InitVal;
+InitVal       ::= Exp;
 
-FuncType --> int | void | char
+FuncDef       ::= FuncType IDENT "(" [FuncFParams] ")" Block;
+FuncType      ::= "void" | "int";
+FuncFParams   ::= FuncFParam {"," FuncFParam};
+FuncFParam    ::= BType IDENT;
 
-FuncParaLists --> FuncParams | e
+Block         ::= "{" {BlockItem} "}";
+BlockItem     ::= Decl | Stmt;
+Stmt          ::= LVal "=" Exp ";"
+                | [Exp] ";"
+                | Block
+                | "if" "(" Exp ")" Stmt ["else" Stmt]
+                | "while" "(" Exp ")" Stmt
+                | "break" ";"
+                | "continue" ";"
+                | "return" [Exp] ";";
 
-FuncParams --> FuncParams , FuncParam | FuncParam
+Exp           ::= LOrExp;
+LVal          ::= IDENT;
+PrimaryExp    ::= "(" Exp ")" | LVal | Number;
+Number        ::= INT_CONST;
+UnaryExp      ::= PrimaryExp | IDENT "(" [FuncRParams] ")" | UnaryOp UnaryExp;
+UnaryOp       ::= "+" | "-" | "!";
+FuncRParams   ::= Exp {"," Exp};
+MulExp        ::= UnaryExp | MulExp ("*" | "/" | "%") UnaryExp;
+AddExp        ::= MulExp | AddExp ("+" | "-") MulExp;
+RelExp        ::= AddExp | RelExp ("<" | ">" | "<=" | ">=") AddExp;
+EqExp         ::= RelExp | EqExp ("==" | "!=") RelExp;
+LAndExp       ::= EqExp | LAndExp "&&" EqExp;
+LOrExp        ::= LAndExp | LOrExp "||" LAndExp;
+ConstExp      ::= Exp;
 
-FuncParam --> VarType IDENTIFIER
-
-Decl --> VarDecl
-
-VarDecl --> VarType VarDef VarList SEMI
-
-VarType --> int | void | char
-
-VarList --> VarList COMMA VarDef | e
-
-VarDef --> IDENTIFIER | IDENTIFIER ASSIGN Exp
-
-Block --> { BlockItemNew }
-
-BlockItemNew --> BlockItemNew BlockItem | e
-
-BlockItem --> Decl | Stmt
-
-Stmt --> LeftVal ASSIGN Exp SEMI
-        | Exp SEMI
-        | SEMI
-        | IF LPAREN Exp RPAREN Stmt ElseState
-        | WHILE LPAREN Exp RPAREN Stmt
-        | BREAK SEMI
-        | CONTINUE SEMI
-        | RETURN RetState SEMI
-
-LeftVal --> IDENTIFIER
-
-ElseState --> ELSE Stmt | e
-
-RetState --> Exp | e
-
-Exp
-    : + Exp 
-    | - Exp
-    | Exp + Exp
-    | Exp - Exp
-    | Exp * Exp
-    | Exp / Exp
-    | Exp % Exp
-
-    | Exp == Exp
-    | Exp != Exp
-    | Exp <  Exp
-    | Exp <= Exp
-    | Exp >  Exp
-    | Exp >= Exp
-
-    | Exp && Exp
-    | Exp || Exp
-    | ! Exp
-
-    | Exp &  Exp
-    | Exp |  Exp
-    | Exp ^  Exp
 
 ```
-2. 优先级和结核性通过yacc实现
+2. 抽象语法树
+    - BaseAST
+        - CompUnitAST
+        - DeclAST
+            - VarDeclAST
+            - FuncDefAST
+        - ExpAST
+            - AssignAST
+            - BinaryOpAST
+            - IntAST
+            - CharAST
+            - IdentifierAST
+
+        - StmtAST
+            - ReturnAST
+            
+            - 
+
+
 

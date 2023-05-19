@@ -10,7 +10,7 @@ https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/cont
 
 ### lexer.l & parser.y
 
-终结符采用全大写方式，非终结符采用帕斯卡命名规则（所有单词首字母大写。）
+终结符采用全大写方式（单词用‘_’进行连接），非终结符采用帕斯卡命名规则（所有单词首字母大写）。
 
 ## Comment
 文件、函数注释采用VScode插件Doxygen Comments提供的注释风格。

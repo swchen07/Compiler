@@ -33,8 +33,9 @@ using namespace std;
 %token IF ELSE
 %token FOR WHILE
 
+%token CONST
 %token IDENTIFIER
-
+%token CONST_INT CONST_CHAR CONST_FLOAT CONST_STR
 // 非终结符的类型定义
 
 %type CompUnit
@@ -43,8 +44,13 @@ using namespace std;
 %type FuncParaLists
 %type FuncParam
 %type Decl
+%type ConstDecl
+%type ConstDef
+%type ConstList
+%type ConstExp
+%type ConstInitVal
 %type VarDecl
-%type VarType
+%type Btype
 %type VarList
 %type VarDef
 
@@ -52,12 +58,13 @@ using namespace std;
 %type BlockItem BlockItemNew
 %type Stmt
 
+%type PrimaryExp
 %type Exp
 %type ElseState
 %type RetState
 
-%type LeftVal
-
+%type LVal
+%type Number
 
 /* 优先级和结合性定义 */
 %right	ASSIGN
@@ -73,20 +80,85 @@ using namespace std;
 
 %%
 
-CompUnit
-    : FuncDef                                   {}
+/* CompUnit      ::= [CompUnit] (Decl | FuncDef); */
+Program
+    : CompUnit FuncDef
+    | CompUnit Decl
     ;
 
+CompUnit
+    : CompUnit FuncDef                                   {}
+    | CompUnit Decl
+    | 
+    ;
+
+/* Decl          ::= ConstDecl | VarDecl; */
+Decl
+    : ConstDecl
+    | VarDecl                                   {}
+    ;
+
+/* ConstDecl     ::= "const" BType ConstDef {"," ConstDef} ";"; */
+ConstDecl
+    : CONST Btype ConstDef ConstList SEMI
+    ;
+
+ConstList
+    : ConstList COMMA ConstDef
+    |
+    ;
+
+/* BType         ::= "int"; */
+Btype
+    : VOID
+    | INT
+    | CHAR
+    ;
+
+/* ConstDef      ::= IDENT "=" ConstInitVal; */
+ConstDef
+    : IDENTIFIER ASSIGN ConstInitVal
+    ;
+
+/* ConstInitVal  ::= ConstExp; */
+ConstInitVal
+    : ConstExp
+    ;
+
+/* VarDecl       ::= BType VarDef {"," VarDef} ";"; */
+VarDecl
+    : Btype VarDef VarList SEMI
+    ;
+
+VarList
+    : VarList COMMA VarDef
+    |
+    ;
+
+/* VarDef        ::= IDENT | IDENT "=" InitVal; */
+VarDef
+    : IDENTIFIER
+    | IDENTIFIER ASSIGN InitVal
+    ;
+
+/* InitVal       ::= Exp; */
+InitVal
+    : Exp
+    ;
+
+/* FuncDef       ::= FuncType IDENT "(" [FuncFParams] ")" Block; */
 FuncDef
     : FuncType IDENTIFIER LPAREN FuncParaLists RPAREN Block   {}
     ;
 
+/* FuncType      ::= "void" | "int"; */
 FuncType
     : INT                                       { $$ = new string("int"); }
     | VOID                                      { $$ = new string("void"); }
     | CHAR                                      { $$ = new string("char"); }
     ;
 
+/* FuncFParams   ::= FuncFParam {"," FuncFParam}; */
 FuncParaLists
     : FuncParams 
     | 
@@ -97,33 +169,12 @@ FuncParams
     | FuncParam
     ;
 
+/* FuncFParam    ::= BType IDENT; */
 FuncParam
-    : VarType IDENTIFIER
-
-Decl
-    : VarDecl                                   {}
+    : Btype IDENTIFIER
     ;
 
-VarDecl
-    : VarType VarDef VarList SEMI
-    ;
-
-VarType
-    : VOID
-    | INT
-    | CHAR
-    ;
-
-VarList
-    : VarList COMMA VarDef
-    |
-    ;
-
-VarDef
-    : IDENTIFIER
-    | IDENTIFIER ASSIGN Exp
-    ;
-
+/* Block         ::= "{" {BlockItem} "}"; */
 Block
     : LBRACE BlockItemNew RBRACE                {}
     ;
@@ -133,15 +184,25 @@ BlockItemNew
     | 
     ;
 
+/* BlockItem     ::= Decl | Stmt; */
 BlockItem
     : Decl
     | Stmt
     ;
 
+/* Stmt          ::= LVal "=" Exp ";"
+                | [Exp] ";"
+                | Block
+                | "if" "(" Exp ")" Stmt ["else" Stmt]
+                | "while" "(" Exp ")" Stmt
+                | "break" ";"
+                | "continue" ";"
+                | "return" [Exp] ";"; */
 Stmt
-    : LeftVal ASSIGN Exp SEMI
+    : LVal ASSIGN Exp SEMI
     | Exp SEMI
     | SEMI
+    | Block
     | IF LPAREN Exp RPAREN Stmt ElseState
     | WHILE LPAREN Exp RPAREN Stmt
     | BREAK SEMI
@@ -149,7 +210,7 @@ Stmt
     | RETURN RetState SEMI
     ;
 
-LeftVal
+LVal
     : IDENTIFIER
     ;
 
@@ -163,11 +224,23 @@ RetState
     |
     ;
 
+PrimaryExp
+    : LPAREN Exp RPAREN
+    | LVal
+    | Number
+    ;
+
+Number
+    : CONST_INT
+    | CONST_CHAR
+    ;
+
 Exp
-    : ADD Exp 
+    : PrimaryExp
+    | ADD Exp 
     | SUB Exp
     | NOT Exp
-    
+
     | Exp ADD Exp
     | Exp SUB Exp
     | Exp MUL Exp
