@@ -34,7 +34,7 @@ using namespace std;
 %token FOR WHILE
 
 %token IDENTIFIER
-
+%token CONST_INT CONST_CHAR CONST_FLOAT CONST_STR
 // 非终结符的类型定义
 
 %type CompUnit
@@ -52,12 +52,13 @@ using namespace std;
 %type BlockItem BlockItemNew
 %type Stmt
 
+%type PrimaryExp
 %type Exp
 %type ElseState
 %type RetState
 
 %type LeftVal
-
+%type ConstVal
 
 /* 优先级和结合性定义 */
 %right	ASSIGN
@@ -163,11 +164,23 @@ RetState
     |
     ;
 
+PrimaryExp
+    : LPAREN Exp RPAREN
+    | LeftVal
+    | ConstVal
+    ;
+
+ConstVal
+    : CONST_INT
+    | CONST_CHAR
+    ;
+
 Exp
-    : ADD Exp 
+    : PrimaryExp
+    | ADD Exp 
     | SUB Exp
     | NOT Exp
-    
+
     | Exp ADD Exp
     | Exp SUB Exp
     | Exp MUL Exp
