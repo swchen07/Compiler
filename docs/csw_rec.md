@@ -49,7 +49,7 @@ A record file for Chen Shaowen.
     new-symbol -> e | else_statement
 
 
-同时由于结合性和优先级可以通过yacc声明实现，所以可以对文法进行简化
+同时由于结合性和优先级可以通过yacc声明实现，所以可以对文法进行简化（参考pku文档）
 
 CompUnit      ::= [CompUnit] (Decl | FuncDef);
 
@@ -116,6 +116,22 @@ ConstExp      ::= Exp;
             - BlockAST
             - ContinueAST
             - BreakAST
+
+### llvm学习记录
+1. llvm官方文档里没有给CodeGenerator，现在版本都是通过CodeGenerator的引用来传递变量
+2. 后面需要调用IR/Builder传值，**这很重要！！！**
+3. context
+4. DataLayout
+5. **不做优化**
+6. Function
+7. Type
+8. AST结点定义
+    - string传递const引用
+    - 指针传递指针（使用智能指针）
+    - 其他直接传递
+
+
+
 
 
 
