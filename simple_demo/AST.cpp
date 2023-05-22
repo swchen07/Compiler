@@ -9,3 +9,20 @@
  * 
  */
 
+#include "AST.hpp"
+
+llvm::Value* FunctionAST::codeGen(IRGenerator& IRContext) {
+
+}
+
+llvm::Value* BlockAST::codeGen(IRGenerator& IRContext) {
+    
+}
+
+llvm::Value* StmtAST::codeGen(IRGenerator& IRContext) {
+    
+}
+
+llvm::Value* ExprAST::codeGen(IRGenerator& IRContext) {
+    
+}

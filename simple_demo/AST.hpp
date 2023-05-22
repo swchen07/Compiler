@@ -10,9 +10,8 @@
  */
 
 #include <llvm/IR/Value.h>
-#include <iostream>
-#include <vector>
 #include <string>
+#include "IRGenerator.hpp"
 
 /**
  * @brief type类型的id
@@ -48,7 +47,7 @@ private:
 class BaseAST {
 public:
     virtual ~BaseAST() = default;
-    virtual llvm::Value* codeGen(CodeGenContext& context) =0;
+    virtual llvm::Value* codeGen(IRGenerator& IRContext) =0;
 };
 
 class FunctionAST : public BaseAST {
@@ -61,21 +60,21 @@ public:
         this->type = VarType(type).GetType()
     }
     ~FunctionAST(){};
-    llvm::Value* codeGen(CodeGenContext& context);
+    llvm::Value* codeGen(IRGenerator& IRContext);
 };
 
 class BlockAST : public FunctionAST {
 public:
     BlockAST(){}
     ~BlockAST(){}
-    llvm::Value* codeGen(CodeGenContext& context);
+    llvm::Value* codeGen(IRGenerator& IRContext);
 }
 
 class StmtAST: public BlockAST {
 public: 
     StmtAST(){}
     ~StmtAST(){}
-    llvm::Value* codeGen(CodeGenContext& context);
+    llvm::Value* codeGen(IRGenerator& IRContext);
 }
 
 class ExprAST: public StmtAST {
@@ -86,5 +85,5 @@ public:
 
     ExprAST(int a, char op, int b):a(a), b(b), op(op){};
     ~ExprAST(){};
-    llvm::Value* codeGen(CodeGenContext& context);
+    llvm::Value* codeGen(IRGenerator& IRContext);
 }
