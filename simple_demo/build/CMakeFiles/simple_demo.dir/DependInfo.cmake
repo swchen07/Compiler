@@ -10,7 +10,9 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/AST.cpp" "CMakeFiles/simple_demo.dir/AST.cpp.o" "gcc" "CMakeFiles/simple_demo.dir/AST.cpp.o.d"
   "/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/IRGenerator.cpp" "CMakeFiles/simple_demo.dir/IRGenerator.cpp.o" "gcc" "CMakeFiles/simple_demo.dir/IRGenerator.cpp.o.d"
+  "/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/lexer.cpp" "CMakeFiles/simple_demo.dir/lexer.cpp.o" "gcc" "CMakeFiles/simple_demo.dir/lexer.cpp.o.d"
   "/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/main.cpp" "CMakeFiles/simple_demo.dir/main.cpp.o" "gcc" "CMakeFiles/simple_demo.dir/main.cpp.o.d"
+  "/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/parser.cpp" "CMakeFiles/simple_demo.dir/parser.cpp.o" "gcc" "CMakeFiles/simple_demo.dir/parser.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

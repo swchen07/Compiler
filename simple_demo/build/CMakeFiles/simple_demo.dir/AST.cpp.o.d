@@ -1,7 +1,7 @@
 CMakeFiles/simple_demo.dir/AST.cpp.o: \
   /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/AST.cpp \
-  /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/AST.hpp \
-  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Value.h \
+  /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/IRGenerator.hpp \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/IRBuilder.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm-c/Types.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm-c/DataTypes.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/inttypes.h \
@@ -97,7 +97,7 @@ CMakeFiles/simple_demo.dir/AST.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/sys/_types/_fsblkcnt_t.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/sys/_types/_fsfilcnt_t.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm-c/ExternC.h \
-  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/STLExtras.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/ArrayRef.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/Hashing.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/Support/DataTypes.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/Support/ErrorHandling.h \
@@ -718,6 +718,8 @@ CMakeFiles/simple_demo.dir/AST.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__functional/pointer_to_binary_function.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__functional/pointer_to_unary_function.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__functional/unary_negate.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/SmallVector.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/STLExtras.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/STLForwardCompat.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/STLFunctionalExtras.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/identity.h \
@@ -726,10 +728,98 @@ CMakeFiles/simple_demo.dir/AST.cpp.o: \
   /Users/wangzijun/llvm-project/build/include/llvm/Config/abi-breaking.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/StringRef.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/DenseMapInfo.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/Twine.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/BasicBlock.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/ilist.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/simple_ilist.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/ilist_base.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/ilist_node_base.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/PointerIntPair.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/PointerLikeTypeTraits.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/ilist_iterator.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/ilist_node.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/ilist_node_options.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Instruction.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/Bitfields.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/DebugLoc.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/TrackingMDRef.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Metadata.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/DenseMap.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/EpochTracker.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/AlignOf.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/MathExtras.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/MemAlloc.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/ReverseIteration.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/PointerUnion.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/Casting.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Constant.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/User.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Use.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/Support/CBindingWrapping.h \
-  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/Casting.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Value.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/Support/Alignment.h \
-  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/MathExtras.h \
   /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Value.def \
-  /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/IRGenerator.hpp
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/LLVMContext.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/DiagnosticHandler.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/FixedMetadataKinds.def \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Metadata.def \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/SymbolTableListTraits.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/AtomicOrdering.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Instruction.def \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/ConstantFolder.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Constants.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/APFloat.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/APInt.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/FloatingPointMode.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/BitmaskEnum.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/StringSwitch.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/raw_ostream.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/system_error \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__errc \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/cerrno \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/DerivedTypes.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Type.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/TypeSize.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/OperandTraits.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/ConstantFold.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/InstrTypes.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/Sequence.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/StringMap.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/StringMapEntry.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/AllocatorBase.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Attributes.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/SmallString.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/CodeGen.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/bitset \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/set \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__tree \
+  /Users/wangzijun/llvm-project/build/include/llvm/IR/Attributes.inc \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/CallingConv.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Function.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/DenseSet.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Argument.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/GlobalObject.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/GlobalValue.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/MD5.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/Endian.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/IRBuilderFolder.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Operator.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/MapVector.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/FMF.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/DataLayout.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/Support/TrailingObjects.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/FPEnv.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/GlobalVariable.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Instructions.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/CFG.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/GraphTraits.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Intrinsics.h \
+  /Users/wangzijun/llvm-project/build/include/llvm/IR/IntrinsicEnums.inc \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Module.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/Comdat.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/ADT/SmallPtrSet.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/GlobalAlias.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/GlobalIFunc.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/ProfileSummary.h \
+  /Users/wangzijun/llvm-project/llvm/include/llvm/IR/ValueHandle.h \
+  /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/AST.hpp

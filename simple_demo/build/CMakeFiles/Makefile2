@@ -189,12 +189,12 @@ CMakeFiles/RISCVTargetParserTableGen.dir/clean:
 CMakeFiles/simple_demo.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_demo.dir/build.make CMakeFiles/simple_demo.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_demo.dir/build.make CMakeFiles/simple_demo.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles --progress-num=1,2,3,4 "Built target simple_demo"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target simple_demo"
 .PHONY : CMakeFiles/simple_demo.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/simple_demo.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/simple_demo.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles 0
 .PHONY : CMakeFiles/simple_demo.dir/rule

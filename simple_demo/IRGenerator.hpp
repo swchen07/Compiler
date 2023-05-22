@@ -15,7 +15,7 @@
 
 class IRGenerator {
 public: 
-    llvm::LLVMContext* Context
+    llvm::LLVMContext* Context;
     llvm::IRBuilder* IRBuilder;
     llvm::Module* Module;
 

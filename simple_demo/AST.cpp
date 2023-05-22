@@ -9,8 +9,8 @@
  * 
  */
 
-#include "AST.hpp"
 #include "IRGenerator.hpp"
+#include "AST.hpp"
 #include <cstdio>
 
 llvm::Value* FunctionAST::IRGen(IRGenerator& IRContext) {

@@ -97,10 +97,24 @@ CMakeFiles/simple_demo.dir/IRGenerator.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/simple_demo.dir/IRGenerator.cpp.s"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/IRGenerator.cpp -o CMakeFiles/simple_demo.dir/IRGenerator.cpp.s
 
+CMakeFiles/simple_demo.dir/lexer.cpp.o: CMakeFiles/simple_demo.dir/flags.make
+CMakeFiles/simple_demo.dir/lexer.cpp.o: /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/lexer.cpp
+CMakeFiles/simple_demo.dir/lexer.cpp.o: CMakeFiles/simple_demo.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/simple_demo.dir/lexer.cpp.o"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/simple_demo.dir/lexer.cpp.o -MF CMakeFiles/simple_demo.dir/lexer.cpp.o.d -o CMakeFiles/simple_demo.dir/lexer.cpp.o -c /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/lexer.cpp
+
+CMakeFiles/simple_demo.dir/lexer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/simple_demo.dir/lexer.cpp.i"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/lexer.cpp > CMakeFiles/simple_demo.dir/lexer.cpp.i
+
+CMakeFiles/simple_demo.dir/lexer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/simple_demo.dir/lexer.cpp.s"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/lexer.cpp -o CMakeFiles/simple_demo.dir/lexer.cpp.s
+
 CMakeFiles/simple_demo.dir/main.cpp.o: CMakeFiles/simple_demo.dir/flags.make
 CMakeFiles/simple_demo.dir/main.cpp.o: /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/main.cpp
 CMakeFiles/simple_demo.dir/main.cpp.o: CMakeFiles/simple_demo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/simple_demo.dir/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/simple_demo.dir/main.cpp.o"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/simple_demo.dir/main.cpp.o -MF CMakeFiles/simple_demo.dir/main.cpp.o.d -o CMakeFiles/simple_demo.dir/main.cpp.o -c /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/main.cpp
 
 CMakeFiles/simple_demo.dir/main.cpp.i: cmake_force
@@ -111,18 +125,36 @@ CMakeFiles/simple_demo.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/simple_demo.dir/main.cpp.s"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/main.cpp -o CMakeFiles/simple_demo.dir/main.cpp.s
 
+CMakeFiles/simple_demo.dir/parser.cpp.o: CMakeFiles/simple_demo.dir/flags.make
+CMakeFiles/simple_demo.dir/parser.cpp.o: /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/parser.cpp
+CMakeFiles/simple_demo.dir/parser.cpp.o: CMakeFiles/simple_demo.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/simple_demo.dir/parser.cpp.o"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/simple_demo.dir/parser.cpp.o -MF CMakeFiles/simple_demo.dir/parser.cpp.o.d -o CMakeFiles/simple_demo.dir/parser.cpp.o -c /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/parser.cpp
+
+CMakeFiles/simple_demo.dir/parser.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/simple_demo.dir/parser.cpp.i"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/parser.cpp > CMakeFiles/simple_demo.dir/parser.cpp.i
+
+CMakeFiles/simple_demo.dir/parser.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/simple_demo.dir/parser.cpp.s"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/wangzijun/Documents/GitHub/Compiler/simple_demo/parser.cpp -o CMakeFiles/simple_demo.dir/parser.cpp.s
+
 # Object files for target simple_demo
 simple_demo_OBJECTS = \
 "CMakeFiles/simple_demo.dir/AST.cpp.o" \
 "CMakeFiles/simple_demo.dir/IRGenerator.cpp.o" \
-"CMakeFiles/simple_demo.dir/main.cpp.o"
+"CMakeFiles/simple_demo.dir/lexer.cpp.o" \
+"CMakeFiles/simple_demo.dir/main.cpp.o" \
+"CMakeFiles/simple_demo.dir/parser.cpp.o"
 
 # External object files for target simple_demo
 simple_demo_EXTERNAL_OBJECTS =
 
 simple_demo: CMakeFiles/simple_demo.dir/AST.cpp.o
 simple_demo: CMakeFiles/simple_demo.dir/IRGenerator.cpp.o
+simple_demo: CMakeFiles/simple_demo.dir/lexer.cpp.o
 simple_demo: CMakeFiles/simple_demo.dir/main.cpp.o
+simple_demo: CMakeFiles/simple_demo.dir/parser.cpp.o
 simple_demo: CMakeFiles/simple_demo.dir/build.make
 simple_demo: /Users/wangzijun/llvm-project/build/lib/libLLVMSupport.a
 simple_demo: /Users/wangzijun/llvm-project/build/lib/libLLVMCore.a
@@ -139,7 +171,7 @@ simple_demo: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platfor
 simple_demo: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/lib/libcurses.tbd
 simple_demo: /Users/wangzijun/llvm-project/build/lib/libLLVMDemangle.a
 simple_demo: CMakeFiles/simple_demo.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable simple_demo"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable simple_demo"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/simple_demo.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

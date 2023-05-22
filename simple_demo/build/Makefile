@@ -229,6 +229,30 @@ IRGenerator.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_demo.dir/build.make CMakeFiles/simple_demo.dir/IRGenerator.cpp.s
 .PHONY : IRGenerator.cpp.s
 
+lexer.o: lexer.cpp.o
+.PHONY : lexer.o
+
+# target to build an object file
+lexer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_demo.dir/build.make CMakeFiles/simple_demo.dir/lexer.cpp.o
+.PHONY : lexer.cpp.o
+
+lexer.i: lexer.cpp.i
+.PHONY : lexer.i
+
+# target to preprocess a source file
+lexer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_demo.dir/build.make CMakeFiles/simple_demo.dir/lexer.cpp.i
+.PHONY : lexer.cpp.i
+
+lexer.s: lexer.cpp.s
+.PHONY : lexer.s
+
+# target to generate assembly for a file
+lexer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_demo.dir/build.make CMakeFiles/simple_demo.dir/lexer.cpp.s
+.PHONY : lexer.cpp.s
+
 main.o: main.cpp.o
 .PHONY : main.o
 
@@ -253,6 +277,30 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_demo.dir/build.make CMakeFiles/simple_demo.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+parser.o: parser.cpp.o
+.PHONY : parser.o
+
+# target to build an object file
+parser.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_demo.dir/build.make CMakeFiles/simple_demo.dir/parser.cpp.o
+.PHONY : parser.cpp.o
+
+parser.i: parser.cpp.i
+.PHONY : parser.i
+
+# target to preprocess a source file
+parser.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_demo.dir/build.make CMakeFiles/simple_demo.dir/parser.cpp.i
+.PHONY : parser.cpp.i
+
+parser.s: parser.cpp.s
+.PHONY : parser.s
+
+# target to generate assembly for a file
+parser.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simple_demo.dir/build.make CMakeFiles/simple_demo.dir/parser.cpp.s
+.PHONY : parser.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -272,9 +320,15 @@ help:
 	@echo "... IRGenerator.o"
 	@echo "... IRGenerator.i"
 	@echo "... IRGenerator.s"
+	@echo "... lexer.o"
+	@echo "... lexer.i"
+	@echo "... lexer.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... parser.o"
+	@echo "... parser.i"
+	@echo "... parser.s"
 .PHONY : help
 
 

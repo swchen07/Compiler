@@ -6,9 +6,11 @@ cmake_minimum_required(VERSION 3.13.4)
 
 set(LLVM_DIR "/Users/wangzijun/llvm-project/build/lib/cmake/llvm")
 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+
 file(RELATIVE_PATH project_name ${CMAKE_CURRENT_LIST_DIR}/.. ${CMAKE_CURRENT_LIST_DIR})
 
-project (${project_name})
+project(${project_name})
 
 ###############################################
 # Generate lexer and parser codes
@@ -16,15 +18,15 @@ project (${project_name})
 
 message("-- Generating lexer and parser codes")
 execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-				COMMAND flex Lexer.l
-				COMMAND bison -d Parser.y)
+                COMMAND flex Lexer.l
+                COMMAND bison -d Parser.y)
 
 ###############################################
 # Set dependencies
 ###############################################
 
 # Set project compile flags.
-set (CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
@@ -50,8 +52,8 @@ add_executable(${project_name} ${SOURCES})
 # Link
 ###############################################
 
-if (WIN32)
-	target_link_libraries(${project_name} ${LLVM_AVAILABLE_LIBS})
+if(WIN32)
+    target_link_libraries(${project_name} ${LLVM_AVAILABLE_LIBS})
 else()
     llvm_map_components_to_libnames(llvm_libs support core irreader)
     target_link_libraries(${project_name} PRIVATE ${llvm_libs})
