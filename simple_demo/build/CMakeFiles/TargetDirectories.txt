@@ -1,4 +1,0 @@
-/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/build/CMakeFiles/rebuild_cache.dir
-/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/build/CMakeFiles/edit_cache.dir
-/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/build/CMakeFiles/simple_demo.dir
-/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/build/CMakeFiles/intrinsics_gen.dir
