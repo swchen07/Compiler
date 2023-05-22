@@ -1,3 +1,4 @@
+
 /**
  * @file IRGenerator.cpp
  * @author your name (you@domain.com)
@@ -44,3 +45,4 @@ void IRGenerator::GenObjectCode(string outputfile) {
     PM.run(*Module);
     Dest.flush();
 }
+
