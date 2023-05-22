@@ -9,9 +9,14 @@
  * 
  */
 
-#include "IRGenerator.hpp"
-#include "AST.hpp"
 #include <cstdio>
+#include "AST.hpp"
+#include "IRGenerator.hpp"
+
+llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
+    this->funcast->IRGen(IRContext); 
+    return NULL; 
+}
 
 llvm::Value* FunctionAST::IRGen(IRGenerator& IRContext) {
     //Get return type
@@ -23,7 +28,7 @@ llvm::Value* FunctionAST::IRGen(IRGenerator& IRContext) {
     //Get function type
     llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, NULL, NULL);
     //Create function
-    llvm::Function* Func = llvm::Function::Create(FuncType, NULL, this->funcname, IRContext.Module);
+    llvm::Function* Func = llvm::Function::Create(FuncType, llvm::GlobalValue::ExternalLinkage, this->funcname, IRContext.Module);
     // IRContext.AddFunction(this->funcname, Func);
 
     this->blockast->IRGen(IRContext); 

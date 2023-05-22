@@ -4,6 +4,7 @@
 #include <string>
 
 int yylex(void);
+BaseAST* Root; 
 
 void yyerror(const char *s) {
     std::printf("Error: %s", s);
@@ -14,8 +15,6 @@ using namespace std;
 %}
 
 %output "parser.cpp"
-
-%parse-param { std::unique_ptr<BaseAST> &ast }
 
 %union {
     std::string *strVal;
@@ -35,7 +34,7 @@ using namespace std;
 
 // 非终结符的类型定义
 
-%type <astVal> FuncDef FuncType Block Stmt Exp
+%type <astVal> FuncDef FuncType Block Stmt Exp CompUnit
 %type <intVal> Number
 
 /* 优先级和结合性定义 */
@@ -43,7 +42,7 @@ using namespace std;
 %%
 
 CompUnit
-    : FuncDef                                   {ast = $1;}
+    : FuncDef                                   {$$ = new ProgramAST((FunctionAST*)$1); Root = $$;}
     ;
 
 FuncDef
