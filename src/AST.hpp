@@ -137,7 +137,10 @@ public:
 class ExpAST : public BaseAST {
 public:
 
-    ExpAST()
+    ExpAST();
+    ~ExpAST();
+
+    llvm::Value* codeGen(CodeGenContext& context);
 }
 
 class BinaryOpAST : public ExpAST {
