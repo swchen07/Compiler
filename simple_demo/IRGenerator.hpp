@@ -29,4 +29,7 @@ public:
         delte IRBuilder;
         delete Module;
     }
+
+    void GenerateCode(BaseAST*);
+    void GenObjectCode(string);
 }
