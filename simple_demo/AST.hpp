@@ -28,6 +28,10 @@ class VarType {
 public:
     VarType(int) {type=Int;}
     VarType(char) {type=Char;}
+    VarType(string name) {
+        if (name == 'int') type = Int; 
+        else if (name == 'char') type = Char; 
+    } 
     ~VarType(){}
     GetType() {return type;}
 private: 
@@ -52,28 +56,35 @@ public:
     string funcname; 
     VarType type; 
     
-    FunctionAST(string type, string function);
-    ~FunctionAST();
+    FunctionAST(string type, string funcname) {
+        this->funcname = funcname; 
+        this->type = VarType(type).GetType()
+    }
+    ~FunctionAST(){};
     llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class BlockAST : public FunctionAST {
 public:
-    BlockAST();
-    ~BlockAST();
+    BlockAST(){}
+    ~BlockAST(){}
     llvm::Value* codeGen(CodeGenContext& context);
 }
 
 class StmtAST: public BlockAST {
 public: 
-    StmtAST();
-    ~StmtAST();
+    StmtAST(){}
+    ~StmtAST(){}
     llvm::Value* codeGen(CodeGenContext& context);
 }
 
 class ExprAST: public StmtAST {
 public: 
-    ExprAST();
-    ~ExprAST();
+    int a; 
+    int b; 
+    char op;
+
+    ExprAST(int a, char op, int b):a(a), b(b), op(op){};
+    ~ExprAST(){};
     llvm::Value* codeGen(CodeGenContext& context);
 }
