@@ -18,15 +18,15 @@ project(${project_name})
 
 message("-- Generating lexer and parser codes")
 execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-                COMMAND flex Lexer.l
-                COMMAND bison -d Parser.y)
+                COMMAND flex lexer.l
+                COMMAND bison -d parser.y)
 
 ###############################################
 # Set dependencies
 ###############################################
 
 # Set project compile flags.
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
 find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
@@ -55,6 +55,10 @@ add_executable(${project_name} ${SOURCES})
 if(WIN32)
     target_link_libraries(${project_name} ${LLVM_AVAILABLE_LIBS})
 else()
-    llvm_map_components_to_libnames(llvm_libs support core irreader)
+    # llvm_map_components_to_libnames(llvm_libs support core irreader)
+    execute_process(COMMAND llvm-config-14 --libs all
+					OUTPUT_VARIABLE llvm_libs)
+	string(STRIP ${llvm_libs} llvm_libs)
+	string(REPLACE " " ";" llvm_libs ${llvm_libs})
     target_link_libraries(${project_name} PRIVATE ${llvm_libs})
 endif()

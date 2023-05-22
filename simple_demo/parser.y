@@ -4,7 +4,7 @@
 #include <string>
 
 int yylex(void);
-BaseAST* Root; 
+extern BaseAST* Root; 
 
 void yyerror(const char *s) {
     std::printf("Error: %s", s);

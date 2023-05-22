@@ -4,5 +4,5 @@ mkdir build
 cd build
 cmake ..
 make
-make clean
-rm -rf build
+# make clean
+# rm -rf build

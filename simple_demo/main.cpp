@@ -16,7 +16,7 @@
 #include "IRGenerator.hpp"
 
 extern int yyparse();
-extern BaseAST* Root;
+BaseAST* Root;
 
 int main(int argc, const char* argv[]) {
     std::string inputfile = argv[1]; 
