@@ -17,7 +17,7 @@ using namespace std;
 %output "parser.cpp"
 
 %union {
-    std::string *strVal;
+    char* strVal;
     int token;
     int intVal;
     BaseAST *astVal;
@@ -27,14 +27,15 @@ using namespace std;
 // lexer 返回的所有 token 种类的声明
 %token ADD
 %token LPAREN RPAREN LBRACE RBRACE
-%token INT RETURN
+%token RETURN
 
-%token <strVal> IDENTIFIER
+%token <strVal> IDENTIFIER INT
 %token <intVal> CONST_INT
 
 // 非终结符的类型定义
 
-%type <astVal> FuncDef FuncType Block Stmt Exp CompUnit
+%type <astVal> FuncDef Block Stmt Exp CompUnit
+%type <strVal> FuncType
 %type <intVal> Number
 
 /* 优先级和结合性定义 */
@@ -46,19 +47,19 @@ CompUnit
     ;
 
 FuncDef
-    : FuncType IDENTIFIER LPAREN RPAREN Block   {$$ = new FunctionAST($1, $2, $5);}
+    : FuncType IDENTIFIER LPAREN RPAREN Block   {$$ = new FunctionAST($1, $2, (BlockAST*)$5);}
     ;
 
 Block
-    : LBRACE Stmt RBRACE                        {$$ = new BlockAST($2);}
+    : LBRACE Stmt RBRACE                        {$$ = new BlockAST((StmtAST*)$2);}
     ;
 
 FuncType
-    : INT                                       {$$ = new string("int");}
+    : INT                                       {$$ = $1;}
     ;
 
 Stmt
-    : RETURN Exp ';'                            {$$ = new StmtAST($2);}
+    : RETURN Exp ';'                            {$$ = new StmtAST((ExprAST*)$2);}
     ;
 
 Exp

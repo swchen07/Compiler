@@ -34,14 +34,14 @@ Hexadecimal   0[xX][0-9a-fA-F]+
 {LineComment}   { /* 忽略, 不做任何操作 */ }
 
 "+"             { return ADD; }
-"int"           { return INT; }
+"int"           { yylval.strVal = yytext; return INT; }
 "return"        { return RETURN; }
 "("             { return LPAREN; }
 ")"             { return RPAREN; }
 "{"             { return LBRACE; }
 "}"             { return RBRACE; }
 
-{Identifier}    { yylval.strVal = new string(yytext); return IDENTIFIER; }
+{Identifier}    { yylval.strVal = yytext; return IDENTIFIER; }
 
 {Decimal}       { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
 {Octal}         { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
