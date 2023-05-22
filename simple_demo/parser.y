@@ -14,11 +14,13 @@ using namespace std;
 
 %}
 
+%parse-param { std::unique_ptr<BaseAST> &ast }
+
 %union {
     std::string *strVal;
     int token;
     int intVal;
-    //BaseAST *astVal;
+    BaseAST *astVal;
 }
 
 /* 终结符 */
@@ -32,7 +34,7 @@ using namespace std;
 
 // 非终结符的类型定义
 
-%type <strVal> FuncDef FuncType Block Stmt
+%type <astVal> FuncDef FuncType Block Stmt Exp
 %type <intVal> Number
 
 /* 优先级和结合性定义 */
@@ -40,31 +42,31 @@ using namespace std;
 %%
 
 CompUnit
-    : FuncDef                                   {printf("CompUnit");}
+    : FuncDef                                   {ast = $1;}
     ;
 
 FuncDef
-    : FuncType IDENTIFIER LPAREN RPAREN Block   {printf("FuncDef\n");}
+    : FuncType IDENTIFIER LPAREN RPAREN Block   {$$ = new FunctionAST($1, $2, $5);}
     ;
 
 Block
-    : LBRACE Stmt RBRACE                        {printf("Block\n");}
+    : LBRACE Stmt RBRACE                        {$$ = new BlockAST($2);}
     ;
 
 FuncType
-    : INT                                       {printf("FuncType\n");}
+    : INT                                       {$$ = new string("int");}
     ;
 
 Stmt
-    : RETURN Exp                                {printf("Stmt\n");}
+    : RETURN Exp ';'                            {$$ = new StmtAST($2);}
     ;
 
 Exp
-    : Number ADD Number                         {printf("Exp\n");}
+    : Number ADD Number                         {$$ = new ExprAST($1, '+', $3);}
     ;
 
 Number
-    : CONST_INT                                 {$$ = new string(to_string($1));}
+    : CONST_INT                                 {$$ = $1;}
     ;
 
 
