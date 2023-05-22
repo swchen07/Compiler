@@ -23,7 +23,7 @@
 class BaseAST {
 public:
     virtual ~BaseAST() = default;
-    virtual llvm::Value* codeGen(CodeGenContext& context) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
     virtual void Dump() const = 0;
 };
 
@@ -40,7 +40,7 @@ public:
  */
 class DeclAST : public BaseAST {
 public:
-    virtual llvm::Value* codeGen(CodeGenContext& context) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
     virtual void Dump() const = 0;
 }
 
@@ -50,7 +50,7 @@ public:
  */
 class StmtAST : public BaseAST {
 public:
-    virtual llvm::Value* codeGen(CodeGenContext& context) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
     virtual void Dump() const = 0;
 }
 
@@ -58,7 +58,7 @@ class BlockAST : public StmtAST {
 public:
     std::unique_ptr<BaseAST> stmts_;
 
-    llvm::Value* codeGen(CodeGenContext& context) { }
+    llvm::Value* codeGen(CodeGenContext& context);
     void Dump();
 }
 
@@ -73,7 +73,7 @@ public:
     std::unique_ptr<BaseAST> acc_;
     std::unique_ptr<BaseAST> loopBody_;
 
-    llvm::Value* codeGen(CodeGenContext& context) { }
+    llvm::Value* codeGen(CodeGenContext& context);
     void Dump();
 }
 
@@ -83,7 +83,7 @@ public:
     std::unique_ptr<BaseAST> condition_;
     std::unique_ptr<BaseAST> else_;
 
-    llvm::Value* codeGen(CodeGenContext& context) { }
+    llvm::Value* codeGen(CodeGenContext& context);
     void Dump();
 }
 
@@ -95,7 +95,7 @@ class WhileAST : public StmtAST {
     std::unique_ptr<BaseAST> condtion_;
     std::unique_ptr<BaseAST> whileBody_;
 
-    llvm::Value* codeGen(CodeGenContext& context) { }
+    llvm::Value* codeGen(CodeGenContext& context);
     void Dump();
 }
 
@@ -103,30 +103,30 @@ class ReturnAST : public StmtAST {
 public: 
     std::unique_ptr<BaseAST> retVal_;
 
-    ReturnAST(ExpAST* _retVal_) : retVal_(_retVal_) {}
-    ~ReturnAST() {}
+    ReturnAST(ExpAST* _retVal_) : retVal_(_retVal_);
+    ~ReturnAST();
 
-    llvm::Value* codeGen(CodeGenContext& context) { }
+    llvm::Value* codeGen(CodeGenContext& context);
     void Dump();
 }
 
 class BreakAST : public StmtAST {
 public:
 
-    BreakAST() {}
-    ~BreakAST() {}
+    BreakAST();
+    ~BreakAST();
  
-    llvm::Value* codeGen(CodeGenContext& context) { }
+    llvm::Value* codeGen(CodeGenContext& context);
     void Dump();
 }
 
 class ContinueAST : public StmtAST {
 public:
 
-    ContinueAST() {}
-    ~ContinueAST() {}
+    ContinueAST();
+    ~ContinueAST();
 
-    llvm::Value* codeGen(CodeGenContext& context) { }
+    llvm::Value* codeGen(CodeGenContext& context);
     void Dump();
 }
 
@@ -135,7 +135,9 @@ public:
  * 
  */
 class ExpAST : public BaseAST {
+public:
 
+    ExpAST()
 }
 
 class BinaryOpAST : public ExpAST {
