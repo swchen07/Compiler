@@ -65,7 +65,7 @@ public:
 
 class ProgramAST : public BaseAST {
 public:
-    FunctionAST* funcast; 
+    FunctionAST* funcast;  
     
     ProgramAST(FunctionAST* funcast):funcast(funcast){}
     ~ProgramAST(){};
