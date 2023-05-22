@@ -13,6 +13,7 @@
 
 #include <llvm/IR/Value.h>
 #include <string>
+#include <iostream>
 
 class IRGenerator;
 
@@ -78,7 +79,9 @@ public:
     VarType type; 
     BlockAST* blockast;
     
-    FunctionAST(std::string type_name, std::string funcname, BlockAST* blockast):funcname(funcname), type(type_name), blockast(blockast) {}
+    FunctionAST(std::string type_name, std::string funcname, BlockAST* blockast):funcname(funcname), type(type_name), blockast(blockast) {
+        // std::cout << type_name << " " << funcname << std::endl;
+    }
     ~FunctionAST(){};
     llvm::Value* IRGen(IRGenerator& IRContext);
 };
@@ -107,7 +110,9 @@ public:
     int b; 
     char op;
 
-    ExprAST(int a, char op, int b):a(a), b(b), op(op){};
+    ExprAST(int a, char op, int b):a(a), b(b), op(op){
+        // std::cout << a << " " << b << std::endl;
+    };
     ~ExprAST(){};
     llvm::Value* IRGen(IRGenerator& IRContext);
 };

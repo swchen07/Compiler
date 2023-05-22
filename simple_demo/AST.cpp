@@ -10,16 +10,19 @@
  */
 
 #include <cstdio>
+#include <iostream>
 #include "AST.hpp"
 #include "IRGenerator.hpp"
 
 llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
+    std::cout << "ProgramAST" << std::endl;
     this->funcast->IRGen(IRContext); 
     return NULL; 
 }
 
 llvm::Value* FunctionAST::IRGen(IRGenerator& IRContext) {
     //Get return type
+    std::cout << "FunctionAST" << std::endl;
     auto IRBuilder = IRContext.IRBuilder; 
     llvm::Type* ReturnType; 
     if (this->type.GetType() == Int)
@@ -36,17 +39,20 @@ llvm::Value* FunctionAST::IRGen(IRGenerator& IRContext) {
 }
 
 llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
+    std::cout << "BlockAST" << std::endl;
     this->stmtast->IRGen(IRContext); 
     return NULL; 
 }
 
 llvm::Value* StmtAST::IRGen(IRGenerator& IRContext) {
+    std::cout << "StmtAST" << std::endl;
     auto IRBuilder = IRContext.IRBuilder; 
     IRBuilder->CreateRet(this->exprast->IRGen(IRContext));
     return NULL; 
 }
 
 llvm::Value* ExprAST::IRGen(IRGenerator& IRContext) {
+    std::cout << "ExprAST" << std::endl;
     if (this->op == '+') {
         auto IRBuilder = IRContext.IRBuilder; 
         return IRBuilder->CreateAdd(IRBuilder->getInt32(this->a), IRBuilder->getInt32(this->b));

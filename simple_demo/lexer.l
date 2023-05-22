@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 
+#define SAVE_TOKEN yylval.string = new std::string(yytext, yyleng)
 // 因为 Flex 会用到 Bison 中关于 token 的定义
 // 所以需要 include Bison 生成的头文件
 extern "C" int yywrap() {return 1;}
@@ -34,14 +35,14 @@ Hexadecimal   0[xX][0-9a-fA-F]+
 {LineComment}   { /* 忽略, 不做任何操作 */ }
 
 "+"             { return ADD; }
-"int"           { yylval.strVal = yytext; return INT; }
+"int"           { yylval.strVal = new std::string(yytext, yyleng); return INT; }
 "return"        { return RETURN; }
 "("             { return LPAREN; }
 ")"             { return RPAREN; }
 "{"             { return LBRACE; }
 "}"             { return RBRACE; }
 
-{Identifier}    { yylval.strVal = yytext; return IDENTIFIER; }
+{Identifier}    { yylval.strVal = new std::string(yytext, yyleng); return IDENTIFIER; }
 
 {Decimal}       { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
 {Octal}         { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
