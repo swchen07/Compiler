@@ -6,7 +6,12 @@ int main() {
 }
 ~~~
 
+CFG: 
+
 function -> type funcname lpa rpa block
+
 block -> lba stmt rba
+
 stmt -> return expr
+
 expr -> int op int
