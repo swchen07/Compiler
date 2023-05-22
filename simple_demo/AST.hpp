@@ -37,6 +37,15 @@ private:
     TypeID type;
 }
 
+/**
+ * @brief 声明所有类
+ * 
+ */
+class BaseAST; 
+class FunctionAST; 
+class BlockAST; 
+class StmtAST; 
+class ExprAST; 
 
 /**
  * @brief 构造所有AST节点的基类，其中用指针管理对象
@@ -47,37 +56,43 @@ private:
 class BaseAST {
 public:
     virtual ~BaseAST() = default;
-    virtual llvm::Value* codeGen(IRGenerator& IRContext) =0;
+    virtual llvm::Value* IRGen(IRGenerator& IRContext) =0;
 };
 
 class FunctionAST : public BaseAST {
 public:
     string funcname; 
     VarType type; 
+    BlockAST* blockast
     
-    FunctionAST(string type, string funcname) {
+    FunctionAST(string type, string funcname, BlockAST* blockast) {
         this->funcname = funcname; 
         this->type = VarType(type).GetType()
+        this->blockast = blockast; 
     }
     ~FunctionAST(){};
-    llvm::Value* codeGen(IRGenerator& IRContext);
+    llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
-class BlockAST : public FunctionAST {
+class BlockAST : public BaseAST {
 public:
-    BlockAST(){}
+    StmtAST* stmtast;
+
+    BlockAST(StmtAST* stmtast): stmtast(stmtast){}
     ~BlockAST(){}
-    llvm::Value* codeGen(IRGenerator& IRContext);
+    llvm::Value* IRGen(IRGenerator& IRContext);
 }
 
-class StmtAST: public BlockAST {
+class StmtAST: public BaseAST {
 public: 
-    StmtAST(){}
+    ExprAST* exprast;
+
+    StmtAST(ExprAST* exprast): exprast(exprast){}
     ~StmtAST(){}
-    llvm::Value* codeGen(IRGenerator& IRContext);
+    llvm::Value* IRGen(IRGenerator& IRContext);
 }
 
-class ExprAST: public StmtAST {
+class ExprAST: public BaseAST {
 public: 
     int a; 
     int b; 
@@ -85,5 +100,5 @@ public:
 
     ExprAST(int a, char op, int b):a(a), b(b), op(op){};
     ~ExprAST(){};
-    llvm::Value* codeGen(IRGenerator& IRContext);
+    llvm::Value* IRGen(IRGenerator& IRContext);
 }
