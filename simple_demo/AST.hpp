@@ -47,7 +47,7 @@ public:
     virtual llvm::Value* codeGen(CodeGenContext& context) =0;
 };
 
-class FunctionAST {
+class FunctionAST : public BaseAST {
 public:
     string funcname; 
     VarType type; 

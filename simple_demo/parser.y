@@ -64,8 +64,9 @@ Exp
     ;
 
 Number
-    : CONST_INT                                 {printf("%d",$1);}
+    : CONST_INT                                 {$$ = new string(to_string($1));}
     ;
+
 
 %%
 
