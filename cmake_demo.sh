@@ -1,4 +1,8 @@
 cd simple_demo
-cmake -S . -B ./build 
-cd build     
+rm -rf build
+mkdir build
+cd build
+cmake ..
 make
+make clean
+rm -rf build

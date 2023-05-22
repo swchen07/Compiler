@@ -1,7 +1,0 @@
-/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles/intrinsics_gen.dir
-/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles/omp_gen.dir
-/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles/acc_gen.dir
-/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles/RISCVTargetParserTableGen.dir
-/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles/simple_demo.dir
-/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles/edit_cache.dir
-/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/build/CMakeFiles/rebuild_cache.dir
