@@ -28,7 +28,7 @@ using namespace std;
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE COMMA SEMI
 %token ASSIGN DOT COLON QUES
 
-%token INT CHAR BOOL VOID STRING
+%token INT CHAR BOOL VOID STRING SHORT
 %token RETURN CONTINUE BREAK
 %token IF ELSE
 %token FOR WHILE
@@ -112,7 +112,7 @@ ConstList
 
 /* BType         ::= "int"; */
 Btype
-    : VOID
+    : SHORT
     | INT
     | CHAR
     ;
@@ -158,6 +158,7 @@ FuncType
     : INT                                       { $$ = new string("int"); }
     | VOID                                      { $$ = new string("void"); }
     | CHAR                                      { $$ = new string("char"); }
+    | SHORT                                     {}
     ;
 
 /* FuncFParams   ::= FuncFParam {"," FuncFParam}; */
@@ -205,7 +206,6 @@ Stmt
     | Exp SEMI
     | SEMI
     | Block
-    | FOR 
     | IF LPAREN Exp RPAREN Stmt ElseState
     | WHILE LPAREN Exp RPAREN Stmt
     | BREAK SEMI

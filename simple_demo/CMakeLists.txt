@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.13.4)
 # Set project_name as the directory name
 ###############################################
 
-set(LLVM_DIR "/Users/wangzijun/llvm-project/build/lib/cmake/llvm")
+# set(LLVM_DIR "/Users/wangzijun/llvm-project/build/lib/cmake/llvm")
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 
@@ -30,7 +30,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+# message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
 include_directories(${LLVM_INCLUDE_DIRS})
 

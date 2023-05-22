@@ -66,13 +66,14 @@
 
 
 /* First part of user prologue.  */
-#line 3 "parser.y"
+#line 1 "Parser.y"
 
 #include "AST.hpp"
 #include <iostream>
 #include <string>
 
 int yylex(void);
+BaseAST* Root; 
 
 void yyerror(const char *s) {
     std::printf("Error: %s", s);
@@ -81,7 +82,7 @@ void yyerror(const char *s) {
 using namespace std;
 
 
-#line 85 "parser.cpp"
+#line 86 "parser.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -145,14 +146,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 22 "parser.y"
+#line 19 "Parser.y"
 
     std::string *strVal;
     int token;
     int intVal;
     BaseAST *astVal;
 
-#line 156 "parser.cpp"
+#line 157 "parser.cpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -163,7 +164,7 @@ typedef union YYSTYPE YYSTYPE;
 
 extern YYSTYPE yylval;
 
-int yyparse (std::unique_ptr<BaseAST> &ast);
+int yyparse (void);
 
 #endif /* !YY_YY_PARSER_HPP_INCLUDED  */
 
@@ -528,7 +529,7 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    48,    48,    52,    56,    60,    64,    68,    72
+       0,    45,    45,    49,    53,    57,    61,    65,    69
 };
 #endif
 
@@ -652,7 +653,7 @@ static const yytype_int8 yyr2[] =
       }                                                           \
     else                                                          \
       {                                                           \
-        yyerror (ast, YY_("syntax error: cannot back up")); \
+        yyerror (YY_("syntax error: cannot back up")); \
         YYERROR;                                                  \
       }                                                           \
   while (0)
@@ -689,7 +690,7 @@ do {                                                                      \
     {                                                                     \
       YYFPRINTF (stderr, "%s ", Title);                                   \
       yy_symbol_print (stderr,                                            \
-                  Type, Value, ast); \
+                  Type, Value); \
       YYFPRINTF (stderr, "\n");                                           \
     }                                                                     \
 } while (0)
@@ -700,11 +701,10 @@ do {                                                                      \
 `-----------------------------------*/
 
 static void
-yy_symbol_value_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep, std::unique_ptr<BaseAST> &ast)
+yy_symbol_value_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep)
 {
   FILE *yyoutput = yyo;
   YYUSE (yyoutput);
-  YYUSE (ast);
   if (!yyvaluep)
     return;
 # ifdef YYPRINT
@@ -722,12 +722,12 @@ yy_symbol_value_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep, st
 `---------------------------*/
 
 static void
-yy_symbol_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep, std::unique_ptr<BaseAST> &ast)
+yy_symbol_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep)
 {
   YYFPRINTF (yyo, "%s %s (",
              yytype < YYNTOKENS ? "token" : "nterm", yytname[yytype]);
 
-  yy_symbol_value_print (yyo, yytype, yyvaluep, ast);
+  yy_symbol_value_print (yyo, yytype, yyvaluep);
   YYFPRINTF (yyo, ")");
 }
 
@@ -760,7 +760,7 @@ do {                                                            \
 `------------------------------------------------*/
 
 static void
-yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, int yyrule, std::unique_ptr<BaseAST> &ast)
+yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, int yyrule)
 {
   int yylno = yyrline[yyrule];
   int yynrhs = yyr2[yyrule];
@@ -774,7 +774,7 @@ yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, int yyrule, std::unique_ptr<
       yy_symbol_print (stderr,
                        yystos[+yyssp[yyi + 1 - yynrhs]],
                        &yyvsp[(yyi + 1) - (yynrhs)]
-                                              , ast);
+                                              );
       YYFPRINTF (stderr, "\n");
     }
 }
@@ -782,7 +782,7 @@ yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, int yyrule, std::unique_ptr<
 # define YY_REDUCE_PRINT(Rule)          \
 do {                                    \
   if (yydebug)                          \
-    yy_reduce_print (yyssp, yyvsp, Rule, ast); \
+    yy_reduce_print (yyssp, yyvsp, Rule); \
 } while (0)
 
 /* Nonzero means print parse trace.  It is left uninitialized so that
@@ -1050,10 +1050,9 @@ yysyntax_error (YYPTRDIFF_T *yymsg_alloc, char **yymsg,
 `-----------------------------------------------*/
 
 static void
-yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, std::unique_ptr<BaseAST> &ast)
+yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)
 {
   YYUSE (yyvaluep);
-  YYUSE (ast);
   if (!yymsg)
     yymsg = "Deleting";
   YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
@@ -1080,7 +1079,7 @@ int yynerrs;
 `----------*/
 
 int
-yyparse (std::unique_ptr<BaseAST> &ast)
+yyparse (void)
 {
     yy_state_fast_t yystate;
     /* Number of tokens to shift before error messages enabled.  */
@@ -1322,49 +1321,49 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 48 "parser.y"
-                                                {ast = (yyvsp[0].astVal);}
-#line 1328 "parser.cpp"
+#line 45 "Parser.y"
+                                                {(yyval.astVal) = new ProgramAST((FunctionAST*)(yyvsp[0].astVal)); Root = (yyval.astVal);}
+#line 1327 "parser.cpp"
     break;
 
   case 3:
-#line 52 "parser.y"
+#line 49 "Parser.y"
                                                 {(yyval.astVal) = new FunctionAST((yyvsp[-4].astVal), (yyvsp[-3].strVal), (yyvsp[0].astVal));}
-#line 1334 "parser.cpp"
+#line 1333 "parser.cpp"
     break;
 
   case 4:
-#line 56 "parser.y"
+#line 53 "Parser.y"
                                                 {(yyval.astVal) = new BlockAST((yyvsp[-1].astVal));}
-#line 1340 "parser.cpp"
+#line 1339 "parser.cpp"
     break;
 
   case 5:
-#line 60 "parser.y"
+#line 57 "Parser.y"
                                                 {(yyval.astVal) = new string("int");}
-#line 1346 "parser.cpp"
+#line 1345 "parser.cpp"
     break;
 
   case 6:
-#line 64 "parser.y"
+#line 61 "Parser.y"
                                                 {(yyval.astVal) = new StmtAST((yyvsp[-1].astVal));}
-#line 1352 "parser.cpp"
+#line 1351 "parser.cpp"
     break;
 
   case 7:
-#line 68 "parser.y"
+#line 65 "Parser.y"
                                                 {(yyval.astVal) = new ExprAST((yyvsp[-2].intVal), '+', (yyvsp[0].intVal));}
-#line 1358 "parser.cpp"
+#line 1357 "parser.cpp"
     break;
 
   case 8:
-#line 72 "parser.y"
+#line 69 "Parser.y"
                                                 {(yyval.intVal) = (yyvsp[0].intVal);}
-#line 1364 "parser.cpp"
+#line 1363 "parser.cpp"
     break;
 
 
-#line 1368 "parser.cpp"
+#line 1367 "parser.cpp"
 
       default: break;
     }
@@ -1414,7 +1413,7 @@ yyerrlab:
     {
       ++yynerrs;
 #if ! YYERROR_VERBOSE
-      yyerror (ast, YY_("syntax error"));
+      yyerror (YY_("syntax error"));
 #else
 # define YYSYNTAX_ERROR yysyntax_error (&yymsg_alloc, &yymsg, \
                                         yyssp, yytoken)
@@ -1441,7 +1440,7 @@ yyerrlab:
                 yymsgp = yymsg;
               }
           }
-        yyerror (ast, yymsgp);
+        yyerror (yymsgp);
         if (yysyntax_error_status == 2)
           goto yyexhaustedlab;
       }
@@ -1465,7 +1464,7 @@ yyerrlab:
       else
         {
           yydestruct ("Error: discarding",
-                      yytoken, &yylval, ast);
+                      yytoken, &yylval);
           yychar = YYEMPTY;
         }
     }
@@ -1519,7 +1518,7 @@ yyerrlab1:
 
 
       yydestruct ("Error: popping",
-                  yystos[yystate], yyvsp, ast);
+                  yystos[yystate], yyvsp);
       YYPOPSTACK (1);
       yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
@@ -1558,7 +1557,7 @@ yyabortlab:
 | yyexhaustedlab -- memory exhaustion comes here.  |
 `-------------------------------------------------*/
 yyexhaustedlab:
-  yyerror (ast, YY_("memory exhausted"));
+  yyerror (YY_("memory exhausted"));
   yyresult = 2;
   /* Fall through.  */
 #endif
@@ -1574,7 +1573,7 @@ yyreturn:
          user semantic actions for why this is necessary.  */
       yytoken = YYTRANSLATE (yychar);
       yydestruct ("Cleanup: discarding lookahead",
-                  yytoken, &yylval, ast);
+                  yytoken, &yylval);
     }
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYABORT or YYACCEPT.  */
@@ -1583,7 +1582,7 @@ yyreturn:
   while (yyssp != yyss)
     {
       yydestruct ("Cleanup: popping",
-                  yystos[+*yyssp], yyvsp, ast);
+                  yystos[+*yyssp], yyvsp);
       YYPOPSTACK (1);
     }
 #ifndef yyoverflow
@@ -1596,13 +1595,9 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 76 "parser.y"
+#line 73 "Parser.y"
 
 
 int yywrap(){
     return 1;
-}
-int main()
-{
-    yyparse();
 }

@@ -65,7 +65,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 22 "parser.y"
+#line 19 "Parser.y"
 
     std::string *strVal;
     int token;
@@ -83,6 +83,6 @@ typedef union YYSTYPE YYSTYPE;
 
 extern YYSTYPE yylval;
 
-int yyparse (std::unique_ptr<BaseAST> &ast);
+int yyparse (void);
 
 #endif /* !YY_YY_PARSER_HPP_INCLUDED  */

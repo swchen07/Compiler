@@ -1,22 +1,25 @@
-
-# Consider dependencies only in project.
-set(CMAKE_DEPENDS_IN_PROJECT_ONLY OFF)
-
 # The set of languages for which implicit dependencies are needed:
 set(CMAKE_DEPENDS_LANGUAGES
+  "CXX"
+  )
+# The set of files for implicit dependencies of each language:
+set(CMAKE_DEPENDS_CHECK_CXX
+  "/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/AST.cpp" "/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/build/CMakeFiles/simple_demo.dir/AST.cpp.o"
+  "/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/IRGenerator.cpp" "/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/build/CMakeFiles/simple_demo.dir/IRGenerator.cpp.o"
+  "/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/lexer.cpp" "/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/build/CMakeFiles/simple_demo.dir/lexer.cpp.o"
+  "/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/main.cpp" "/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/build/CMakeFiles/simple_demo.dir/main.cpp.o"
+  "/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/parser.cpp" "/mnt/d/Programming/VScode/C/CompilePrinciple/Compiler/Compiler/simple_demo/build/CMakeFiles/simple_demo.dir/parser.cpp.o"
+  )
+set(CMAKE_CXX_COMPILER_ID "GNU")
+
+# The include file search paths:
+set(CMAKE_CXX_TARGET_INCLUDE_PATH
+  "/usr/lib/llvm-10/include"
+  "../include"
   )
 
-# The set of dependency files which are needed:
-set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/AST.cpp" "CMakeFiles/simple_demo.dir/AST.cpp.o" "gcc" "CMakeFiles/simple_demo.dir/AST.cpp.o.d"
-  "/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/IRGenerator.cpp" "CMakeFiles/simple_demo.dir/IRGenerator.cpp.o" "gcc" "CMakeFiles/simple_demo.dir/IRGenerator.cpp.o.d"
-  "/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/lexer.cpp" "CMakeFiles/simple_demo.dir/lexer.cpp.o" "gcc" "CMakeFiles/simple_demo.dir/lexer.cpp.o.d"
-  "/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/main.cpp" "CMakeFiles/simple_demo.dir/main.cpp.o" "gcc" "CMakeFiles/simple_demo.dir/main.cpp.o.d"
-  "/Users/wangzijun/Documents/GitHub/Compiler/simple_demo/parser.cpp" "CMakeFiles/simple_demo.dir/parser.cpp.o" "gcc" "CMakeFiles/simple_demo.dir/parser.cpp.o.d"
-  )
-
-# Targets to which this target links which contain Fortran sources.
-set(CMAKE_Fortran_TARGET_LINKED_INFO_FILES
+# Targets to which this target links.
+set(CMAKE_TARGET_LINKED_INFO_FILES
   )
 
 # Fortran module output directory.

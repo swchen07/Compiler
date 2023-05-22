@@ -51,11 +51,12 @@ A record file for Chen Shaowen.
 
 同时由于结合性和优先级可以通过yacc声明实现，所以可以对文法进行简化（参考pku文档）
 
+Program       ::= CompUnit; 
 CompUnit      ::= [CompUnit] (Decl | FuncDef);
 
 Decl          ::= ConstDecl | VarDecl;
 ConstDecl     ::= "const" BType ConstDef {"," ConstDef} ";";
-BType         ::= "int";
+BType         ::= "int" | "short" | "char";
 ConstDef      ::= IDENT "=" ConstInitVal;
 ConstInitVal  ::= ConstExp;
 VarDecl       ::= BType VarDef {"," VarDef} ";";
@@ -63,7 +64,7 @@ VarDef        ::= IDENT | IDENT "=" InitVal;
 InitVal       ::= Exp;
 
 FuncDef       ::= FuncType IDENT "(" [FuncFParams] ")" Block;
-FuncType      ::= "void" | "int";
+FuncType      ::= "void" | BType;
 FuncFParams   ::= FuncFParam {"," FuncFParam};
 FuncFParam    ::= BType IDENT;
 
