@@ -9,9 +9,12 @@
  * 
  */
 
+#pragma once
+
 #include <llvm/IR/Value.h>
-#include "IRGenerator.hpp"
 #include <string>
+
+class IRGenerator;
 
 /**
  * @brief type类型的id
@@ -27,21 +30,22 @@ class VarType {
 public:
     VarType(int) {type=Int;}
     VarType(char) {type=Char;}
-    VarType(string name) {
-        if (name == 'int') type = Int; 
-        else if (name == 'char') type = Char; 
+    VarType(std::string name) {
+        if (name == "int") type = Int; 
+        else if (name == "char") type = Char; 
     } 
     ~VarType(){}
-    GetType() {return type;}
+    TypeID GetType() {return type;}
 private: 
     TypeID type;
-}
+};
 
 /**
  * @brief 声明所有类
  * 
  */
 class BaseAST; 
+class ProgramAST;
 class FunctionAST; 
 class BlockAST; 
 class StmtAST; 
@@ -59,17 +63,22 @@ public:
     virtual llvm::Value* IRGen(IRGenerator& IRContext) =0;
 };
 
+class ProgramAST : public BaseAST {
+public:
+    FunctionAST* funcast; 
+    
+    ProgramAST(FunctionAST* funcast):funcast(funcast){}
+    ~ProgramAST(){};
+    llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
 class FunctionAST : public BaseAST {
 public:
-    string funcname; 
+    std::string funcname; 
     VarType type; 
-    BlockAST* blockast
+    BlockAST* blockast;
     
-    FunctionAST(string type, string funcname, BlockAST* blockast) {
-        this->funcname = funcname; 
-        this->type = VarType(type).GetType()
-        this->blockast = blockast; 
-    }
+    FunctionAST(std::string type_name, std::string funcname, BlockAST* blockast):funcname(funcname), type(type_name), blockast(blockast) {}
     ~FunctionAST(){};
     llvm::Value* IRGen(IRGenerator& IRContext);
 };
@@ -81,7 +90,7 @@ public:
     BlockAST(StmtAST* stmtast): stmtast(stmtast){}
     ~BlockAST(){}
     llvm::Value* IRGen(IRGenerator& IRContext);
-}
+};
 
 class StmtAST: public BaseAST {
 public: 
@@ -90,7 +99,7 @@ public:
     StmtAST(ExprAST* exprast): exprast(exprast){}
     ~StmtAST(){}
     llvm::Value* IRGen(IRGenerator& IRContext);
-}
+};
 
 class ExprAST: public BaseAST {
 public: 
@@ -101,4 +110,4 @@ public:
     ExprAST(int a, char op, int b):a(a), b(b), op(op){};
     ~ExprAST(){};
     llvm::Value* IRGen(IRGenerator& IRContext);
-}
+};

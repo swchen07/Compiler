@@ -19,14 +19,14 @@ extern int yyparse();
 extern BaseAST* Root;
 
 int main(int argc, const char* argv[]) {
-    string inputfile = argv[1]; 
+    std::string inputfile = argv[1]; 
     freopen(inputfile.c_str(), "r", stdin);
 
     yyparse();
     //Generating code
     IRGenerator Gen;
-    Gen.GenerateCode(*Root);
+    Gen.GenerateCode(Root);
 
-    Gen.GenObjectCode('a.out');
+    Gen.GenObjectCode("a.out");
 
 }

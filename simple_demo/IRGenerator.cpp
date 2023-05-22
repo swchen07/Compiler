@@ -17,7 +17,7 @@ void IRGenerator::GenerateCode(BaseAST* root) {
     root->IRGen(*this);
 }
 
-void IRGenerator::GenObjectCode(string outputfile) {
+void IRGenerator::GenObjectCode(std::string outputfile) {
     auto TargetTriple = llvm::sys::getDefaultTargetTriple();
     llvm::InitializeAllTargetInfos();
     llvm::InitializeAllTargets();
@@ -39,10 +39,10 @@ void IRGenerator::GenObjectCode(string outputfile) {
     std::error_code EC;
     llvm::raw_fd_ostream Dest(outputfile, EC, llvm::sys::fs::OF_None);
 
-    auto FileType = llvm::CGFT_ObjectFile;
-    llvm::legacy::PassManager PM;
+    // auto FileType = llvm::CGFT_ObjectFile;
+    // llvm::legacy::PassManager PM;
+    // TargetMachine->addPassesToEmitFile(PM, Dest, nullptr, FileType);
 
-    PM.run(*Module);
+    // PM.run(*Module);
     Dest.flush();
 }
-
