@@ -47,7 +47,7 @@ CompUnit
     ;
 
 FuncDef
-    : FuncType IDENTIFIER LPAREN RPAREN Block   {std::cout << *$2 <<std::endl; $$ = new FunctionAST(*$1, *$2, (BlockAST*)$5);}
+    : FuncType IDENTIFIER LPAREN RPAREN Block   {$$ = new FunctionAST(*$1, *$2, (BlockAST*)$5);}
     ;
 
 Block

@@ -1,0 +1,6 @@
+/home/gabriel/Codes/Compiler/simple_demo/build/CMakeFiles/intrinsics_gen.dir
+/home/gabriel/Codes/Compiler/simple_demo/build/CMakeFiles/omp_gen.dir
+/home/gabriel/Codes/Compiler/simple_demo/build/CMakeFiles/acc_gen.dir
+/home/gabriel/Codes/Compiler/simple_demo/build/CMakeFiles/simple_demo.dir
+/home/gabriel/Codes/Compiler/simple_demo/build/CMakeFiles/edit_cache.dir
+/home/gabriel/Codes/Compiler/simple_demo/build/CMakeFiles/rebuild_cache.dir
