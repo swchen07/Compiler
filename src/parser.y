@@ -205,6 +205,7 @@ Stmt
     | Exp SEMI
     | SEMI
     | Block
+    | FOR 
     | IF LPAREN Exp RPAREN Stmt ElseState
     | WHILE LPAREN Exp RPAREN Stmt
     | BREAK SEMI
