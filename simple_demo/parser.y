@@ -1,10 +1,9 @@
-
-
 %{
+#include "AST.hpp"
 #include <iostream>
 #include <string>
 
-int yylex();
+int yylex(void);
 
 void yyerror(const char *s) {
     std::printf("Error: %s", s);
@@ -13,6 +12,8 @@ void yyerror(const char *s) {
 using namespace std;
 
 %}
+
+%output "parser.cpp"
 
 %parse-param { std::unique_ptr<BaseAST> &ast }
 
@@ -74,8 +75,4 @@ Number
 
 int yywrap(){
     return 1;
-}
-int main()
-{
-    yyparse();
 }
