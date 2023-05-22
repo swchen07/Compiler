@@ -29,4 +29,8 @@ int main(int argc, const char* argv[]) {
 
     Gen.GenObjectCode("a.out");
 
+    std::cout << "Hello" << std::endl;
+
+    return 0;
+
 }

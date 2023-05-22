@@ -22,31 +22,35 @@ void IRGenerator::GenObjectCode(std::string outputfile) {
 	// llvm::raw_string_ostream oss(s);
 	// this->Module->print(oss, NULL);
 	// oss.flush();
-    auto TargetTriple = llvm::sys::getDefaultTargetTriple();
-    llvm::InitializeAllTargetInfos();
-    llvm::InitializeAllTargets();
-    llvm::InitializeAllTargetMCs();
-    llvm::InitializeAllAsmParsers();
-    llvm::InitializeAllAsmPrinters();
+    // std::cout << oss.str() << std::endl;
 
-    auto Features = "";
-    auto CPU = "generic";
-    std::string Error;
-    auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, Error);
+    // auto TargetTriple = llvm::sys::getDefaultTargetTriple();
+    // llvm::InitializeAllTargetInfos();
+    // llvm::InitializeAllTargets();
+    // llvm::InitializeAllTargetMCs();
+    // llvm::InitializeAllAsmParsers();
+    // llvm::InitializeAllAsmPrinters();
 
-    llvm::TargetOptions opt;
-    auto RM = llvm::Optional<llvm::Reloc::Model>();
-    auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
-    Module->setDataLayout(TargetMachine->createDataLayout());
-    Module->setTargetTriple(TargetTriple);
+    // auto Features = "";
+    // auto CPU = "generic";
+    // std::string Error;
+    // auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, Error);
 
-    std::error_code EC;
-    llvm::raw_fd_ostream Dest(outputfile, EC, llvm::sys::fs::OF_None);
+    // llvm::TargetOptions opt;
+    // auto RM = llvm::Optional<llvm::Reloc::Model>();
+    // auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
+    // Module->setDataLayout(TargetMachine->createDataLayout());
+    // Module->setTargetTriple(TargetTriple);
 
-    // auto FileType = llvm::CGFT_ObjectFile;
-    // llvm::legacy::PassManager PM;
-    // TargetMachine->addPassesToEmitFile(PM, Dest, nullptr, FileType);
+    // std::error_code EC;
+    // llvm::raw_fd_ostream Dest(outputfile, EC, llvm::sys::fs::OF_None);
 
-    // PM.run(*Module);
-    Dest.flush();
+    // // auto FileType = llvm::CGFT_ObjectFile;
+    // // llvm::legacy::PassManager PM;
+    // // TargetMachine->addPassesToEmitFile(PM, Dest, nullptr, FileType);
+
+    // // PM.run(*Module);
+    // Dest.flush();
+
+    this->Module->print(llvm::outs(), NULL);
 }
