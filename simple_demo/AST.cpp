@@ -15,17 +15,24 @@
 
 llvm::Value* FunctionAST::IRGen(IRGenerator& IRContext) {
     //Get return type
-    llvm::Type* ReturnType = this->_RetType->GetLLVMType(__Generator);
+    auto IRBuilder = IRContext.IRBuilder; 
+    llvm::Type* ReturnType; 
+    if (this->type.GetType() == Int)
+        ReturnType = IRBuilder->getInt32Ty();
 
     //Get function type
     llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, NULL, NULL);
     //Create function
-    llvm::Function* Func = llvm::Function::Create(FuncType, llvm::GlobalValue::ExternalLinkage, this->_Name, __Generator.Module);
-    __Generator.AddFunction(this->_Name, Func);
+    llvm::Function* Func = llvm::Function::Create(FuncType, NULL, this->funcname, IRContext.Module);
+    // IRContext.AddFunction(this->funcname, Func);
+
+    this->blockast->IRGen(IRContext); 
+    return NULL;
 }
 
 llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
-    return this->stmtast->IRGen(IRContext); 
+    this->stmtast->IRGen(IRContext); 
+    return NULL; 
 }
 
 llvm::Value* StmtAST::IRGen(IRGenerator& IRContext) {
