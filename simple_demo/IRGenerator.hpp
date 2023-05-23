@@ -57,6 +57,9 @@
 
 #include "AST.hpp"
 
+// extern llvm::LLVMContext Context; 
+// extern llvm::IRBuilder<> IRBuilder; 
+
 class IRGenerator {
 public: 
     llvm::LLVMContext* Context;
@@ -64,15 +67,15 @@ public:
     llvm::Module* Module;
 
     IRGenerator(){
-        Context = new llvm::LLVMContext;
+        Context = new llvm::LLVMContext; 
         IRBuilder = new llvm::IRBuilder<>(*Context);
         Module = new llvm::Module("main", *Context);
     }
-    ~IRGenerator(){
-        delete Context;
-        delete IRBuilder;
-        delete Module;
-    }
+    // ~IRGenerator(){
+    //     // delete Context;
+    //     // delete IRBuilder;
+    //     // delete Module;
+    // }
 
     void GenerateCode(BaseAST*);
     void GenObjectCode(std::string);

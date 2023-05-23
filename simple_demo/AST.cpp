@@ -11,11 +11,15 @@
 
 #include <cstdio>
 #include <iostream>
+#include <vector>
 #include "AST.hpp"
 #include "IRGenerator.hpp"
 
+// extern llvm::IRBuilder<> IRBuilder; 
+
 llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
     std::cout << "ProgramAST" << std::endl;
+    // IRContext.Module->print(llvm::outs(), NULL);
     this->funcast->IRGen(IRContext); 
     return NULL; 
 }
@@ -28,11 +32,14 @@ llvm::Value* FunctionAST::IRGen(IRGenerator& IRContext) {
     if (this->type.GetType() == Int)
         ReturnType = IRBuilder->getInt32Ty();
 
+    std::vector<llvm::Type*> ArgTypes; 
+
     //Get function type
-    llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, NULL, NULL);
+    llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, false);
     //Create function
-    llvm::Function* Func = llvm::Function::Create(FuncType, llvm::GlobalValue::ExternalLinkage, this->funcname, IRContext.Module);
+    llvm::Function* Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcname, IRContext.Module);
     // IRContext.AddFunction(this->funcname, Func);
+    // IRContext.Module->print(llvm::outs(), NULL);
 
     this->blockast->IRGen(IRContext); 
     return NULL;
@@ -54,6 +61,7 @@ llvm::Value* StmtAST::IRGen(IRGenerator& IRContext) {
 llvm::Value* ExprAST::IRGen(IRGenerator& IRContext) {
     std::cout << "ExprAST" << std::endl;
     if (this->op == '+') {
+        std::cout << "ExprAST+" << std::endl;
         auto IRBuilder = IRContext.IRBuilder; 
         return IRBuilder->CreateAdd(IRBuilder->getInt32(this->a), IRBuilder->getInt32(this->b));
     }
