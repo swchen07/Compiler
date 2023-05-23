@@ -13,6 +13,9 @@
 #include "AST.hpp"
 #include "IRGenerator.hpp"
 
+// llvm::LLVMContext Context; 
+// llvm::IRBuilder<> IRBuilder(Context); 
+
 void IRGenerator::GenerateCode(BaseAST* root) {
     root->IRGen(*this);
 }
