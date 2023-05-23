@@ -72,9 +72,9 @@ public:
         Module = new llvm::Module("main", *Context);
     }
     // ~IRGenerator(){
-    //     // delete Context;
-    //     // delete IRBuilder;
-    //     // delete Module;
+    //     delete Context;
+    //     delete IRBuilder;
+    //     delete Module;
     // }
 
     void GenerateCode(BaseAST*);

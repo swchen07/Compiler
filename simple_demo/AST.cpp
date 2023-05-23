@@ -40,6 +40,8 @@ llvm::Value* FunctionAST::IRGen(IRGenerator& IRContext) {
     llvm::Function* Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcname, IRContext.Module);
     // IRContext.AddFunction(this->funcname, Func);
     // IRContext.Module->print(llvm::outs(), NULL);
+    llvm::BasicBlock* FuncBlock = llvm::BasicBlock::Create(*(IRContext.Context), "entry", Func);
+    IRBuilder->SetInsertPoint(FuncBlock);
 
     this->blockast->IRGen(IRContext); 
     return NULL;
