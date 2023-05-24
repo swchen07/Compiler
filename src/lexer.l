@@ -90,6 +90,8 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
     /* 关键字 */
     /* 数据类型 */
 "int"                   {SAVE_TOKEN; return INT;}
+"short"                 {SAVE_TOKEN; return SHORT;}
+"char"                  {SAVE_TOKEN; return CHAR;}
 "void"                  {SAVE_TOKEN; return VOID;}
 
     /* 跳转结构 */

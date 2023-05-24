@@ -45,7 +45,7 @@ using namespace std;
 %token LPAREN RPAREN LBRACE RBRACE COMMA SEMI
 %token ASSIGN DOT COLON QUES
 
-%token <strVal> INT CHAR  VOID
+%token <strVal> INT CHAR SHORT VOID
 %token RETURN CONTINUE BREAK
 %token IF ELSE
 %token FOR WHILE
@@ -118,7 +118,7 @@ CompUnit
 /* Decl          ::= ConstDecl | VarDecl; */
 Decl
     : ConstDecl
-    | VarDecl                                   {}
+    | VarDecl                                           {}
     ;
 
 /* ConstDecl     ::= "const" BType ConstDef {"," ConstDef} ";"; */
@@ -135,6 +135,7 @@ ConstList
 Btype
     : VOID
     | INT
+    | SHORT
     | CHAR
     ;
 
