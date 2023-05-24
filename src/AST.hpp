@@ -129,13 +129,13 @@ public:
 /* 定义声明的抽象类作为一般声明和const的基类
  * 
  */
-class DeclAST : public CompUnitAST {
-public:
-	DeclAST() {}
-	~DeclAST() {}
+// class DeclAST : public CompUnitAST {
+// public:
+// 	DeclAST() {}
+// 	~DeclAST() {}
 
-	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
-};
+// 	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+// };
 
 // class VarDeclAST : public DeclAST {
 // public:

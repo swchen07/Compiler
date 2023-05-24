@@ -48,10 +48,13 @@
 
 class IRVarAttr {
 public: 
-    TypeID ID; 
-    std:string name; 
-	llvm::Function* CurFunc;
-    //llvm::value
+    TypeID type_; 
+    std:string name_; 
+
+	//llvm::Function* CurFunc;
+    llvm::Value* value_;
+
+    IRVarAttr(TypeID type, std::string name, llvm::Value* value):type_(type), name_(name), value_(value){}
 };
 
 class IRGenerator {
@@ -60,7 +63,8 @@ public:
     llvm::IRBuilder<>* IRBuilder;
     llvm::Module* Module;
 
-    
+    std::vector<IRVarAttr*> varList_;
+    llvm::Function* curFunc_;
 
     IRGenerator(){
         Context = new llvm::LLVMContext; 
@@ -75,4 +79,8 @@ public:
 
     void GenerateCode(BaseAST*);
     void GenObjectCode(std::string);
+    void CreateVar(TypeID type, std::string name, llvm::Value* value);
+    void DiscardVar(int cnt); 
+    void SetCurFunc(llvm::Function* curFunc);
+    llvm::Function* GetCurFunc();
 };

@@ -35,3 +35,22 @@ void IRGenerator::GenObjectCode(std::string outputfile) {
     // PM.run(*Module);
     Dest.flush();
 }
+
+void IRGenerator::CreateVar(TypeID type, std::string name, llvm::Value* value){
+    this->varList_.push(new IRVarAttr(type, name, value));
+}
+
+void IRGenerator::DiscardVar(int cnt) {
+    for (int i = 0; i < cnt; i++) {
+        auto IRVar = this->varList_.pop();
+        delete IRVar; 
+    }
+}
+
+void IRGenerator::SetCurFunc(llvm::Function* curFunc) {
+    this->curFunc_ = curFunc; 
+}
+
+llvm::Function* IRGenerator::GetCurFunc() {
+    return this->curFunc_; 
+}

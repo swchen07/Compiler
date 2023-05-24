@@ -81,17 +81,21 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
     llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, false);
     //Create function
     llvm::Function* Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
+	IRContext.SetCurFunc(Func);
     // IRContext.AddFunction(this->funcname, Func);
     // IRContext.Module->print(llvm::outs(), NULL);
-    llvm::BasicBlock* FuncBlock = llvm::BasicBlock::Create(*(IRContext.Context), "entry", Func);
-    IRBuilder->SetInsertPoint(FuncBlock);
+    // llvm::BasicBlock* FuncBlock = llvm::BasicBlock::Create(*(IRContext.Context), "entry", Func);
+    // IRBuilder->SetInsertPoint(FuncBlock);
 
-    this->block_->IRGen(IRContext); 
+    this->block_->IRGen(IRContext);
     return NULL;
 }
 
 llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
     std::cout << "BlockAST" << std::endl;
+	llvm::Function* Func = IRContext.getCurFunc();
+	llvm::BasicBlock* FuncBlock = llvm::BasicBlock::Create(*(IRContext.Context), "entry", Func);
+    IRBuilder->SetInsertPoint(FuncBlock);
 	for (auto stmt : *(this->stmts_)){
 		if(stmt){
 			stmt->IRGen(IRContext);
