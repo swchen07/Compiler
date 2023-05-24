@@ -45,23 +45,26 @@ llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
 	return NULL;
 }
 
-// llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
-// 	std::cout << "VarDeclAST" << std::endl;
+llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "VarDeclAST" << std::endl;
 
-// 	auto IRBuilder = IRContext.IRBuilder; 
+	auto IRBuilder = IRContext.IRBuilder; 
 
-// 	llvm::Type* varType;
+	//Get the llvm type
+	llvm::Type* VarType = this->_VarType->GetLLVMType(__Generator);
 
-// 	if (this->type_.GetType() == Int)
-//         varType = IRBuilder->getInt32Ty();
+	if (this->type_.GetType() == Int)
+        varType = IRBuilder->getInt32Ty();
 
-// 	llvm::Constant* Initializer = NULL;
+	llvm::Constant* Initializer = NULL;
 
-// 	if(this->varInit_->initExpr_){
+	if(this->varInit_->initExpr_){
 
-// 	}
+	}
 	
-// }
+}
+
+
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
     //Get return type

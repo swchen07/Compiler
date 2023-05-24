@@ -120,13 +120,22 @@ public:
     llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
-// class DeclAST : public CompUnitAST {
-// public:
-// 	DeclAST() {}
-// 	~DeclAST() {}
+/**
+ * @brief 变量声明相关
+ * 
+ */
 
-// 	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
-// };
+
+/* 定义声明的抽象类作为一般声明和const的基类
+ * 
+ */
+class DeclAST : public CompUnitAST {
+public:
+	DeclAST() {}
+	~DeclAST() {}
+
+	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+};
 
 // class VarDeclAST : public DeclAST {
 // public:
