@@ -46,11 +46,21 @@
 
 #include "AST.hpp"
 
+class IRVarAttr {
+public: 
+    TypeID ID; 
+    std:string name; 
+
+    llvm::value
+};
+
 class IRGenerator {
 public: 
     llvm::LLVMContext* Context;
     llvm::IRBuilder<>* IRBuilder;
     llvm::Module* Module;
+
+    
 
     IRGenerator(){
         Context = new llvm::LLVMContext; 
