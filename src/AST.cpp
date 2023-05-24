@@ -93,7 +93,8 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
 
 llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
     std::cout << "BlockAST" << std::endl;
-	llvm::Function* Func = IRContext.getCurFunc();
+	llvm::Function* Func = IRContext.GetCurFunc();
+	auto IRBuilder = IRContext.IRBuilder; 
 	llvm::BasicBlock* FuncBlock = llvm::BasicBlock::Create(*(IRContext.Context), "entry", Func);
     IRBuilder->SetInsertPoint(FuncBlock);
 	for (auto stmt : *(this->stmts_)){
