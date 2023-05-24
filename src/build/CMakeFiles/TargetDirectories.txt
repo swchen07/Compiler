@@ -1,0 +1,6 @@
+/home/hz/c-compiler/Compiler/src/build/CMakeFiles/intrinsics_gen.dir
+/home/hz/c-compiler/Compiler/src/build/CMakeFiles/omp_gen.dir
+/home/hz/c-compiler/Compiler/src/build/CMakeFiles/acc_gen.dir
+/home/hz/c-compiler/Compiler/src/build/CMakeFiles/src.dir
+/home/hz/c-compiler/Compiler/src/build/CMakeFiles/edit_cache.dir
+/home/hz/c-compiler/Compiler/src/build/CMakeFiles/rebuild_cache.dir

@@ -65,11 +65,14 @@ public:
 
     std::vector<IRVarAttr*> varList_;
     llvm::Function* curFunc_;
+    bool bbCreatePreBrSignal_;
 
     IRGenerator(){
         Context = new llvm::LLVMContext; 
         IRBuilder = new llvm::IRBuilder<>(*Context);
         Module = new llvm::Module("main", *Context);
+
+        bbCreatePreBrSignal_ = false; 
     }
     // ~IRGenerator(){
     //     delete Context;
@@ -79,8 +82,14 @@ public:
 
     void GenerateCode(BaseAST*);
     void GenObjectCode(std::string);
+
     void CreateVar(TypeID type, std::string name, llvm::Value* value);
     void DiscardVar(int cnt); 
+
     void SetCurFunc(llvm::Function* curFunc);
     llvm::Function* GetCurFunc();
+
+    void setPreBrSignal();
+    bool clearPreBrSignal();
+    bool getPreBrSignal();
 };
