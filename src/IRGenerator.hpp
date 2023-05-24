@@ -49,7 +49,7 @@
 class IRVarAttr {
 public: 
     TypeID type_; 
-    std:string name_; 
+    std::string name_; 
 
 	//llvm::Function* CurFunc;
     llvm::Value* value_;

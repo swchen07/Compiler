@@ -37,13 +37,14 @@ void IRGenerator::GenObjectCode(std::string outputfile) {
 }
 
 void IRGenerator::CreateVar(TypeID type, std::string name, llvm::Value* value){
-    this->varList_.push(new IRVarAttr(type, name, value));
+    this->varList_.push_back(new IRVarAttr(type, name, value));
 }
 
 void IRGenerator::DiscardVar(int cnt) {
     for (int i = 0; i < cnt; i++) {
-        auto IRVar = this->varList_.pop();
-        delete IRVar; 
+        auto var = this->varList_[this->varList_.size()-1];
+		this->varList_.pop_back();
+        delete var; 
     }
 }
 
