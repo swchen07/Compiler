@@ -50,6 +50,10 @@ class BaseAST;
 class ProgramAST;
 class CompUnitAST;
 class FuncDef;
+
+class DeclAST;
+class VarInitAST;
+class VarDeclAST;
 class BlockAST;
 class StmtAST;
 class ReturnStmtAST;
@@ -116,6 +120,38 @@ public:
     llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
+// class DeclAST : public CompUnitAST {
+// public:
+// 	DeclAST() {}
+// 	~DeclAST() {}
+
+// 	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+// };
+
+// class VarDeclAST : public DeclAST {
+// public:
+// 	VarInitAST* varInit_;
+// 	VarType* type_;
+
+// 	VarDeclAST(VarInitAST* _varInit_, VarType* _type_) : 
+// 		varInit_(_varInit_), type_(_type_) {}
+// 	~VarDeclAST() {}
+
+// 	llvm::Value* IRGen(IRGenerator& IRContext) {}
+// };
+
+// class VarInitAST : public BaseAST {
+// public:
+// 	std::string varName_;
+// 	ExprAST* initExpr_;
+
+// 	VarInitAST(std::string _varName_) : 
+// 		varName_(_varName_) {}
+// 	VarInitAST(std::string _varName_, ExprAST* _initExpr_) : 
+// 		varName_(_varName_), initExpr_(_initExpr_) {}
+// 	~VarInitAST() {}
+// 	llvm::Value* IRGen(IRGenerator& IRContext) {}
+// };
 
 /**
  * @brief Statement抽象类
@@ -133,10 +169,10 @@ class ReturnStmtAST : public StmtAST {
 public:
 	ExprAST* RetVal_;
 
-	llvm::Value* IRGen(IRGenerator& IRContext);
-
 	ReturnStmtAST(ExprAST* _RetVal_ = NULL) : RetVal_(_RetVal_) {}
 	~ReturnStmtAST () {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
 
@@ -152,6 +188,32 @@ public:
 	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
 };
 
+
+/**
+ * @brief 算术运算
+ * 
+ */
+
+class MoncPlus : public ExprAST {
+public:
+	ExprAST* RHS_;
+
+	MoncPlus(ExprAST* _RHS_) : RHS_(_RHS_) {}
+	~MoncPlus() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class MoncMinus : public ExprAST {
+public:
+	ExprAST* RHS_;
+
+	MoncMinus(ExprAST* _RHS_) : RHS_(_RHS_) {}
+	~MoncMinus() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
 class Addition : public ExprAST {
 public:
 	ExprAST* LHS_;
@@ -159,6 +221,155 @@ public:
 
 	Addition(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
 	~Addition() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class Subtraction : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	Subtraction(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~Subtraction() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class Multiplication : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	Multiplication(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~Multiplication() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+
+class Division : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	Division(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~Division() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class Modulation : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	Modulation(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~Modulation() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+
+/**
+ * @brief 逻辑运算
+ * 
+ */
+class LogicNot : public ExprAST {
+public:
+	ExprAST* RHS_;
+
+	LogicNot(ExprAST* _RHS_) : RHS_(_RHS_) {}
+	~LogicNot() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+
+};
+
+class AndOp : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	AndOp(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~AndOp() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class OrOp : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	OrOp(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~OrOp() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class Equal : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	Equal(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~Equal() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class NotEqual : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	NotEqual(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~NotEqual() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class GreEqu : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	GreEqu(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~GreEqu() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class LessEqu : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	LessEqu(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~LessEqu() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class GreThan : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	GreThan(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~GreThan() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class LessThan : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
+
+	LessThan(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~LessThan() {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
@@ -171,7 +382,7 @@ public:
 	Assign(ExprAST* _LHS_, ExprAST* _RHS_) : LHS_(_LHS_), RHS_(_RHS_) {}
 	~Assign() {}
 
-	llvm::Value* IRGen(IRGenerator& IRContext);
+	llvm::Value* IRGen(IRGenerator& IRContext) {}
 };
 
 class Constant : public ExprAST {
@@ -180,6 +391,15 @@ public:
 
 	Constant(int _int_) : int_(_int_) {}
 	~Constant() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class Variable : public  ExprAST {
+public:
+	std::string name_;
+
+	Variable(std::string& _name_) : name_(_name_) {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };

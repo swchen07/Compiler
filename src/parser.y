@@ -261,25 +261,25 @@ Constant
 
 Exp
     : PrimaryExp						{ $$ = $1; }						
-    | ADD Exp 
-    | SUB Exp
-    | NOT Exp
+    | ADD Exp %prec NOT					{ $$ = new MoncPlus((ExprAST*)$2); }
+    | SUB Exp %prec NOT					{ $$ = new MoncMinus((ExprAST*)$2); }
+    | NOT Exp							{ $$ = new LogicNot((ExprAST*)$2); }
 
     | Exp ADD Exp						{$$ = new Addition((ExprAST*)$1, (ExprAST*)$3);}
-    | Exp SUB Exp
-    | Exp MUL Exp
-    | Exp DIV Exp
-    | Exp MOD Exp
+    | Exp SUB Exp						{$$ = new Subtraction((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp MUL Exp						{$$ = new Multiplication((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp DIV Exp						{$$ = new Division((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp MOD Exp						{$$ = new Modulation((ExprAST*)$1, (ExprAST*)$3);}
 
-    | Exp EQU Exp
-    | Exp NEQ Exp
-    | Exp LES Exp
-    | Exp LEQ Exp
-    | Exp GRE Exp
-    | Exp GEQ Exp
+    | Exp EQU Exp						{$$ = new Equal((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp NEQ Exp						{$$ = new NotEqual((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp LES Exp						{$$ = new LessThan((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp LEQ Exp						{$$ = new LessEqu((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp GRE Exp						{$$ = new GreThan((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp GEQ Exp						{$$ = new GreEqu((ExprAST*)$1, (ExprAST*)$3);}
 
-    | Exp AND Exp
-    | Exp OR  Exp
+    | Exp AND Exp						{$$ = new AndOp((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp OR  Exp						{$$ = new OrOp((ExprAST*)$1, (ExprAST*)$3);}
 
     | Exp BAND Exp
     | Exp BOR  Exp

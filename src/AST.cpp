@@ -15,6 +15,24 @@
 #include "AST.hpp"
 #include "IRGenerator.hpp"
 
+
+/**
+ * @brief 考虑到逻辑运算中需要用到true or false的判断
+ * 通过该函数把类型转换成bool型（即1bit）
+ * 
+ */
+llvm::Value* ToBoolType(llvm::Value* Value, IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder; 
+	if (Value->getType() == IRBuilder->getInt1Ty()) return Value;
+	else if (Value->getType()->isIntegerTy()){
+		auto v2 = llvm::ConstantInt::get((llvm::IntegerType*)Value->getType(), 0, true);
+		return IRBuilder->CreateICmpNE(Value, v2);
+	}else{
+		return NULL;
+	}
+}
+
+
 llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
     std::cout << "ProgramAST" << std::endl;
 
@@ -26,6 +44,24 @@ llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
 
 	return NULL;
 }
+
+// llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
+// 	std::cout << "VarDeclAST" << std::endl;
+
+// 	auto IRBuilder = IRContext.IRBuilder; 
+
+// 	llvm::Type* varType;
+
+// 	if (this->type_.GetType() == Int)
+//         varType = IRBuilder->getInt32Ty();
+
+// 	llvm::Constant* Initializer = NULL;
+
+// 	if(this->varInit_->initExpr_){
+
+// 	}
+	
+// }
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
     //Get return type
@@ -68,15 +104,140 @@ llvm::Value* ReturnStmtAST::IRGen(IRGenerator& IRContext) {
     return NULL; 
 }
 
+
+/**
+ * @brief 算术运算
+ * 
+ */
+llvm::Value* MoncPlus::IRGen(IRGenerator& IRContext) {
+	std::cout << "ExprAST +1" << std::endl;
+	llvm::Value* val = this->RHS_->IRGen(IRContext);
+	return val;
+
+}
+
+llvm::Value* MoncMinus::IRGen(IRGenerator& IRContext) {
+	std::cout << "ExprAST -1" << std::endl;
+	llvm::Value* val = this->RHS_->IRGen(IRContext);
+	auto IRBuilder = IRContext.IRBuilder; 
+	return IRBuilder->CreateNeg(val);
+
+}
+
 llvm::Value* Addition::IRGen(IRGenerator& IRContext) {
-    std::cout << "ExprAST+" << std::endl;
+    std::cout << "ExprAST +" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder; 
 	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
 	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
 	return IRBuilder->CreateAdd(LHS, RHS);
-        // auto IRBuilder = IRContext.IRBuilder; 
-        // return IRBuilder->CreateAdd(IRBuilder->getInt32(this->a), IRBuilder->getInt32(this->b));
-    
+}
+
+llvm::Value* Subtraction::IRGen(IRGenerator& IRContext) {
+    std::cout << "ExprAST -" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	return IRBuilder->CreateSub(LHS, RHS);
+}
+
+llvm::Value* Multiplication::IRGen(IRGenerator& IRContext) {
+    std::cout << "ExprAST *" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	return IRBuilder->CreateMul(LHS, RHS);
+}
+
+llvm::Value* Division::IRGen(IRGenerator& IRContext) {
+    std::cout << "ExprAST /" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	return IRBuilder->CreateSDiv(LHS, RHS);
+}
+
+llvm::Value* Modulation::IRGen(IRGenerator& IRContext) {
+    std::cout << "ExprAST %" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	return IRBuilder->CreateSRem(LHS, RHS);
+}
+
+
+/**
+ * @brief 逻辑运算
+ * 
+ */
+llvm::Value* LogicNot::IRGen(IRGenerator& IRContext) {
+	std::cout << "ExprAST !" << std::endl;
+	llvm::Value* val = this->RHS_->IRGen(IRContext);
+	auto IRBuilder = IRContext.IRBuilder;
+	return IRBuilder->CreateICmpEQ(ToBoolType(Value, IRContext), IRBuilder.getInt1(false));
+}
+
+llvm::Value* AndOp::IRGen(IRGenerator& IRContext) {
+	std::cout << "ExprAST &&" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = ToBoolType(this->LHS_->IRGen(IRContext), IRContext);
+	llvm::Value* RHS = ToBoolType(this->RHS_->IRGen(IRContext), IRContext);
+	return IRBuilder->CreateLogicalAnd(LHS, RHS);
+}
+
+llvm::Value* OrOp::IRGen(IRGenerator& IRContext) {
+	std::cout << "ExprAST ||" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = ToBoolType(this->LHS_->IRGen(IRContext), IRContext);
+	llvm::Value* RHS = ToBoolType(this->RHS_->IRGen(IRContext), IRContext);
+	return IRBuilder->CreateLogicalOr(LHS, RHS);
+}
+
+llvm::Value* Equal::IRGen(IRGenerator& IRContext) {
+	std::cout << "ExprAST ==" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	return IRBuilder->CreateICmpEQ(LHS, RHS);
+}
+
+llvm::Value* NotEqual::IRGen(IRGenerator& IRContext) {
+	std::cout << "ExprAST !=" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	return IRBuilder->CreateICmpNE(LHS, RHS);
+}
+
+llvm::Value* GreThan::IRGen(IRGenerator& IRContext) {
+	std::cout << "ExprAST >" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	return IRBuilder->CreateICmpSGT(LHS, RHS);
+}
+
+llvm::Value* LessThan::IRGen(IRGenerator& IRContext) {
+	std::cout << "ExprAST >" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	return IRBuilder->CreateICmpSLT(LHS, RHS);
+}
+
+llvm::Value* GreEqu::IRGen(IRGenerator& IRContext) {
+	std::cout << "ExprAST >" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	return IRBuilder->CreateICmpSGE(LHS, RHS);
+}
+
+llvm::Value* LessEqu::IRGen(IRGenerator& IRContext) {
+	std::cout << "ExprAST >" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	return IRBuilder->CreateICmpSLE(LHS, RHS);
 }
 
 llvm::Value* Constant::IRGen(IRGenerator& IRContext) {
