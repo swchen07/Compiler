@@ -8,12 +8,56 @@
  * @copyright Copyright (c) 2023
  * 
  */
+#pragma once
 
-
-#include <llvm/IR/Value.h>
+#include <string>
 #include <iostream>
 #include <vector>
+#include <llvm/IR/Value.h>
 
+class IRGenerator;
+
+/**
+ * @brief type类型的id
+ * 
+ */
+
+enum TypeID{
+    Int, 
+    Char
+};
+
+class VarType {
+public:
+    VarType(int) {type=Int;}
+    VarType(char) {type=Char;}
+    VarType(std::string name) {
+        if (name == "int") type = Int; 
+        else if (name == "char") type = Char; 
+    } 
+    ~VarType(){}
+    TypeID GetType() {return type;}
+private: 
+    TypeID type;
+};
+
+/**
+ * @brief 声明所有类
+ * 
+ */
+
+class BaseAST;
+class ProgramAST;
+class CompUnitAST;
+class FuncDef;
+class BlockAST;
+class StmtAST;
+class ReturnStmtAST;
+class ExprAST;
+class Addition;
+
+using CompUnits = std::vector<CompUnitAST*>;
+using Stmts = std::vector<StmtAST*>;
 /**
  * @brief 构造所有AST节点的基类，其中用指针管理对象
  * 
@@ -22,146 +66,120 @@
 // 所有 AST 的基类
 class BaseAST {
 public:
-    virtual ~BaseAST() = default;
-    virtual llvm::Value* codeGen(CodeGenContext& context);
-    virtual void Dump() const = 0;
+	BaseAST() {}
+    ~BaseAST() {}
+
+    virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
 };
 
+class ProgramAST : public BaseAST {
+public:
+	CompUnits* compUnit_;
+    
+    ProgramAST(CompUnits* _compUnit_):compUnit_(_compUnit_){}
+    ~ProgramAST(){};
+    llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+/**
+ * @brief ComUnit抽象类
+ * 
+ */
 class CompUnitAST : public BaseAST {
 public:
-     std::vector<std::unique_ptr<BaseAST>> Decls_;
-    llvm::Value* codeGen(CodeGenContext& context);
-    void Dump();
-}
+	CompUnitAST(){}
+	~CompUnitAST(){}
+
+	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+};
+
+class FuncDefAST : public CompUnitAST {
+public:
+	std::string funcName_; 
+    VarType type_; 
+    BlockAST* block_;
+
+	FuncDefAST(std::string _typeName_, std::string _funcName_, BlockAST* _block_):funcName_(_funcName_), 
+	type_(_typeName_), block_(_block_) {}
+
+	~FuncDefAST(){};
+    llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class BlockAST : public BaseAST {
+public:
+    Stmts* stmts_;
+
+    BlockAST(Stmts* _stmts_): stmts_(_stmts_){}
+    ~BlockAST(){}
+
+    llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
 
 /**
- * @brief Decl基类
+ * @brief Statement抽象类
  * 
  */
-class DeclAST : public BaseAST {
-public:
-    virtual llvm::Value* codeGen(CodeGenContext& context);
-    virtual void Dump() const = 0;
-}
-
-/**
- * @brief Stmt基类和他的子类
- * 
- */
-class StmtAST : public BaseAST {
-public:
-    virtual llvm::Value* codeGen(CodeGenContext& context);
-    virtual void Dump() const = 0;
-}
-
-class BlockAST : public StmtAST {
-public:
-    std::unique_ptr<BaseAST> stmts_;
-
-    llvm::Value* codeGen(CodeGenContext& context);
-    void Dump();
-}
-
-/**
- * @brief for(init; loopCond; acc) loopBody
- * 
- */
-class ForAST : public StmtAST {
-public:
-    std::unique_ptr<BaseAST> init_;
-    std::unique_ptr<BaseAST> conditon_;
-    std::unique_ptr<BaseAST> acc_;
-    std::unique_ptr<BaseAST> loopBody_;
-
-    llvm::Value* codeGen(CodeGenContext& context);
-    void Dump();
-}
-
-class IfAST : public StmtAST {
-public:
-    std::unique_ptr<BaseAST> if_;
-    std::unique_ptr<BaseAST> condition_;
-    std::unique_ptr<BaseAST> else_;
-
-    llvm::Value* codeGen(CodeGenContext& context);
-    void Dump();
-}
-
-/**
- * @brief while( condition ) whileBody
- * 
- */
-class WhileAST : public StmtAST {
-    std::unique_ptr<BaseAST> condtion_;
-    std::unique_ptr<BaseAST> whileBody_;
-
-    llvm::Value* codeGen(CodeGenContext& context);
-    void Dump();
-}
-
-class ReturnAST : public StmtAST {
+class StmtAST: public BaseAST {
 public: 
-    std::unique_ptr<BaseAST> retVal_;
+	StmtAST() {}
+	~StmtAST() {}
 
-    ReturnAST(ExpAST* _retVal_) : retVal_(_retVal_);
-    ~ReturnAST();
+    virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+};
 
-    llvm::Value* codeGen(CodeGenContext& context);
-    void Dump();
-}
-
-class BreakAST : public StmtAST {
+class ReturnStmtAST : public StmtAST {
 public:
+	ExprAST* RetVal_;
 
-    BreakAST();
-    ~BreakAST();
- 
-    llvm::Value* codeGen(CodeGenContext& context);
-    void Dump();
-}
+	llvm::Value* IRGen(IRGenerator& IRContext);
 
-class ContinueAST : public StmtAST {
-public:
+	ReturnStmtAST(ExprAST* _RetVal_ = NULL) : RetVal_(_RetVal_) {}
+	~ReturnStmtAST () {}
+};
 
-    ContinueAST();
-    ~ContinueAST();
-
-    llvm::Value* codeGen(CodeGenContext& context);
-    void Dump();
-}
 
 /**
- * @brief Exp基类和他的子类
+ * @brief expression抽象类
  * 
  */
-class ExpAST : public BaseAST {
+class ExprAST : public BaseAST {
 public:
+	ExprAST(void) {}
+	~ExprAST(void) {}
 
-    ExpAST();
-    ~ExpAST();
+	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+};
 
-    llvm::Value* codeGen(CodeGenContext& context);
-}
+class Addition : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
 
-class BinaryOpAST : public ExpAST {
+	Addition(ExprAST* _LHS_, ExprAST* _RHS_): LHS_(_LHS_), RHS_(_RHS_) {}
+	~Addition() {}
 
-}
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
 
-class AssignAST : public ExpAST {
+class Assign : public ExprAST {
+public:
+	ExprAST* LHS_;
+	ExprAST* RHS_;
 
-}
+	Assign(ExprAST* _LHS_, ExprAST* _RHS_) : LHS_(_LHS_), RHS_(_RHS_) {}
+	~Assign() {}
 
-class IntAST : public ExpAST {
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
 
-}
+class Constant : public ExprAST {
+public:
+	int int_;
 
-class CharAST : public ExpAST {
+	Constant(int _int_) : int_(_int_) {}
+	~Constant() {}
 
-}
-
-class IdentifierAST : public ExpAST {
-
-}
-
-
-
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
