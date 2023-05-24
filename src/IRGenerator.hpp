@@ -48,13 +48,13 @@
 
 class IRVarAttr {
 public: 
-    TypeID type_; 
+    VarType type_; 
     std::string name_; 
 
 	//llvm::Function* CurFunc;
     llvm::Value* value_;
 
-    IRVarAttr(TypeID type, std::string name, llvm::Value* value):type_(type), name_(name), value_(value){}
+    IRVarAttr(VarType type, std::string name, llvm::Value* value):type_(type), name_(name), value_(value){}
 };
 
 class IRGenerator {
@@ -65,6 +65,7 @@ public:
 
     std::vector<IRVarAttr*> varList_;
     llvm::Function* curFunc_;
+    BlockAST* curBasicBlock_;
     bool bbCreatePreBrSignal_;
 
     IRGenerator(){
@@ -72,7 +73,9 @@ public:
         IRBuilder = new llvm::IRBuilder<>(*Context);
         Module = new llvm::Module("main", *Context);
 
-        bbCreatePreBrSignal_ = false; 
+        bbCreatePreBrSignal_ = true; 
+        curBasicBlock_ = NULL; 
+        curFunc_ = NULL;
     }
     // ~IRGenerator(){
     //     delete Context;
@@ -83,13 +86,16 @@ public:
     void GenerateCode(BaseAST*);
     void GenObjectCode(std::string);
 
-    void CreateVar(TypeID type, std::string name, llvm::Value* value);
-    void DiscardVar(int cnt); 
+    void CreateVar(VarType type, std::string name, llvm::Value* value);
+    void DiscardVar(); 
 
     void SetCurFunc(llvm::Function* curFunc);
     llvm::Function* GetCurFunc();
 
-    void setPreBrSignal();
-    bool clearPreBrSignal();
-    bool getPreBrSignal();
+    void SetPreBrSignal();
+    bool ClearPreBrSignal();
+    bool GetPreBrSignal();
+
+    BlockAST* GetBasicBlock();
+    void SetBasicBlock(BlockAST*);
 };

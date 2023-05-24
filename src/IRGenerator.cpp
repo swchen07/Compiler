@@ -36,16 +36,18 @@ void IRGenerator::GenObjectCode(std::string outputfile) {
     Dest.flush();
 }
 
-void IRGenerator::CreateVar(TypeID type, std::string name, llvm::Value* value){
+void IRGenerator::CreateVar(VarType type, std::string name, llvm::Value* value){
     this->varList_.push_back(new IRVarAttr(type, name, value));
+    if (this->curBasicBlock_) this->curBasicBlock_->varCnt_ += 1; 
 }
 
-void IRGenerator::DiscardVar(int cnt) {
-    for (int i = 0; i < cnt; i++) {
-        auto var = this->varList_[this->varList_.size()-1];
-		this->varList_.pop_back();
-        delete var; 
-    }
+void IRGenerator::DiscardVar() {
+    if (this->curBasicBlock_)
+        for (int i = 0; i < this->curBasicBlock_->varCnt_; i++) {
+            auto var = this->varList_[this->varList_.size()-1];
+            this->varList_.pop_back();
+            delete var; 
+        }
 }
 
 void IRGenerator::SetCurFunc(llvm::Function* curFunc) {
@@ -56,16 +58,24 @@ llvm::Function* IRGenerator::GetCurFunc() {
     return this->curFunc_; 
 }
 
-void IRGenerator::setPreBrSignal() {
+void IRGenerator::SetPreBrSignal() {
     this->bbCreatePreBrSignal_ = true; 
 }
 
-bool IRGenerator::clearPreBrSignal() {
+bool IRGenerator::ClearPreBrSignal() {
     bool bbCreatePreBrSignal = this->bbCreatePreBrSignal_; 
     this->bbCreatePreBrSignal_ = false;
     return bbCreatePreBrSignal;
 }
 
-bool IRGenerator::getPreBrSignal() {
+bool IRGenerator::GetPreBrSignal() {
     return this->bbCreatePreBrSignal_; 
+}
+
+BlockAST* IRGenerator::GetBasicBlock() {
+    return this->curBasicBlock_; 
+}
+
+void IRGenerator::SetBasicBlock(BlockAST* newBasicBlock){
+    this->curBasicBlock_ = newBasicBlock; 
 }

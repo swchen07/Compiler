@@ -24,19 +24,19 @@ class IRGenerator;
 
 enum TypeID{
     Int, 
-    Char
+    Char, 
+	Short
 };
 
 class VarType {
 public:
     VarType(int) {type=Int;}
     VarType(char) {type=Char;}
-    VarType(std::string name) {
-        if (name == "int") type = Int; 
-        else if (name == "char") type = Char; 
-    } 
+	VarType(short) {type=Short;}
+    VarType(std::string name);
     ~VarType(){}
     TypeID GetType() {return type;}
+	llvm::Type* ToLLVMType(IRGenerator&); 
 private: 
     TypeID type;
 };
@@ -113,8 +113,9 @@ public:
 class BlockAST : public BaseAST {
 public:
     Stmts* stmts_;
+	int varCnt_;
 
-    BlockAST(Stmts* _stmts_): stmts_(_stmts_){}
+    BlockAST(Stmts* _stmts_): stmts_(_stmts_), varCnt_(0){}
     ~BlockAST(){}
 
     llvm::Value* IRGen(IRGenerator& IRContext);
@@ -129,25 +130,25 @@ public:
 /* 定义声明的抽象类作为一般声明和const的基类
  * 
  */
-// class DeclAST : public CompUnitAST {
-// public:
-// 	DeclAST() {}
-// 	~DeclAST() {}
+class DeclAST : public CompUnitAST {
+public:
+	DeclAST() {}
+	~DeclAST() {}
 
-// 	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
-// };
+	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+};
 
-// class VarDeclAST : public DeclAST {
-// public:
-// 	VarInitAST* varInit_;
-// 	VarType* type_;
+class VarDeclAST : public DeclAST {
+public:
+	std::string varName_; 
+    VarType type_; 
 
-// 	VarDeclAST(VarInitAST* _varInit_, VarType* _type_) : 
-// 		varInit_(_varInit_), type_(_type_) {}
-// 	~VarDeclAST() {}
+	VarDeclAST(std::string _typeName_, std::string _varName_) : 
+		varName_(_varName_), type_(_typeName_) {}
+	~VarDeclAST() {}
 
-// 	llvm::Value* IRGen(IRGenerator& IRContext) {}
-// };
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
 
 // class VarInitAST : public BaseAST {
 // public:
