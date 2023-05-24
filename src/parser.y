@@ -1,22 +1,39 @@
 %{
 #include "AST.hpp"
+#include <iostream>
+#include <string>
 
-int yylex();
+int yylex(void);
+extern BaseAST* Root; 
 
-void yyerror(const char *s) {
-    std::printf("Error: %s", s);
+void yyerror(char *s)
+{
+	extern int yylineno;	// defined and maintained in lex
+	extern char *yytext;	// defined and maintained in lex
+	int len=strlen(yytext);
+	int i;
+	char buf[512]={0};
+	for (i=0;i<len;++i)
+	{
+		sprintf(buf,"%s%d ",buf,yytext[i]);
+	}
+	fprintf(stderr, "ERROR: %s at symbol '%s' on line %d\n", s, buf, yylineno);
 }
+
 
 using namespace std;
 
 %}
 
+%output "parser.cpp"
+
 %union {
-    std::string *string;
-    std::string *strVal;
-    int token;
+    std::string* strVal;
+	float floatVal;
     int intVal;
-    float floatVal;
+    BaseAST *astVal;
+	CompUnits *compUnits;
+	Stmts *stmts;
 }
 
 /* 终结符 */
@@ -25,21 +42,23 @@ using namespace std;
 %token ADD SUB MUL DIV MOD
 %token AND OR NOT
 %token BAND BOR BXOR
-%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE COMMA SEMI
+%token LPAREN RPAREN LBRACE RBRACE COMMA SEMI
 %token ASSIGN DOT COLON QUES
 
-%token INT CHAR BOOL VOID STRING
+%token <strVal> INT CHAR  VOID
 %token RETURN CONTINUE BREAK
 %token IF ELSE
 %token FOR WHILE
 
 %token CONST
-%token IDENTIFIER
-%token CONST_INT CONST_CHAR CONST_FLOAT CONST_STR
+%token <strVal> IDENTIFIER
+%token <intVal> CONST_INT 
+%token CONST_CHAR CONST_FLOAT CONST_STR
 // 非终结符的类型定义
 
-%type CompUnit
-%type FuncDef
+%type <astVal> Program
+%type <compUnits> CompUnit
+%type <astVal> FuncDef
 %type <strVal> FuncType
 %type FuncParaLists
 %type FuncParam
@@ -54,17 +73,19 @@ using namespace std;
 %type VarList
 %type VarDef
 
-%type Block
-%type BlockItem BlockItemNew
-%type Stmt
+%type <astVal> Block
+%type <astVal> BlockItem 
+%type <stmts> BlockItemNew
+%type <astVal> Stmt
 
-%type PrimaryExp
-%type Exp
+%type <astVal> PrimaryExp
+%type <astVal> Exp
 %type ElseState
-%type RetState
+%type <astVal> RetState
 
 %type LVal
-%type Number
+%type <intVal> Number
+%type <astVal> Constant
 
 /* 优先级和结合性定义 */
 %right	ASSIGN
@@ -83,15 +104,15 @@ using namespace std;
 %%
 
 /* CompUnit      ::= [CompUnit] (Decl | FuncDef); */
-Program
-    : CompUnit FuncDef
-    | CompUnit Decl
-    ;
+/* 	: FuncDef 											{auto c = new CompUnits(); c->push_back((CompUnitAST*)$1); $$ = new ProgramAST(c); Root = $$;} */
+/*	| CompUnit											{$$ = new ProgramAST($1); Root = $$;} */
+Program							
+	: CompUnit 											{$$ = new ProgramAST((CompUnits*)$1); Root = $$;}
+	;
 
 CompUnit
-    : CompUnit FuncDef                                   {}
-    | CompUnit Decl
-    | 
+    : CompUnit FuncDef									{ $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
+    | 													{ $$ = new CompUnits(); }
     ;
 
 /* Decl          ::= ConstDecl | VarDecl; */
@@ -150,14 +171,14 @@ InitVal
 
 /* FuncDef       ::= FuncType IDENT "(" [FuncFParams] ")" Block; */
 FuncDef
-    : FuncType IDENTIFIER LPAREN FuncParaLists RPAREN Block   {}
+    : FuncType IDENTIFIER LPAREN RPAREN Block   { $$ = new FuncDefAST(*$1, *$2, (BlockAST*)$5);}
     ;
 
 /* FuncType      ::= "void" | "int"; */
 FuncType
-    : INT                                       { $$ = new string("int"); }
-    | VOID                                      { $$ = new string("void"); }
-    | CHAR                                      { $$ = new string("char"); }
+    : INT                                       { $$ = $1; }
+    | VOID                                      { $$ = $1; }
+    | CHAR                                      { $$ = $1; }
     ;
 
 /* FuncFParams   ::= FuncFParam {"," FuncFParam}; */
@@ -178,18 +199,18 @@ FuncParam
 
 /* Block         ::= "{" {BlockItem} "}"; */
 Block
-    : LBRACE BlockItemNew RBRACE                {}
+    : LBRACE BlockItemNew RBRACE                {$$ = new BlockAST((Stmts*)$2);}
     ;
 
 BlockItemNew
-    : BlockItemNew BlockItem
-    | 
+    : BlockItemNew BlockItem					{ $$ = (Stmts*)$1; if ($2 != NULL)$$->push_back((StmtAST*)$2); }
+    | 											{ $$ = new Stmts(); }
     ;
 
 /* BlockItem     ::= Decl | Stmt; */
 BlockItem
     : Decl
-    | Stmt
+    | Stmt										{$$ = $1;}
     ;
 
 /* Stmt          ::= LVal "=" Exp ";"
@@ -202,15 +223,15 @@ BlockItem
                 | "return" [Exp] ";"; */
 Stmt
     : LVal ASSIGN Exp SEMI
-    | Exp SEMI
-    | SEMI
-    | Block
+    | Exp SEMI									{ $$ = $1; }
+    | SEMI										{ $$ = NULL; }
+    | Block										{ $$ = $1; }
     | FOR 
     | IF LPAREN Exp RPAREN Stmt ElseState
     | WHILE LPAREN Exp RPAREN Stmt
     | BREAK SEMI
     | CONTINUE SEMI
-    | RETURN RetState SEMI
+    | RETURN RetState SEMI				{$$ = new ReturnStmtAST((ExprAST*)$2);}
     ;
 
 LVal
@@ -223,28 +244,28 @@ ElseState
     ;
 
 RetState
-    : Exp
+    : Exp								{$$ = $1;}
     |
     ;
 
 PrimaryExp
     : LPAREN Exp RPAREN
     | LVal
-    | Number
+    | Constant							{ $$ = $1; }				
     ;
 
-Number
-    : CONST_INT
+Constant
+    : CONST_INT							{ $$ =  new Constant($1); }
     | CONST_CHAR
     ;
 
 Exp
-    : PrimaryExp
+    : PrimaryExp						{ $$ = $1; }						
     | ADD Exp 
     | SUB Exp
     | NOT Exp
 
-    | Exp ADD Exp
+    | Exp ADD Exp						{$$ = new Addition((ExprAST*)$1, (ExprAST*)$3);}
     | Exp SUB Exp
     | Exp MUL Exp
     | Exp DIV Exp
@@ -263,6 +284,11 @@ Exp
     | Exp BAND Exp
     | Exp BOR  Exp
     | Exp BXOR Exp
+
+	| Exp ASSIGN Exp					/*{ $$ = new Assign((ExprAST*)$1, (ExprAST*)$3); }*/
     ;
 
+ConstExp
+	:
+	;
 %%

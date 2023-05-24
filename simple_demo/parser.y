@@ -60,6 +60,7 @@ FuncType
 
 Stmt
     : RETURN Exp ';'                            {$$ = new StmtAST((ExprAST*)$2);}
+	|
     ;
 
 Exp
