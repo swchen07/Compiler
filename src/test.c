@@ -4,6 +4,7 @@ int main (){
 		-1;
 		+1;
 		return 1 && 0;
+		return 1;
 	}
 	
 }
