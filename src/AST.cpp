@@ -45,24 +45,24 @@ llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
 	return NULL;
 }
 
-llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
-	std::cout << "VarDeclAST" << std::endl;
+// llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
+// 	std::cout << "VarDeclAST" << std::endl;
 
-	auto IRBuilder = IRContext.IRBuilder; 
+// 	auto IRBuilder = IRContext.IRBuilder; 
 
-	//Get the llvm type
-	llvm::Type* VarType = this->_VarType->GetLLVMType(__Generator);
+// 	//Get the llvm type
+// 	llvm::Type* VarType = this->_VarType->GetLLVMType(__Generator);
 
-	if (this->type_.GetType() == Int)
-        varType = IRBuilder->getInt32Ty();
+// 	if (this->type_.GetType() == Int)
+//         varType = IRBuilder->getInt32Ty();
 
-	llvm::Constant* Initializer = NULL;
+// 	llvm::Constant* Initializer = NULL;
 
-	if(this->varInit_->initExpr_){
+// 	if(this->varInit_->initExpr_){
 
-	}
+// 	}
 	
-}
+// }
 
 
 
@@ -176,7 +176,7 @@ llvm::Value* LogicNot::IRGen(IRGenerator& IRContext) {
 	std::cout << "ExprAST !" << std::endl;
 	llvm::Value* val = this->RHS_->IRGen(IRContext);
 	auto IRBuilder = IRContext.IRBuilder;
-	return IRBuilder->CreateICmpEQ(ToBoolType(Value, IRContext), IRBuilder.getInt1(false));
+	return IRBuilder->CreateICmpEQ(ToBoolType(val, IRContext), IRBuilder->getInt1(false));
 }
 
 llvm::Value* AndOp::IRGen(IRGenerator& IRContext) {
