@@ -50,8 +50,8 @@ class IRVarAttr {
 public: 
     TypeID ID; 
     std:string name; 
-
-    llvm::value
+	llvm::Function* CurFunc;
+    //llvm::value
 };
 
 class IRGenerator {

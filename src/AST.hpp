@@ -256,7 +256,6 @@ public:
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
-
 class Division : public ExprAST {
 public:
 	ExprAST* LHS_;
