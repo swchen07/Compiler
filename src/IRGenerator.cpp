@@ -3,6 +3,7 @@
 
 void IRGenerator::GenerateCode(BaseAST* root) {
     root->IRGen(*this);
+	this->Module->print(llvm::outs(), NULL);
 }
 
 void IRGenerator::GenObjectCode(std::string outputfile) {
@@ -27,10 +28,10 @@ void IRGenerator::GenObjectCode(std::string outputfile) {
     std::error_code EC;
     llvm::raw_fd_ostream Dest(outputfile, EC, llvm::sys::fs::OF_None);
 
-    auto FileType = llvm::CGFT_ObjectFile;
-    llvm::legacy::PassManager PM;
-    TargetMachine->addPassesToEmitFile(PM, Dest, nullptr, FileType);
+    // auto FileType = llvm::CGFT_ObjectFile;
+    // llvm::legacy::PassManager PM;
+    // TargetMachine->addPassesToEmitFile(PM, Dest, nullptr, FileType);
 
-    PM.run(*Module);
+    // PM.run(*Module);
     Dest.flush();
 }
