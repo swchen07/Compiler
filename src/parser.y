@@ -31,6 +31,7 @@ using namespace std;
     std::string* strVal;
 	float floatVal;
     int intVal;
+	char charVal;
     BaseAST *astVal;
 	CompUnits *compUnits;
 	Stmts *stmts;
@@ -53,7 +54,8 @@ using namespace std;
 %token CONST
 %token <strVal> IDENTIFIER
 %token <intVal> CONST_INT 
-%token CONST_CHAR CONST_FLOAT CONST_STR
+%token <charVal> CONST_CHAR 
+%token CONST_FLOAT CONST_STR
 // 非终结符的类型定义
 
 %type <astVal> Program
@@ -163,6 +165,7 @@ VarList
 VarDef
     : IDENTIFIER                                    { $$ = $1;}
     | IDENTIFIER ASSIGN InitVal
+	| IDENTIFIER ArrayDimension						{}
     ;
 
 /* InitVal       ::= Exp; */
@@ -223,7 +226,7 @@ BlockItem
                 | "continue" ";"
                 | "return" [Exp] ";"; */
 Stmt
-    : LVal ASSIGN Exp SEMI						{ std::cout << "assign" << std::endl; $$ = new AssignAST((LeftValAST*)$1, (ExprAST*)$3); }
+    : LVal ASSIGN Exp SEMI						{ $$ = new AssignAST((LeftValAST*)$1, (ExprAST*)$3); }
     | Exp SEMI									{ $$ = $1; }
     | SEMI										{ $$ = NULL; }
     | Block										{ $$ = $1; }
@@ -232,11 +235,11 @@ Stmt
     | WHILE LPAREN Exp RPAREN Stmt
     | BREAK SEMI
     | CONTINUE SEMI
-    | RETURN RetState SEMI				{$$ = new ReturnStmtAST((ExprAST*)$2);}
+    | RETURN RetState SEMI						{$$ = new ReturnStmtAST((ExprAST*)$2);}
     ;
 
 LVal
-    : IDENTIFIER						{ $$ = new LeftValAST(*$1); }
+    : IDENTIFIER								{ $$ = new LeftValAST(*$1); }
     ;
 
 ElseState
@@ -256,8 +259,8 @@ PrimaryExp
     ;
 
 Constant
-    : CONST_INT							{ $$ =  new Constant($1); }
-    | CONST_CHAR
+    : CONST_INT							{ $$ = new Constant($1); }
+    | CONST_CHAR						{ std::cout << "char" << std::endl; $$ = new Constant($1); }
     ;
 
 Exp
