@@ -74,6 +74,8 @@ class Addition;
 
 class LeftValAST;
 
+class IfElseAST; 
+
 using CompUnits = std::vector<CompUnitAST*>;
 using Stmts = std::vector<StmtAST*>;
 /**
@@ -224,6 +226,22 @@ public:
 	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
 };
 
+/**
+ * @brief branch & control
+ * 
+ */
+
+class IfElseAST : public StmtAST {
+public: 
+	ExprAST* cond_; 
+	BlockAST* ifBlock_; 
+	BlockAST* elseBlock_; 
+
+	IfElseAST(ExprAST* _cond_, BlockAST* _ifBlock_, BlockAST* _elseBlock_):cond_(_cond_), ifBlock_(_ifBlock_), elseBlock_(_elseBlock_){}
+	~IfElseAST(){}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
 
 /**
  * @brief 算术运算

@@ -1,4 +1,11 @@
 int main() {
+	int x = 4;
+	if (x == 4) {
+		x = 1;
+	}
+	else {
+		x = 2;
+	}
 	{}
 	{{{{}
 	int c; 
@@ -13,7 +20,24 @@ int main() {
 }
 
 int a() {
+	int x = 4;
+	if (x == 4) {
+		x = 1;
+	}
+	else {
+		x = 2;
+	}
+}
 
+int a2() {
+	int x = 4;
+	if (x == 4) {
+		x = 1;
+	}
+	else {
+		x = 2;
+	}
+	int a2;
 }
 
 int b() {
