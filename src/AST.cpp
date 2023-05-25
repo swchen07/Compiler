@@ -41,7 +41,7 @@ llvm::Value* ToBoolType(llvm::Value* value, IRGenerator& IRContext) {
  */
 llvm::Value* CastType(llvm::Value* value, llvm::Type* type, IRGenerator& IRContext){
 	auto IRBuilder = IRContext.IRBuilder;
-	if(value->getType == type){
+	if(value->getType() == type){
 		return value;
 	}else if(type == IRBuilder->getInt1Ty()){
 		return ToBoolType(value, IRContext);
@@ -91,9 +91,13 @@ llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 	std::cout << "VarDeclAST" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder; 
 
+	//创建变量
 	auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varName_);
 	// llvm::Value* initVal = CastType(this->, IRContext)
-	// IRBuilder->CreateStore(NULL, AllocMem);
+
+	llvm::Value* val = IRBuilder->getInt32(42);
+
+	IRBuilder->CreateStore(val, AllocMem);
 
 	std::cout << "VarDeclAST2" << std::endl;
 
@@ -303,8 +307,37 @@ llvm::Value* LessEqu::IRGen(IRGenerator& IRContext) {
 	return IRBuilder->CreateICmpSLE(LHS, RHS);
 }
 
+llvm::Value* AssignAST::IRGen(IRGenerator& IRContext){
+	std::cout << "Assign" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	llvm::Value* LHSPtr = this->LHS_->IRGenPtr(IRContext);
+
+	//赋值
+	IRBuilder->CreateStore(RHS, LHSPtr);
+	return IRBuilder->CreateLoad(LHSPtr->getType()->getNonOpaquePointerElementType(), LHSPtr);
+
+}
+
 llvm::Value* Constant::IRGen(IRGenerator& IRContext) {
 	std::cout << "Constant" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder; 
 	return IRBuilder->getInt32(this->int_);
 }
+
+llvm::Value* LeftValAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "LeftVal" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Value* VarPtr = IRContext.FindVar(this->name_);
+	llvm::Type* type = VarPtr->getType()->getNonOpaquePointerElementType();
+	llvm::Value* val = IRBuilder->CreateLoad(type,VarPtr);
+	return val;
+}
+
+llvm::Value* LeftValAST::IRGenPtr(IRGenerator& IRContext) {
+	std::cout << "LeftValPtr" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Value* VarPtr = IRContext.FindVar(this->name_);
+	return VarPtr;
+}
+

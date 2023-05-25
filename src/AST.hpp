@@ -60,6 +60,8 @@ class ReturnStmtAST;
 class ExprAST;
 class Addition;
 
+class LeftValAST;
+
 using CompUnits = std::vector<CompUnitAST*>;
 using Stmts = std::vector<StmtAST*>;
 /**
@@ -383,15 +385,15 @@ public:
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
-class Assign : public ExprAST {
+class AssignAST : public StmtAST {
 public:
-	ExprAST* LHS_;
+	LeftValAST* LHS_;
 	ExprAST* RHS_;
 
-	Assign(ExprAST* _LHS_, ExprAST* _RHS_) : LHS_(_LHS_), RHS_(_RHS_) {}
-	~Assign() {}
+	AssignAST(LeftValAST* _LHS_, ExprAST* _RHS_) : LHS_(_LHS_), RHS_(_RHS_) {}
+	~AssignAST() {}
 
-	llvm::Value* IRGen(IRGenerator& IRContext) {}
+	llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
 class Constant : public ExprAST {
@@ -404,11 +406,13 @@ public:
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
-class Variable : public  ExprAST {
+class LeftValAST : public  ExprAST {
 public:
 	std::string name_;
 
-	Variable(std::string& _name_) : name_(_name_) {}
+	LeftValAST(std::string& _name_) : name_(_name_) {}
+	~LeftValAST() {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
+	llvm::Value* IRGenPtr(IRGenerator& IRContext);
 };

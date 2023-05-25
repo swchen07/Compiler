@@ -98,4 +98,6 @@ public:
 
     BlockAST* GetBasicBlock();
     void SetBasicBlock(BlockAST*);
+
+	llvm::Value* FindVar(std::string name);
 };

@@ -1,13 +1,6 @@
 int main (){
 	int a;
-	int b;
-	int c;
-	return 1+2;
+	a = a+1;
+	return a;
 	
-}
-
-int a(){
-	3+4;
-	1+2;
-	return -2;
 }

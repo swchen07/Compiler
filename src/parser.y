@@ -83,7 +83,7 @@ using namespace std;
 %type ElseState
 %type <astVal> RetState
 
-%type LVal
+%type <astVal> LVal
 %type <intVal> Number
 %type <astVal> Constant
 
@@ -107,18 +107,18 @@ using namespace std;
 /* 	: FuncDef 											{auto c = new CompUnits(); c->push_back((CompUnitAST*)$1); $$ = new ProgramAST(c); Root = $$;} */
 /*	| CompUnit											{$$ = new ProgramAST($1); Root = $$;} */
 Program							
-	: CompUnit 											{std::cout << "q" << std::endl; $$ = new ProgramAST((CompUnits*)$1); Root = $$;}
+	: CompUnit 											{ $$ = new ProgramAST((CompUnits*)$1); Root = $$;}
 	;
 
 CompUnit
-    : CompUnit FuncDef									{std::cout << "w" << std::endl; $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
+    : CompUnit FuncDef									{ $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
     | 													{ $$ = new CompUnits(); }
     ;
 
 /* Decl          ::= ConstDecl | VarDecl; */
 Decl
     : ConstDecl
-    | VarDecl                                           { std::cout << "2" << std::endl; $$ = $1; }
+    | VarDecl                                           { $$ = $1; }
     ;
 
 /* ConstDecl     ::= "const" BType ConstDef {"," ConstDef} ";"; */
@@ -134,7 +134,7 @@ ConstList
 /* BType         ::= "int"; */
 Btype
     : VOID                          { $$ = $1; }
-    | INT                           {std::cout << "6" << std::endl;  $$ = $1; }
+    | INT                           { $$ = $1; }
     | SHORT                         { $$ = $1; }
     | CHAR                          { $$ = $1; }
     ;
@@ -151,17 +151,17 @@ ConstInitVal
 
 /* VarDecl       ::= BType VarDef {"," VarDef} ";"; */
 VarDecl
-    : Btype VarDef VarList SEMI                     {std::cout << "3" << std::endl; $$ = new VarDeclAST(*$1, *$2);}
+    : Btype VarDef VarList SEMI                     { $$ = new VarDeclAST(*$1, *$2);}
     ;
 
 VarList
     : VarList COMMA VarDef
-    |                                               {std::cout << "5" << std::endl; }
+    |                                               { ; }
     ;
 
 /* VarDef        ::= IDENT | IDENT "=" InitVal; */
 VarDef
-    : IDENTIFIER                                    {std::cout << "4" << std::endl; $$ = $1;}
+    : IDENTIFIER                                    { $$ = $1;}
     | IDENTIFIER ASSIGN InitVal
     ;
 
@@ -172,7 +172,7 @@ InitVal
 
 /* FuncDef       ::= FuncType IDENT "(" [FuncFParams] ")" Block; */
 FuncDef
-    : FuncType IDENTIFIER LPAREN RPAREN Block   { std::cout << "e" << std::endl;$$ = new FuncDefAST(*$1, *$2, (BlockAST*)$5);}
+    : FuncType IDENTIFIER LPAREN RPAREN Block   { $$ = new FuncDefAST(*$1, *$2, (BlockAST*)$5);}
     ;
 
 /* FuncType      ::= "void" | "int"; */
@@ -200,7 +200,7 @@ FuncParam
 
 /* Block         ::= "{" {BlockItem} "}"; */
 Block
-    : LBRACE BlockItemNew RBRACE                { std::cout << "t" << std::endl;$$ = new BlockAST((Stmts*)$2);}
+    : LBRACE BlockItemNew RBRACE                { $$ = new BlockAST((Stmts*)$2);}
     ;
 
 BlockItemNew
@@ -223,7 +223,7 @@ BlockItem
                 | "continue" ";"
                 | "return" [Exp] ";"; */
 Stmt
-    : LVal ASSIGN Exp SEMI
+    : LVal ASSIGN Exp SEMI						{ std::cout << "assign" << std::endl; $$ = new AssignAST((LeftValAST*)$1, (ExprAST*)$3); }
     | Exp SEMI									{ $$ = $1; }
     | SEMI										{ $$ = NULL; }
     | Block										{ $$ = $1; }
@@ -236,7 +236,7 @@ Stmt
     ;
 
 LVal
-    : IDENTIFIER
+    : IDENTIFIER						{ $$ = new LeftValAST(*$1); }
     ;
 
 ElseState
@@ -251,7 +251,7 @@ RetState
 
 PrimaryExp
     : LPAREN Exp RPAREN
-    | LVal
+    | LVal								{ $$ = $1; }
     | Constant							{ $$ = $1; }				
     ;
 
@@ -285,9 +285,7 @@ Exp
     | Exp BAND Exp
     | Exp BOR  Exp
     | Exp BXOR Exp
-
-	| Exp ASSIGN Exp					/*{ $$ = new Assign((ExprAST*)$1, (ExprAST*)$3); }*/
-    ;
+	;
 
 ConstExp
 	:

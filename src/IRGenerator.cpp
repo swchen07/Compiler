@@ -79,3 +79,15 @@ BlockAST* IRGenerator::GetBasicBlock() {
 void IRGenerator::SetBasicBlock(BlockAST* newBasicBlock){
     this->curBasicBlock_ = newBasicBlock; 
 }
+
+llvm::Value* IRGenerator::FindVar(std::string name){
+	if(this->varList_.size() == 0){
+		return NULL;
+	}
+	for(auto symbol = this->varList_.end() - 1; symbol >= this->varList_.begin(); symbol--){
+		if((*symbol)->name_ == name){
+			return (*symbol)->value_;
+		}
+	}
+	return NULL;
+}
