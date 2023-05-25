@@ -115,12 +115,13 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 {IDENTIFIER}            {SAVE_TOKEN; return IDENTIFIER;}
 
 
-{DECIMAL}               {yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT;}
-{OCTAL}                 {yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT;}
-{HEXADECIMAL}           {yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT;}
+{DECIMAL}               { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
+{OCTAL}                 { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
+{HEXADECIMAL}           { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
+ 
+{REAL}                  { yylval.floatVal = strtol(yytext, nullptr, 0); return CONST_FLOAT; }
 
-{REAL}                  {yylval.floatVal = strtol(yytext, nullptr, 0); return CONST_FLOAT;}
-
+"\'"[^\\']"\'"			{ yylval.charVal = yytext[1]; return CONST_CHAR; }
 
 
 .                       { printf("Unknown token!/n");}

@@ -46,6 +46,9 @@ llvm::Value* CastType(llvm::Value* value, llvm::Type* type, IRGenerator& IRConte
 	}else if(type == IRBuilder->getInt1Ty()){
 		return ToBoolType(value, IRContext);
 	}
+	// else if(value=>get){
+
+	// }
 }
 /**
  * @brief 
@@ -66,6 +69,12 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
 		case Char: return IRBuilder->getInt8Ty(); 
 		case Short: return IRBuilder->getInt16Ty(); 
 	}
+}
+
+llvm::Type* ArrayType::ToLLVMType(IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Type* elemType = this->elemType_->GetLLVMType(IRContext);
+	return llvm::ArrayType::get(elemType, this->size_);
 }
 
 /**
@@ -93,9 +102,11 @@ llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 
 	//创建变量
 	auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varName_);
+	
 	// llvm::Value* initVal = CastType(this->, IRContext)
 
-	llvm::Value* val = IRBuilder->getInt32(42);
+	//测试用，TODO：梓敬实现初始化
+	llvm::Value* val = IRBuilder->getInt8('0');
 
 	IRBuilder->CreateStore(val, AllocMem);
 
@@ -340,4 +351,3 @@ llvm::Value* LeftValAST::IRGenPtr(IRGenerator& IRContext) {
 	llvm::Value* VarPtr = IRContext.FindVar(this->name_);
 	return VarPtr;
 }
-

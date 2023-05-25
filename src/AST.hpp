@@ -25,7 +25,8 @@ class IRGenerator;
 enum TypeID{
     Int, 
     Char, 
-	Short
+	Short,
+	Double
 };
 
 class VarType {
@@ -40,6 +41,17 @@ public:
 private: 
     TypeID type;
 };
+
+class ArrayType {
+public:
+	VarType* elemType_;
+	size_t size_;
+
+	ArrayType(VarType* _elemType_, size_t _size_) : elemType_(_elemType_), size_(_size_) {}
+	~ArrayType() {}
+
+	
+}
 
 /**
  * @brief 声明所有类
@@ -399,8 +411,10 @@ public:
 class Constant : public ExprAST {
 public:
 	int int_;
-
+	char character_;
+	
 	Constant(int _int_) : int_(_int_) {}
+	Constant(char _character_) : character_(_character_) {}
 	~Constant() {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
