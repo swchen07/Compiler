@@ -50,8 +50,8 @@ public:
 	ArrayType(VarType* _elemType_, size_t _size_) : elemType_(_elemType_), size_(_size_) {}
 	~ArrayType() {}
 
-	
-}
+	llvm::Type* ToLLVMType(IRGenerator& IRContext);
+};
 
 /**
  * @brief 声明所有类

@@ -165,7 +165,6 @@ VarList
 VarDef
     : IDENTIFIER                                    { $$ = $1;}
     | IDENTIFIER ASSIGN InitVal
-	| IDENTIFIER ArrayDimension						{}
     ;
 
 /* InitVal       ::= Exp; */
