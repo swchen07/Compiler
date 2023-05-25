@@ -210,24 +210,30 @@ llvm::Value* IfElseAST::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
 
 	auto CondExpr = this->cond_->IRGen(IRContext);
-	auto CondBlock = IRBuilder->GetInsertBlock();
+	llvm::BasicBlock* CondBlock = IRBuilder->GetInsertBlock();
 
 	IRContext.ClearPreBrSignal();
-	auto IfBlock = (llvm::BasicBlock*)this->ifBlock_->IRGen(IRContext);
-	IRContext.ClearPreBrSignal();
-	auto ElseBlock = (llvm::BasicBlock*)this->elseBlock_->IRGen(IRContext);
-
-	// set conditional branch
-	IRBuilder->SetInsertPoint(CondBlock);
-	IRBuilder->CreateCondBr(CondExpr, IfBlock, ElseBlock);
+	llvm::BasicBlock* IfBlock = (llvm::BasicBlock*)this->ifBlock_->IRGen(IRContext);
+	llvm::BasicBlock* ElseBlock; 
+	if (this->elseBlock_) {
+		IRContext.ClearPreBrSignal();
+		ElseBlock = (llvm::BasicBlock*)this->elseBlock_->IRGen(IRContext);
+	}
 
 	// set exit 
 	llvm::Function* Func = IRContext.GetCurFunc();
 	llvm::BasicBlock* OutBlock = llvm::BasicBlock::Create(*(IRContext.Context), "BBExit", Func);
 	IRBuilder->SetInsertPoint(IfBlock);
 	IRBuilder->CreateBr(OutBlock);
-	IRBuilder->SetInsertPoint(ElseBlock);
-	IRBuilder->CreateBr(OutBlock);
+	if (this->elseBlock_) {
+		IRBuilder->SetInsertPoint(ElseBlock);
+		IRBuilder->CreateBr(OutBlock);
+	}
+
+	// set conditional branch
+	IRBuilder->SetInsertPoint(CondBlock);
+	IRBuilder->CreateCondBr(CondExpr, IfBlock, this->elseBlock_?ElseBlock:OutBlock);
+
 	IRBuilder->SetInsertPoint(OutBlock);
 
 	return NULL;
@@ -377,7 +383,7 @@ llvm::Value* AssignAST::IRGen(IRGenerator& IRContext){
 
 	//赋值
 	IRBuilder->CreateStore(RHS, LHSPtr);
-	return IRBuilder->CreateLoad(LHSPtr->getType()->getNonOpaquePointerElementType(), LHSPtr);
+	return RHS; 
 
 }
 

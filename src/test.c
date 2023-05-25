@@ -17,6 +17,11 @@ int main() {
 	int ce = ab+cd;
 	char s = 1; 
 	short s3 = 16; 
+	if (x < -1) {
+		x = 1;
+	}
+	b = 9+x; 
+	ce = cd + ab;
 }
 
 int a() {
