@@ -46,6 +46,9 @@ llvm::Value* CastType(llvm::Value* value, llvm::Type* type, IRGenerator& IRConte
 	}else if(type == IRBuilder->getInt1Ty()){
 		return ToBoolType(value, IRContext);
 	}
+	// else if(value=>get){
+
+	// }
 }
 /**
  * @brief 
@@ -66,6 +69,12 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
 		case Char: return IRBuilder->getInt8Ty(); 
 		case Short: return IRBuilder->getInt16Ty(); 
 	}
+}
+
+llvm::Type* ArrayType::ToLLVMType(IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Type* elemType = this->elemType_->ToLLVMType(IRContext);
+	return llvm::ArrayType::get(elemType, this->size_);
 }
 
 /**
@@ -92,18 +101,30 @@ llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
 
 	//创建变量
-	auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varName_);
+	auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varDef_->varName_);
+	
 	// llvm::Value* initVal = CastType(this->, IRContext)
 
-	llvm::Value* val = IRBuilder->getInt32(42);
+	// initializa
+	llvm::Value* value = this->varDef_->IRGen(IRContext);
 
-	IRBuilder->CreateStore(val, AllocMem);
+	IRBuilder->CreateStore(value, AllocMem);
 
-	std::cout << "VarDeclAST2" << std::endl;
-
-	IRContext.CreateVar(this->type_, this->varName_, AllocMem);
+	IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
 
 	return NULL;
+}
+
+llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "VarDefAST" << std::endl;
+	
+	if (this->initValue_) {
+		return this->initValue_->IRGen(IRContext);
+	}
+	else {
+		auto IRBuilder = IRContext.IRBuilder; 
+		return IRBuilder->getInt8('0');
+	}
 }
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
@@ -134,20 +155,28 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
 
 llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
     std::cout << "BlockAST" << std::endl;
+
+	// // Empty Block
+	// if (this->stmts_.size() == 0) {
+	// 	IRContext.SetPreBrSignal();
+	// 	return NULL; 
+	// }
+
 	auto IRBuilder = IRContext.IRBuilder; 
 
 	llvm::Function* Func = IRContext.GetCurFunc();
-	llvm::BasicBlock* newBlock = llvm::BasicBlock::Create(*(IRContext.Context), "entry", Func);
-	if (IRContext.GetBasicBlock()){
-		if (IRContext.ClearPreBrSignal()) {
-			IRBuilder->CreateBr(newBlock);
-		}
-		IRContext.SetPreBrSignal();
+	llvm::BasicBlock* newBlock = llvm::BasicBlock::Create(*(IRContext.Context), "BBEntry", Func);
+	auto prevBB = IRContext.GetBasicBlock(); 
+
+	bool isConn = IRContext.ClearPreBrSignal(); 
+	if (isConn) {
+		// maybe go into a function, thus not insert Br
+		IRBuilder->CreateBr(newBlock);
 	}
+	IRContext.SetPreBrSignal();
+
 	IRContext.SetBasicBlock(this); 
     IRBuilder->SetInsertPoint(newBlock);
-
-	std::cout << "BlockAST2" << std::endl;
 
 	for (auto stmt : *(this->stmts_)){
 		if(stmt){
@@ -155,11 +184,14 @@ llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
 		}
 	}
 
-	std::cout << "BlockAST3" << std::endl;
-
 	IRContext.DiscardVar();
 
-	std::cout << "BlockAST4" << std::endl;
+	IRContext.SetBasicBlock(prevBB); 
+	if (isConn) {
+		llvm::BasicBlock* outBlock = llvm::BasicBlock::Create(*(IRContext.Context), "BBExit", Func);
+		IRBuilder->CreateBr(outBlock);
+		IRBuilder->SetInsertPoint(outBlock);
+	}
 
     return NULL; 
 }
@@ -340,4 +372,3 @@ llvm::Value* LeftValAST::IRGenPtr(IRGenerator& IRContext) {
 	llvm::Value* VarPtr = IRContext.FindVar(this->name_);
 	return VarPtr;
 }
-
