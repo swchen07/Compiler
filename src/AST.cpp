@@ -21,17 +21,32 @@
  * 通过该函数把类型转换成bool型（即1bit）
  * 
  */
-llvm::Value* ToBoolType(llvm::Value* Value, IRGenerator& IRContext) {
+llvm::Value* ToBoolType(llvm::Value* value, IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
-	if (Value->getType() == IRBuilder->getInt1Ty()) return Value;
-	else if (Value->getType()->isIntegerTy()){
-		auto v2 = llvm::ConstantInt::get((llvm::IntegerType*)Value->getType(), 0, true);
-		return IRBuilder->CreateICmpNE(Value, v2);
+	if (value->getType() == IRBuilder->getInt1Ty()) return value;
+	else if (value->getType()->isIntegerTy()){
+		auto v2 = llvm::ConstantInt::get((llvm::IntegerType*)value->getType(), 0, true);
+		return IRBuilder->CreateICmpNE(value, v2);
 	}else{
 		return NULL;
 	}
 }
 
+/**
+ * @brief 涉及到类型转换
+ * 目前支持：
+ * 1. 类型相同
+ * 2. 转换成bool
+ * 
+ */
+llvm::Value* CastType(llvm::Value* value, llvm::Type* type, IRGenerator& IRContext){
+	auto IRBuilder = IRContext.IRBuilder;
+	if(value->getType == type){
+		return value;
+	}else if(type == IRBuilder->getInt1Ty()){
+		return ToBoolType(value, IRContext);
+	}
+}
 /**
  * @brief 
  * 
@@ -72,26 +87,20 @@ llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
 	return NULL;
 }
 
-// llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
-// 	std::cout << "VarDeclAST" << std::endl;
+llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "VarDeclAST" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
 
-// 	auto IRBuilder = IRContext.IRBuilder; 
+	auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varName_);
+	// llvm::Value* initVal = CastType(this->, IRContext)
+	// IRBuilder->CreateStore(NULL, AllocMem);
 
-// 	//Get the llvm type
-// 	llvm::Type* VarType = this->_VarType->GetLLVMType(__Generator);
+	std::cout << "VarDeclAST2" << std::endl;
 
-// 	if (this->type_.GetType() == Int)
-//         varType = IRBuilder->getInt32Ty();
+	IRContext.CreateVar(this->type_, this->varName_, AllocMem);
 
-// 	llvm::Constant* Initializer = NULL;
-
-// 	if(this->varInit_->initExpr_){
-
-// 	}
-	
-// }
-
-
+	return NULL;
+}
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
     //Get return type
@@ -298,18 +307,4 @@ llvm::Value* Constant::IRGen(IRGenerator& IRContext) {
 	std::cout << "Constant" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder; 
 	return IRBuilder->getInt32(this->int_);
-}
-
-llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
-	std::cout << "VarDeclAST" << std::endl;
-	auto IRBuilder = IRContext.IRBuilder; 
-
-	auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varName_);
-	// IRBuilder->CreateStore(NULL, AllocMem);
-
-	std::cout << "VarDeclAST2" << std::endl;
-
-	IRContext.CreateVar(this->type_, this->varName_, AllocMem);
-
-	return NULL;
 }

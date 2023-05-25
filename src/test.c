@@ -1,18 +1,8 @@
 int main (){
-	;;;;;;;
 	int a;
-	{
-		{int b;}
-		int c;
-		{}
-		{
-			-1;
-			+1;
-			return 1 && 0;
-			return 1;
-		}
-		{{{}}}
-	}
+	int b;
+	int c;
+	return 1+2;
 	
 }
 
