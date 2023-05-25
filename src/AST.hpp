@@ -64,8 +64,8 @@ class CompUnitAST;
 class FuncDef;
 
 class DeclAST;
-class VarInitAST;
 class VarDeclAST;
+class VarDefAST;
 class BlockAST;
 class StmtAST;
 class ReturnStmtAST;
@@ -154,12 +154,24 @@ public:
 
 class VarDeclAST : public DeclAST {
 public:
-	std::string varName_; 
+	VarDefAST* varDef_;
     VarType type_; 
 
-	VarDeclAST(std::string _typeName_, std::string _varName_) : 
-		varName_(_varName_), type_(_typeName_) {}
+	VarDeclAST(std::string _typeName_, VarDefAST* _varDef_) : 
+		varDef_(_varDef_), type_(_typeName_) {}
 	~VarDeclAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class VarDefAST : public BaseAST {
+public:
+	std::string varName_; 
+    ExprAST* initValue_; 
+
+	VarDefAST(std::string _varName_, ExprAST* _initValue_ = NULL) : 
+		varName_(_varName_), initValue_(_initValue_) {}
+	~VarDefAST() {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };

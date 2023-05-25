@@ -101,20 +101,30 @@ llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
 
 	//创建变量
-	auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varName_);
+	auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varDef_->varName_);
 	
 	// llvm::Value* initVal = CastType(this->, IRContext)
 
-	//测试用，TODO：梓敬实现初始化
-	llvm::Value* val = IRBuilder->getInt8('0');
+	// initializa
+	llvm::Value* value = this->varDef_->IRGen(IRContext);
 
-	IRBuilder->CreateStore(val, AllocMem);
+	IRBuilder->CreateStore(value, AllocMem);
 
-	std::cout << "VarDeclAST2" << std::endl;
-
-	IRContext.CreateVar(this->type_, this->varName_, AllocMem);
+	IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
 
 	return NULL;
+}
+
+llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "VarDefAST" << std::endl;
+	
+	if (this->initValue_) {
+		return this->initValue_->IRGen(IRContext);
+	}
+	else {
+		auto IRBuilder = IRContext.IRBuilder; 
+		return IRBuilder->getInt8('0');
+	}
 }
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {

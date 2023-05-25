@@ -73,7 +73,8 @@ using namespace std;
 %type <astVal> VarDecl
 %type <strVal> Btype
 %type VarList
-%type <strVal> VarDef
+%type <astVal> VarDef
+%type <astVal> InitVal
 
 %type <astVal> Block
 %type <astVal> BlockItem 
@@ -153,7 +154,7 @@ ConstInitVal
 
 /* VarDecl       ::= BType VarDef {"," VarDef} ";"; */
 VarDecl
-    : Btype VarDef VarList SEMI                     { $$ = new VarDeclAST(*$1, *$2);}
+    : Btype VarDef VarList SEMI                     { $$ = new VarDeclAST(*$1, (VarDefAST*)$2);}
     ;
 
 VarList
@@ -163,13 +164,13 @@ VarList
 
 /* VarDef        ::= IDENT | IDENT "=" InitVal; */
 VarDef
-    : IDENTIFIER                                    { $$ = $1;}
-    | IDENTIFIER ASSIGN InitVal
+    : IDENTIFIER                                    { $$ = new VarDefAST(*$1);}
+    | IDENTIFIER ASSIGN InitVal                     { $$ = new VarDefAST(*$1, (ExprAST*)$3);}
     ;
 
 /* InitVal       ::= Exp; */
 InitVal
-    : Exp
+    : Exp                                           { $$ = $1; }
     ;
 
 /* FuncDef       ::= FuncType IDENT "(" [FuncFParams] ")" Block; */
