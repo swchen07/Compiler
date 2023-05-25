@@ -105,9 +105,10 @@ llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 	
 	// llvm::Value* initVal = CastType(this->, IRContext)
 
-	// initializa
+	// initialize
 	llvm::Value* value = this->varDef_->IRGen(IRContext);
 
+	// store will always align to 4, even for char, which is because we need a type cast for 'value'
 	IRBuilder->CreateStore(value, AllocMem);
 
 	IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
@@ -123,7 +124,7 @@ llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
 	}
 	else {
 		auto IRBuilder = IRContext.IRBuilder; 
-		return IRBuilder->getInt8('0');
+		return IRBuilder->getInt8(0);
 	}
 }
 
@@ -193,7 +194,7 @@ llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
 		IRBuilder->SetInsertPoint(outBlock);
 	}
 
-    return NULL; 
+    return newBlock; 
 }
 
 llvm::Value* ReturnStmtAST::IRGen(IRGenerator& IRContext) {
@@ -201,6 +202,35 @@ llvm::Value* ReturnStmtAST::IRGen(IRGenerator& IRContext) {
     auto IRBuilder = IRContext.IRBuilder; 
     IRBuilder->CreateRet(this->RetVal_->IRGen(IRContext));
     return NULL; 
+}
+
+llvm::Value* IfElseAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "IfElseAST" << std::endl;
+
+	auto IRBuilder = IRContext.IRBuilder; 
+
+	auto CondExpr = this->cond_->IRGen(IRContext);
+	auto CondBlock = IRBuilder->GetInsertBlock();
+
+	IRContext.ClearPreBrSignal();
+	auto IfBlock = (llvm::BasicBlock*)this->ifBlock_->IRGen(IRContext);
+	IRContext.ClearPreBrSignal();
+	auto ElseBlock = (llvm::BasicBlock*)this->elseBlock_->IRGen(IRContext);
+
+	// set conditional branch
+	IRBuilder->SetInsertPoint(CondBlock);
+	IRBuilder->CreateCondBr(CondExpr, IfBlock, ElseBlock);
+
+	// set exit 
+	llvm::Function* Func = IRContext.GetCurFunc();
+	llvm::BasicBlock* OutBlock = llvm::BasicBlock::Create(*(IRContext.Context), "BBExit", Func);
+	IRBuilder->SetInsertPoint(IfBlock);
+	IRBuilder->CreateBr(OutBlock);
+	IRBuilder->SetInsertPoint(ElseBlock);
+	IRBuilder->CreateBr(OutBlock);
+	IRBuilder->SetInsertPoint(OutBlock);
+
+	return NULL;
 }
 
 

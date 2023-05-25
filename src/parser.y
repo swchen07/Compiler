@@ -83,7 +83,7 @@ using namespace std;
 
 %type <astVal> PrimaryExp
 %type <astVal> Exp
-%type ElseState
+%type <astVal> ElseState
 %type <astVal> RetState
 
 %type <astVal> LVal
@@ -231,7 +231,7 @@ Stmt
     | SEMI										{ $$ = NULL; }
     | Block										{ $$ = $1; }
     | FOR 
-    | IF LPAREN Exp RPAREN Stmt ElseState
+    | IF LPAREN Exp RPAREN Block ElseState      { $$ = new IfElseAST((ExprAST*)$3, (BlockAST*)$5, (BlockAST*)$6); }
     | WHILE LPAREN Exp RPAREN Stmt
     | BREAK SEMI
     | CONTINUE SEMI
@@ -243,8 +243,8 @@ LVal
     ;
 
 ElseState
-    : ELSE Stmt
-    |
+    : ELSE Block                        {$$ = $2; }
+    |                                   {$$ = NULL; }
     ;
 
 RetState
