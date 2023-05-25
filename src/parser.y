@@ -79,7 +79,7 @@ using namespace std;
 %type <astVal> Block
 %type <astVal> BlockItem 
 %type <stmts> BlockItemNew
-%type <astVal> Stmt
+%type <astVal> Stmt SmooStmt
 
 %type <astVal> PrimaryExp
 %type <astVal> Exp
@@ -225,17 +225,21 @@ BlockItem
                 | "break" ";"
                 | "continue" ";"
                 | "return" [Exp] ";"; */
+
+SmooStmt
+    : LVal ASSIGN Exp						{ $$ = new AssignAST((LeftValAST*)$1, (ExprAST*)$3); }
+    | Exp								    { $$ = $1; }
+    | 									    { $$ = NULL; }
+    | BREAK
+    | CONTINUE
+    | RETURN RetState					    {$$ = new ReturnStmtAST((ExprAST*)$2);}
+
 Stmt
-    : LVal ASSIGN Exp SEMI						{ $$ = new AssignAST((LeftValAST*)$1, (ExprAST*)$3); }
-    | Exp SEMI									{ $$ = $1; }
-    | SEMI										{ $$ = NULL; }
+    : SmooStmt SEMI						        { $$ = $1; }
     | Block										{ $$ = $1; }
-    | FOR 
-    | IF LPAREN Exp RPAREN Block ElseState      { $$ = new IfElseAST((ExprAST*)$3, (BlockAST*)$5, (BlockAST*)$6); }
+    | FOR LPAREN SmooStmt SEMI Exp SEMI SmooStmt RPAREN Block   { $$ = new ForStmtAST((StmtAST*)$3, (ExprAST*)$5, (StmtAST*)$7, (BlockAST*)$9); }
+    | IF LPAREN Exp RPAREN Block ElseState      { $$ = new IfElseStmtAST((ExprAST*)$3, (BlockAST*)$5, (BlockAST*)$6); }
     | WHILE LPAREN Exp RPAREN Stmt
-    | BREAK SEMI
-    | CONTINUE SEMI
-    | RETURN RetState SEMI						{$$ = new ReturnStmtAST((ExprAST*)$2);}
     ;
 
 LVal

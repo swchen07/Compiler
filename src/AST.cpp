@@ -204,8 +204,8 @@ llvm::Value* ReturnStmtAST::IRGen(IRGenerator& IRContext) {
     return NULL; 
 }
 
-llvm::Value* IfElseAST::IRGen(IRGenerator& IRContext) {
-	std::cout << "IfElseAST" << std::endl;
+llvm::Value* IfElseStmtAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "IfElseStmtAST" << std::endl;
 
 	auto IRBuilder = IRContext.IRBuilder; 
 
@@ -214,19 +214,21 @@ llvm::Value* IfElseAST::IRGen(IRGenerator& IRContext) {
 
 	IRContext.ClearPreBrSignal();
 	llvm::BasicBlock* IfBlock = (llvm::BasicBlock*)this->ifBlock_->IRGen(IRContext);
-	llvm::BasicBlock* ElseBlock; 
+	llvm::BasicBlock* IfOutBlock = IRBuilder->GetInsertBlock(); 
+	llvm::BasicBlock* ElseBlock, *ElseOutBlock; 
 	if (this->elseBlock_) {
 		IRContext.ClearPreBrSignal();
 		ElseBlock = (llvm::BasicBlock*)this->elseBlock_->IRGen(IRContext);
+		ElseOutBlock = IRBuilder->GetInsertBlock(); 
 	}
 
 	// set exit 
 	llvm::Function* Func = IRContext.GetCurFunc();
 	llvm::BasicBlock* OutBlock = llvm::BasicBlock::Create(*(IRContext.Context), "BBExit", Func);
-	IRBuilder->SetInsertPoint(IfBlock);
+	IRBuilder->SetInsertPoint(IfOutBlock);
 	IRBuilder->CreateBr(OutBlock);
 	if (this->elseBlock_) {
-		IRBuilder->SetInsertPoint(ElseBlock);
+		IRBuilder->SetInsertPoint(ElseOutBlock);
 		IRBuilder->CreateBr(OutBlock);
 	}
 
@@ -235,6 +237,41 @@ llvm::Value* IfElseAST::IRGen(IRGenerator& IRContext) {
 	IRBuilder->CreateCondBr(CondExpr, IfBlock, this->elseBlock_?ElseBlock:OutBlock);
 
 	IRBuilder->SetInsertPoint(OutBlock);
+
+	return NULL;
+}
+
+llvm::Value* ForStmtAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "ForStmtAST" << std::endl;
+
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Function* Func = IRContext.GetCurFunc();
+
+	// init generate
+	if (this->initStmt_)
+		this->initStmt_->IRGen(IRContext); 
+	llvm::BasicBlock* cmpBlock = llvm::BasicBlock::Create(*(IRContext.Context), "ForCmp", Func);
+	IRBuilder->CreateBr(cmpBlock);
+
+	// condition generate
+	IRBuilder->SetInsertPoint(cmpBlock);
+	auto cmpRes = (this->condExpr_)?this->condExpr_->IRGen(IRContext):IRBuilder->getInt1(true); 
+
+	// body generate
+	IRContext.ClearPreBrSignal();
+	llvm::BasicBlock* bodyBlock = (llvm::BasicBlock*)this->forBody_->IRGen(IRContext);
+	llvm::BasicBlock* bodyOutBlock = IRBuilder->GetInsertBlock();
+	IRBuilder->SetInsertPoint(bodyOutBlock);
+	// iteration generate
+	if (this->iterStmt_) this->iterStmt_->IRGen(IRContext);
+	IRBuilder->CreateBr(cmpBlock);
+
+	// exit generate
+	llvm::BasicBlock* exitBlock = llvm::BasicBlock::Create(*(IRContext.Context), "ForExit", Func);
+
+	IRBuilder->SetInsertPoint(cmpBlock);
+	IRBuilder->CreateCondBr(cmpRes, bodyBlock, exitBlock);
+	IRBuilder->SetInsertPoint(exitBlock);
 
 	return NULL;
 }

@@ -74,7 +74,8 @@ class Addition;
 
 class LeftValAST;
 
-class IfElseAST; 
+class IfElseStmtAST; 
+class ForStmtAST; 
 
 using CompUnits = std::vector<CompUnitAST*>;
 using Stmts = std::vector<StmtAST*>;
@@ -231,14 +232,28 @@ public:
  * 
  */
 
-class IfElseAST : public StmtAST {
+class IfElseStmtAST : public StmtAST {
 public: 
 	ExprAST* cond_; 
 	BlockAST* ifBlock_; 
 	BlockAST* elseBlock_; 
 
-	IfElseAST(ExprAST* _cond_, BlockAST* _ifBlock_, BlockAST* _elseBlock_):cond_(_cond_), ifBlock_(_ifBlock_), elseBlock_(_elseBlock_){}
-	~IfElseAST(){}
+	IfElseStmtAST(ExprAST* _cond_, BlockAST* _ifBlock_, BlockAST* _elseBlock_):cond_(_cond_), ifBlock_(_ifBlock_), elseBlock_(_elseBlock_){}
+	~IfElseStmtAST(){}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class ForStmtAST : public StmtAST {
+public: 
+	StmtAST* initStmt_; 
+	ExprAST* condExpr_; 
+	StmtAST* iterStmt_; 
+	BlockAST* forBody_; 
+
+	ForStmtAST(StmtAST* _initStmt_, ExprAST* _condExpr_, StmtAST* _iterStmt_, BlockAST* _forBody_):
+		initStmt_(_initStmt_), condExpr_(_condExpr_), iterStmt_(_iterStmt_), forBody_(_forBody_){}
+	~ForStmtAST(){}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
