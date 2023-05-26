@@ -274,7 +274,11 @@ llvm::Value* ForStmtAST::IRGen(IRGenerator& IRContext) {
 	if (this->initStmt_)
 		this->initStmt_->IRGen(IRContext); 
 	llvm::BasicBlock* cmpBlock = llvm::BasicBlock::Create(*(IRContext.Context), "ForCmp", Func);
+	llvm::BasicBlock* iterBlock = llvm::BasicBlock::Create(*(IRContext.Context), "ForIter", Func);
+	llvm::BasicBlock* exitBlock = llvm::BasicBlock::Create(*(IRContext.Context), "ForExit", Func);
 	IRBuilder->CreateBr(cmpBlock);
+	// enter the Loop
+	IRContext.EnterLoop(cmpBlock, iterBlock, exitBlock); 
 
 	// condition generate
 	IRBuilder->SetInsertPoint(cmpBlock);
@@ -284,18 +288,19 @@ llvm::Value* ForStmtAST::IRGen(IRGenerator& IRContext) {
 	IRContext.ClearPreBrSignal();
 	llvm::BasicBlock* bodyBlock = (llvm::BasicBlock*)this->forBody_->IRGen(IRContext);
 	llvm::BasicBlock* bodyOutBlock = IRBuilder->GetInsertBlock();
+
 	// iteration generate
-	llvm::BasicBlock* iterBlock = llvm::BasicBlock::Create(*(IRContext.Context), "ForIter", Func);
 	IRBuilder->CreateBr(iterBlock);
 	IRBuilder->SetInsertPoint(iterBlock);
 	if (this->iterStmt_) this->iterStmt_->IRGen(IRContext);
 	IRBuilder->CreateBr(cmpBlock);
 
-	// exit generate
-	llvm::BasicBlock* exitBlock = llvm::BasicBlock::Create(*(IRContext.Context), "ForExit", Func);
-
+	// set conditional branch
 	IRBuilder->SetInsertPoint(cmpBlock);
 	IRBuilder->CreateCondBr(cmpRes, bodyBlock, exitBlock);
+
+	// leave the Loop
+	IRContext.LeaveCurrentLoop(); 
 	IRBuilder->SetInsertPoint(exitBlock);
 
 	return NULL;
@@ -308,9 +313,14 @@ llvm::Value* WhileStmtAST::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
 	llvm::Function* Func = IRContext.GetCurFunc();
 
-	// condition generate
+	// init
 	llvm::BasicBlock* cmpBlock = llvm::BasicBlock::Create(*(IRContext.Context), "WhileCmp", Func);
+	llvm::BasicBlock* exitBlock = llvm::BasicBlock::Create(*(IRContext.Context), "WhileExit", Func);
 	IRBuilder->CreateBr(cmpBlock);
+	// enter the Loop
+	IRContext.EnterLoop(cmpBlock, NULL, exitBlock); 
+
+	// condition generate
 	IRBuilder->SetInsertPoint(cmpBlock);
 	auto cmpRes = (this->condExpr_)?this->condExpr_->IRGen(IRContext):IRBuilder->getInt1(true); 
 
@@ -320,22 +330,35 @@ llvm::Value* WhileStmtAST::IRGen(IRGenerator& IRContext) {
 	llvm::BasicBlock* bodyOutBlock = IRBuilder->GetInsertBlock();
 	IRBuilder->CreateBr(cmpBlock);
 
-	// exit generate
-	llvm::BasicBlock* exitBlock = llvm::BasicBlock::Create(*(IRContext.Context), "WhileExit", Func);
-
+	// set conditional branch
 	IRBuilder->SetInsertPoint(cmpBlock);
 	IRBuilder->CreateCondBr(cmpRes, bodyBlock, exitBlock);
+
+	// leave the Loop
+	IRContext.LeaveCurrentLoop(); 
 	IRBuilder->SetInsertPoint(exitBlock);
 
 	return NULL;
 }
 
 llvm::Value* BreakStmtAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "BreakStmtAST" << std::endl;
+
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::BasicBlock* targetBlock = IRContext.BreakCurrentLoop();
+	IRBuilder->CreateBr(targetBlock);
+
 	return NULL; 
 }
 
 llvm::Value* ContinueStmtAST::IRGen(IRGenerator& IRContext) {
-	return NULL;
+	std::cout << "ContinueStmtAST" << std::endl;
+
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::BasicBlock* targetBlock = IRContext.ContinueCurrentLoop();
+	IRBuilder->CreateBr(targetBlock);
+
+	return NULL; 
 }
 
 /**

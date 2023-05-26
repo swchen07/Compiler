@@ -241,7 +241,7 @@ SmooStmt
     | Exp								    { $$ = $1; }
     | 									    { $$ = NULL; }
     | BREAK                                 { $$ = new BreakStmtAST(); }
-    | CONTINUE                              ( $$ = new ContinueStmtAST(); )
+    | CONTINUE                              { $$ = new ContinueStmtAST(); }
     | RETURN RetState					    { $$ = new ReturnStmtAST((ExprAST*)$2);}
 
 Stmt

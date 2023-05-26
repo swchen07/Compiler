@@ -62,6 +62,18 @@ void IRGenerator::DiscardVar() {
         }
 }
 
+llvm::Value* IRGenerator::FindVar(std::string name){
+	if(this->varList_.size() == 0){
+		return NULL;
+	}
+	for(auto symbol = this->varList_.end() - 1; symbol >= this->varList_.begin(); symbol--){
+		if((*symbol)->name_ == name){
+			return (*symbol)->value_;
+		}
+	}
+	return NULL;
+}
+
 void IRGenerator::SetCurFunc(llvm::Function* curFunc) {
     this->curFunc_ = curFunc; 
 }
@@ -92,14 +104,20 @@ void IRGenerator::SetBasicBlock(BlockAST* newBasicBlock){
     this->curBasicBlock_ = newBasicBlock; 
 }
 
-llvm::Value* IRGenerator::FindVar(std::string name){
-	if(this->varList_.size() == 0){
-		return NULL;
-	}
-	for(auto symbol = this->varList_.end() - 1; symbol >= this->varList_.begin(); symbol--){
-		if((*symbol)->name_ == name){
-			return (*symbol)->value_;
-		}
-	}
-	return NULL;
+void IRGenerator::EnterLoop(llvm::BasicBlock* condBlock, llvm::BasicBlock* iterBlock, llvm::BasicBlock* exitBlock) {
+    this->loopLevel_.push_back(new IRLoopAttr(condBlock, iterBlock, exitBlock));
+}
+
+void IRGenerator::LeaveCurrentLoop() {
+    this->loopLevel_.pop_back();
+}
+
+llvm::BasicBlock* IRGenerator::BreakCurrentLoop() {
+    auto currentLoop = this->loopLevel_[this->loopLevel_.size()-1];
+    return currentLoop->exitBlock_; 
+}
+
+llvm::BasicBlock* IRGenerator::ContinueCurrentLoop() {
+    auto currentLoop = this->loopLevel_[this->loopLevel_.size()-1];
+    return currentLoop->iterBlock_?currentLoop->iterBlock_:currentLoop->condBlock_; 
 }
