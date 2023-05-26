@@ -1,6 +1,4 @@
-int printf(char ptr, ...);
-
-int main (){
+int main (int a){
 	int a;
 	a = a+1;
 	return a;

@@ -95,6 +95,9 @@ llvm::Value* IRGenerator::FindVar(std::string name){
 
 
 void IRGenerator::CreateFunc(llvm::FunctionType* type, std::string name, llvm::Function* func){
+    if(this->FindFunction(name)){
+        return;
+    }
     this->funcList_.push_back(new IRFuncAttr(type, name, func));
 }
 

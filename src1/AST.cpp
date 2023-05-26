@@ -47,6 +47,9 @@ llvm::Value* CastType(llvm::Value* value, llvm::Type* type, IRGenerator& IRConte
 	}else if(type == IRBuilder->getInt1Ty()){
 		return ToBoolType(value, IRContext);
 	}
+	// else if(value=>get){
+
+	// }
 }
 /**
  * @brief 
@@ -93,62 +96,56 @@ llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
 
 	//创建变量
-	auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varName_);
+	auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varDef_->varName_);
+	
 	// llvm::Value* initVal = CastType(this->, IRContext)
 
-	llvm::Value* val = IRBuilder->getInt32(42);
+	// initializa
+	llvm::Value* value = this->varDef_->IRGen(IRContext);
 
-	IRBuilder->CreateStore(val, AllocMem);
+	IRBuilder->CreateStore(value, AllocMem);
 
-	std::cout << "VarDeclAST2" << std::endl;
-
-	IRContext.CreateVar(this->type_, this->varName_, AllocMem);
+	IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
 
 	return NULL;
 }
 
-llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
-    //Get return type
-    std::cout << "FunctionAST" << std::endl;
-
-    auto IRBuilder = IRContext.IRBuilder; 
-    llvm::Type* ReturnType; 
-    if (this->type_.GetType() == Int)
-        ReturnType = IRBuilder->getInt32Ty();
-
-    std::vector<llvm::Type*> ArgTypes; 
-
-    //Get function type
-    llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, false);
-    //Create function
-    llvm::Function* Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
-
-	IRContext.SetCurFunc(Func);
-	IRContext.ClearPreBrSignal();
-
-    this->block_->IRGen(IRContext);
-
-	IRContext.SetBasicBlock(NULL); 
-	IRContext.SetCurFunc(NULL); 
-    return NULL;
+llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "VarDefAST" << std::endl;
+	
+	if (this->initValue_) {
+		return this->initValue_->IRGen(IRContext);
+	}
+	else {
+		auto IRBuilder = IRContext.IRBuilder; 
+		return IRBuilder->getInt8('0');
+	}
 }
 
 llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
     std::cout << "BlockAST" << std::endl;
+
+	// // Empty Block
+	// if (this->stmts_.size() == 0) {
+	// 	IRContext.SetPreBrSignal();
+	// 	return NULL; 
+	// }
+
 	auto IRBuilder = IRContext.IRBuilder; 
 
 	llvm::Function* Func = IRContext.GetCurFunc();
-	llvm::BasicBlock* newBlock = llvm::BasicBlock::Create(*(IRContext.Context), "entry", Func);
-	if (IRContext.GetBasicBlock()){
-		if (IRContext.ClearPreBrSignal()) {
-			IRBuilder->CreateBr(newBlock);
-		}
-		IRContext.SetPreBrSignal();
+	llvm::BasicBlock* newBlock = llvm::BasicBlock::Create(*(IRContext.Context), "BBEntry", Func);
+	auto prevBB = IRContext.GetBasicBlock(); 
+
+	bool isConn = IRContext.ClearPreBrSignal(); 
+	if (isConn) {
+		// maybe go into a function, thus not insert Br
+		IRBuilder->CreateBr(newBlock);
 	}
+	IRContext.SetPreBrSignal();
+
 	IRContext.SetBasicBlock(this); 
     IRBuilder->SetInsertPoint(newBlock);
-
-	std::cout << "BlockAST2" << std::endl;
 
 	for (auto stmt : *(this->stmts_)){
 		if(stmt){
@@ -156,11 +153,14 @@ llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
 		}
 	}
 
-	std::cout << "BlockAST3" << std::endl;
-
 	IRContext.DiscardVar();
 
-	std::cout << "BlockAST4" << std::endl;
+	IRContext.SetBasicBlock(prevBB); 
+	if (isConn) {
+		llvm::BasicBlock* outBlock = llvm::BasicBlock::Create(*(IRContext.Context), "BBExit", Func);
+		IRBuilder->CreateBr(outBlock);
+		IRBuilder->SetInsertPoint(outBlock);
+	}
 
     return NULL; 
 }
@@ -343,8 +343,46 @@ llvm::Value* LeftValAST::IRGenPtr(IRGenerator& IRContext) {
 }
 
 
+llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
+    //Get return type
+    std::cout << "FunctionAST" << std::endl;
 
-llvm::Value* FunctionCall::IRGen(IRGenerator& IRContext) {
+    auto IRBuilder = IRContext.IRBuilder; 
+    llvm::Type* ReturnType = this->type_.ToLLVMType(IRContext);
+
+    std::vector<llvm::Type*> ArgTypes; 
+	for (auto ArgType : *(this->_ArgList)) {
+		llvm::Type* LLVMType = ArgType->type_.ToLLVMType(IRContext);
+		if (!LLVMType) {
+			throw std::logic_error("Defining a function " + this->funcName_ + " using unknown type(s).");
+			return NULL;
+		}
+		ArgTypes.push_back(LLVMType);
+	}
+	
+    std::cout << "xx" << std::endl;
+	
+    //Get function type
+    llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, this->_ArgList->_VarArgLenth);
+    //Create function
+    llvm::Function* Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
+
+	IRContext.CreateFunc(FuncType, this->funcName_, Func);
+
+	if(this->block_){
+		IRContext.SetCurFunc(Func);
+		IRContext.ClearPreBrSignal();
+
+		this->block_->IRGen(IRContext);
+
+		IRContext.SetBasicBlock(NULL); 
+		IRContext.SetCurFunc(NULL); 
+	}
+	
+    return NULL;
+}
+
+llvm::Value* FunctionCallAST::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
 	llvm::Function* Func = IRContext.FindFunction(this->_FuncName);
 	//Get the function. Throw exception if the function doesn't exist.
@@ -370,17 +408,17 @@ llvm::Value* FunctionCall::IRGen(IRGenerator& IRContext) {
 		}
 		ArgList.push_back(Arg);
 	}
-	// //Continue to push arguments if this function takes a variable number of arguments
-	// //According to the C standard, bool/char/short should be extended to int, and float should be extended to double
-	// if (Func->isVarArg())
-	// 	for (; Index < this->_ArgList->size(); Index++) {
-	// 		llvm::Value* Arg = this->_ArgList->at(Index)->IRGen(IRContext);
-	// 		if (Arg->getType()->isIntegerTy())
-	// 			Arg = TypeUpgrading(Arg, IRBuilder->getInt32Ty());
-	// 		else if (Arg->getType()->isFloatingPointTy())
-	// 			Arg = TypeUpgrading(Arg, IRBuilder->getDoubleTy());
-	// 		ArgList.push_back(Arg);
-	// 	}
-	//Create function call.
+	//Continue to push arguments if this function takes a variable number of arguments
+	//According to the C standard, bool/char/short should be extended to int, and float should be extended to double
+	if (Func->isVarArg())
+		for (; Index < this->_ArgList->size(); Index++) {
+			llvm::Value* Arg = this->_ArgList->at(Index)->IRGen(IRContext);
+			if (Arg->getType()->isIntegerTy())
+				Arg = TypeUpgrading(Arg, IRBuilder->getInt32Ty(), IRContext);
+			else if (Arg->getType()->isFloatingPointTy())
+				Arg = TypeUpgrading(Arg, IRBuilder->getDoubleTy(), IRContext);
+			ArgList.push_back(Arg);
+		}
+
 	return IRBuilder->CreateCall(Func, ArgList);
 }

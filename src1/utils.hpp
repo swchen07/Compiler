@@ -46,3 +46,28 @@ llvm::Value* TypeCasting(llvm::Value* Value, llvm::Type* Type, IRGenerator& IRCo
 		return NULL;
 	}
 }
+
+llvm::Value* TypeUpgrading(llvm::Value* Value, llvm::Type* Type, IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder; 
+
+	if (Value->getType()->isIntegerTy() && Type->isIntegerTy()) {
+		size_t Bit1 = ((llvm::IntegerType*)Value->getType())->getBitWidth();
+		size_t Bit2 = ((llvm::IntegerType*)Type)->getBitWidth();
+		if (Bit1 < Bit2)
+			return IRBuilder->CreateIntCast(Value, Type, Bit1 != 1);
+		else return Value;
+	}
+	else if (Value->getType()->isFloatingPointTy() && Type->isFloatingPointTy()) {
+		if (Value->getType()->isFloatTy() && Type->isDoubleTy())
+			return IRBuilder->CreateFPCast(Value, Type);
+		else return Value;
+	}
+	else if (Value->getType()->isIntegerTy() && Type->isFloatingPointTy()) {
+		return Value->getType()->isIntegerTy(1) ?
+			IRBuilder->CreateUIToFP(Value, Type) : IRBuilder->CreateSIToFP(Value, Type);
+	}
+	else if (Value->getType()->isFloatingPointTy() && Type->isIntegerTy()) {
+		return Value;
+	}
+	else return NULL;
+}

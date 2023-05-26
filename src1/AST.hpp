@@ -25,7 +25,8 @@ class IRGenerator;
 enum TypeID{
     Int, 
     Char, 
-	Short
+	Short,
+	Double
 };
 
 class VarType {
@@ -41,6 +42,17 @@ private:
     TypeID type;
 };
 
+class ArrayType {
+public:
+	VarType* elemType_;
+	size_t size_;
+
+	ArrayType(VarType* _elemType_, size_t _size_) : elemType_(_elemType_), size_(_size_) {}
+	~ArrayType() {}
+
+	llvm::Type* ToLLVMType(IRGenerator& IRContext);
+};
+
 /**
  * @brief 声明所有类
  * 
@@ -49,11 +61,11 @@ private:
 class BaseAST;
 class ProgramAST;
 class CompUnitAST;
-class FuncDef;
+class FuncDefAST;
 
 class DeclAST;
-class VarInitAST;
 class VarDeclAST;
+class VarDefAST;
 class BlockAST;
 class StmtAST;
 class ReturnStmtAST;
@@ -99,18 +111,6 @@ public:
 	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
 };
 
-class FuncDefAST : public CompUnitAST {
-public:
-	std::string funcName_; 
-    VarType type_; 
-    BlockAST* block_;
-
-	FuncDefAST(std::string _typeName_, std::string _funcName_, BlockAST* _block_):funcName_(_funcName_), 
-	type_(_typeName_), block_(_block_) {}
-
-	~FuncDefAST(){};
-    llvm::Value* IRGen(IRGenerator& IRContext);
-};
 
 class BlockAST : public BaseAST {
 public:
@@ -142,12 +142,24 @@ public:
 
 class VarDeclAST : public DeclAST {
 public:
-	std::string varName_; 
+	VarDefAST* varDef_;
     VarType type_; 
 
-	VarDeclAST(std::string _typeName_, std::string _varName_) : 
-		varName_(_varName_), type_(_typeName_) {}
+	VarDeclAST(std::string _typeName_, VarDefAST* _varDef_) : 
+		varDef_(_varDef_), type_(_typeName_) {}
 	~VarDeclAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class VarDefAST : public BaseAST {
+public:
+	std::string varName_; 
+    ExprAST* initValue_; 
+
+	VarDefAST(std::string _varName_, ExprAST* _initValue_ = NULL) : 
+		varName_(_varName_), initValue_(_initValue_) {}
+	~VarDefAST() {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
@@ -399,8 +411,10 @@ public:
 class Constant : public ExprAST {
 public:
 	int int_;
-
+	char character_;
+	
 	Constant(int _int_) : int_(_int_) {}
+	Constant(char _character_) : character_(_character_) {}
 	~Constant() {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
@@ -418,14 +432,53 @@ public:
 };
 
 
-using ExprList = std::vector<ExprAST*>;
-class FunctionCall : public ExprAST {
+//Function argument
+class ArgAST : public BaseAST {
+public:
+	//Its type
+	VarType type_;
+	//Its name (if any)
+	std::string _Name;
+
+	ArgAST(std::string& _typeName_, const std::string& __Name = "") :
+		type_(_typeName_), _Name(__Name) {}
+	~ArgAST(void) {}
+	llvm::Value* IRGen(IRGenerator& IRContext) { return NULL; }
+};
+
+class ArgListAST : public std::vector<ArgAST*>, public BaseAST {
+public:
+	//Set true if the argument list contains "..."
+	bool _VarArgLenth;
+	void SetVarArg(void) { this->_VarArgLenth = true; }
+
+	ArgListAST(void) : _VarArgLenth(false) {}
+	~ArgListAST(void) {}
+	llvm::Value* IRGen(IRGenerator& IRContext) { return NULL; }
+};
+
+class FuncDefAST : public CompUnitAST {
+public:
+	std::string funcName_; 
+    VarType type_; 
+	ArgListAST* _ArgList;
+    BlockAST* block_;
+
+	FuncDefAST(std::string _typeName_, std::string _funcName_, ArgListAST* __ArgList, BlockAST* _block_ = NULL):
+		funcName_(_funcName_), type_(_typeName_), block_(_block_) , _ArgList(_ArgList){}
+
+	~FuncDefAST(){};
+    llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+using ExprListAST = std::vector<ExprAST*>;
+class FunctionCallAST : public ExprAST {
 public:
 	std::string _FuncName;
-	ExprList* _ArgList;
+	ExprListAST* _ArgList;
 
-	FunctionCall(const std::string& __FuncName, ExprList* __ArgList) : _FuncName(__FuncName), _ArgList(__ArgList) {}
-	~FunctionCall(void) {}
+	FunctionCallAST(const std::string& __FuncName, ExprListAST* __ArgList) : _FuncName(__FuncName), _ArgList(__ArgList) {}
+	~FunctionCallAST(void) {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
