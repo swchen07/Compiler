@@ -421,3 +421,21 @@ llvm::Value* FunctionCallAST::IRGen(IRGenerator& IRContext) {
 
 	return IRBuilder->CreateCall(Func, ArgList);
 }
+
+llvm::Value* StringType::IRGen(IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder; 
+	return IRBuilder->CreateGlobalStringPtr(this->_Content.c_str());
+}
+
+llvm::Value* StringType::IRGenPtr(IRGenerator& IRContext) {
+	throw std::logic_error("Constant string is a right-value.");
+	return NULL;
+}
+
+llvm::Value* AddressOf::IRGen(IRGenerator& IRContext) {
+	return this->_Operand->IRGenPtr(IRContext);
+}
+llvm::Value* AddressOf::IRGenPtr(IRGenerator& IRContext) {
+	throw std::logic_error("Address operator \"&\" only returns right-values.");
+	return NULL;
+}

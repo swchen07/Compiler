@@ -60,7 +60,8 @@ using namespace std;
 %token <strVal> IDENTIFIER
 %token <intVal> CONST_INT 
 %token <charVal> CONST_CHAR 
-%token CONST_FLOAT CONST_STR
+%token <strVal> CONST_STR
+%token CONST_FLOAT
 // 非终结符的类型定义
 
 %type <astVal> Program
@@ -284,14 +285,15 @@ RetState
     ;
 
 PrimaryExp
-    : LPAREN Exp RPAREN
+    : LPAREN Exp RPAREN	
     | LVal								{ $$ = $1; }
-    | Constant							{ $$ = $1; }				
+    | Constant							{ $$ = $1; }	
     ;
 
 Constant
     : CONST_INT							{ $$ = new Constant($1); }
     | CONST_CHAR						{ $$ = new Constant($1); }
+    | CONST_STR                         { $$ = new StringType(*$1); }
     ;
 
 Exp
@@ -299,6 +301,7 @@ Exp
     | ADD Exp %prec NOT					{ $$ = new MoncPlus((ExprAST*)$2); }
     | SUB Exp %prec NOT					{ $$ = new MoncMinus((ExprAST*)$2); }
     | NOT Exp							{ $$ = new LogicNot((ExprAST*)$2); }
+    | BAND LVal	%prec NOT			    { $$ = new AddressOf((LeftValAST*)$2); }
 
     | Exp ADD Exp						{$$ = new Addition((ExprAST*)$1, (ExprAST*)$3);}
     | Exp SUB Exp						{$$ = new Subtraction((ExprAST*)$1, (ExprAST*)$3);}

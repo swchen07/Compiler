@@ -543,3 +543,19 @@ public:
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
+
+class StringType : public Constant {
+public:
+	std::string _Content;
+	StringType(const std::string& __Content) : Constant(0), _Content(__Content) {}
+	~StringType(void) {}
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class AddressOf : public ExprAST {
+public:
+	LeftValAST* _Operand;
+	AddressOf(LeftValAST* __Operand) : _Operand(__Operand) {}
+	~AddressOf(void) {}
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
