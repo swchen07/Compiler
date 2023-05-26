@@ -86,19 +86,20 @@ extern int yydebug;
     CHAR = 287,                    /* CHAR  */
     SHORT = 288,                   /* SHORT  */
     VOID = 289,                    /* VOID  */
-    RETURN = 290,                  /* RETURN  */
-    CONTINUE = 291,                /* CONTINUE  */
-    BREAK = 292,                   /* BREAK  */
-    IF = 293,                      /* IF  */
-    ELSE = 294,                    /* ELSE  */
-    FOR = 295,                     /* FOR  */
-    WHILE = 296,                   /* WHILE  */
-    CONST = 297,                   /* CONST  */
-    IDENTIFIER = 298,              /* IDENTIFIER  */
-    CONST_INT = 299,               /* CONST_INT  */
-    CONST_CHAR = 300,              /* CONST_CHAR  */
-    CONST_FLOAT = 301,             /* CONST_FLOAT  */
-    CONST_STR = 302                /* CONST_STR  */
+    PTR = 290,                     /* PTR  */
+    RETURN = 291,                  /* RETURN  */
+    CONTINUE = 292,                /* CONTINUE  */
+    BREAK = 293,                   /* BREAK  */
+    IF = 294,                      /* IF  */
+    ELSE = 295,                    /* ELSE  */
+    FOR = 296,                     /* FOR  */
+    WHILE = 297,                   /* WHILE  */
+    CONST = 298,                   /* CONST  */
+    IDENTIFIER = 299,              /* IDENTIFIER  */
+    CONST_INT = 300,               /* CONST_INT  */
+    CONST_CHAR = 301,              /* CONST_CHAR  */
+    CONST_FLOAT = 302,             /* CONST_FLOAT  */
+    CONST_STR = 303                /* CONST_STR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -121,7 +122,7 @@ union YYSTYPE
     ExprListAST *exprList;
     ExprAST *expVal;
 
-#line 125 "parser.hpp"
+#line 126 "parser.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;

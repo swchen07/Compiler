@@ -50,7 +50,7 @@ using namespace std;
 %token LPAREN RPAREN LBRACE RBRACE COMMA SEMI
 %token ASSIGN DOT COLON QUES ELLIPSES
 
-%token <strVal> INT CHAR SHORT VOID
+%token <strVal> INT CHAR SHORT VOID PTR
 %token RETURN CONTINUE BREAK
 %token IF ELSE
 %token FOR WHILE
@@ -59,7 +59,7 @@ using namespace std;
 %token <strVal> IDENTIFIER
 %token <intVal> CONST_INT 
 %token <charVal> CONST_CHAR 
-%token CONST_FLOAT CONST_STR
+%token <strVal> CONST_FLOAT CONST_STR
 // 非终结符的类型定义
 
 %type <astVal> Program
@@ -82,7 +82,7 @@ using namespace std;
 %type ConstExp
 %type ConstInitVal
 %type <astVal> VarDecl
-%type <strVal> Btype
+%type <strVal> BType
 %type VarList
 %type <astVal> VarDef
 %type <astVal> InitVal
@@ -136,7 +136,7 @@ Decl
 
 /* ConstDecl     ::= "const" BType ConstDef {"," ConstDef} ";"; */
 ConstDecl
-    : CONST Btype ConstDef ConstList SEMI
+    : CONST BType ConstDef ConstList SEMI
     ;
 
 ConstList
@@ -145,7 +145,7 @@ ConstList
     ;
 
 /* BType         ::= "int"; */
-Btype
+BType
     : VOID                          { $$ = $1; }
     | INT                           { $$ = $1; }
     | SHORT                         { $$ = $1; }
@@ -164,7 +164,7 @@ ConstInitVal
 
 /* VarDecl       ::= BType VarDef {"," VarDef} ";"; */
 VarDecl
-    : Btype VarDef VarList SEMI                     { $$ = new VarDeclAST(*$1, (VarDefAST*)$2);}
+    : BType VarDef VarList SEMI                     { $$ = new VarDeclAST(*$1, (VarDefAST*)$2);}
     ;
 
 VarList
@@ -195,8 +195,8 @@ _ArgList:	_ArgList COMMA Arg										{  $$ = $1; $$->push_back($3);   }
 			| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
 			;
 
-Arg:		Btype IDENTIFIER										{  $$ = new ArgAST(*$1, *$2);   }
-			| Btype												    {  $$ = new ArgAST(*$1);   }
+Arg:		BType IDENTIFIER										{  $$ = new ArgAST(*$1, *$2);   }
+			| BType												{  $$ = new ArgAST(*$1);   }
 			;
 
 /* FuncDef       ::= FuncType IDENT "(" [FuncFParams] ")" Block; */
@@ -273,6 +273,7 @@ PrimaryExp
 Constant
     : CONST_INT							{ $$ = new Constant($1); }
     | CONST_CHAR						{ std::cout << "char" << std::endl; $$ = new Constant($1); }
+    | CONST_STR                         { $$ = new StringType(*$1); }
     ;
 
 Exp
@@ -280,6 +281,7 @@ Exp
     | ADD Exp %prec NOT					{ $$ = new MoncPlus((ExprAST*)$2); }
     | SUB Exp %prec NOT					{ $$ = new MoncMinus((ExprAST*)$2); }
     | NOT Exp							{ $$ = new LogicNot((ExprAST*)$2); }
+    | BAND Exp	%prec NOT			    { $$ = new AddressOf($2); }
 
     | Exp ADD Exp						{$$ = new Addition((ExprAST*)$1, (ExprAST*)$3);}
     | Exp SUB Exp						{$$ = new Subtraction((ExprAST*)$1, (ExprAST*)$3);}

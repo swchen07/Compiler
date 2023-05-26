@@ -94,6 +94,7 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "short"                 {SAVE_TOKEN; return SHORT;}
 "char"                  {SAVE_TOKEN; return CHAR;}
 "void"                  {SAVE_TOKEN; return VOID;}
+"ptr"					{SAVE_TOKEN; return PTR;}
 
     /* 跳转结构 */
 "return"                {return RETURN;}
@@ -108,7 +109,17 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "for"                   {SAVE_TOKEN; return FOR;}
 "while"                 {SAVE_TOKEN; return WHILE;}
 
-
+"\""(\\.|[^"\\])*"\""		{
+                                yylval.strVal = new std::string("");
+                                for (int i = 1; i <= yyleng-2; i++)
+                                    if (yytext[i] == '\\'){
+                                        i++;
+                                        yylval.strVal->push_back(Escape2Char(yytext[i]));
+                                    }else{
+                                        yylval.strVal->push_back(yytext[i]);
+                                    }
+                                return CONST_STR;
+                            }
     /* 暂时参考北大在线文档给的demo */
     /* 标识符 */
     /* yylval 用来向 parser 传递 lexer 读取到的内容 */

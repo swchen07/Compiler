@@ -3,6 +3,7 @@ int printf(char ptr, ...);
 int main (){
 	int a;
 	a = a+1;
-	printf(&a);
+	char b = "a";
+	printf(b);
 	return a;
 }
