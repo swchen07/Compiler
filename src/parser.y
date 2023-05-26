@@ -35,6 +35,7 @@ using namespace std;
     BaseAST *astVal;
 	CompUnits *compUnits;
 	Stmts *stmts;
+	Exprs *exprs;
 }
 
 /* 终结符 */
@@ -43,7 +44,7 @@ using namespace std;
 %token ADD SUB MUL DIV MOD
 %token AND OR NOT
 %token BAND BOR BXOR
-%token LPAREN RPAREN LBRACE RBRACE COMMA SEMI
+%token LPAREN RPAREN LBRACE RBRACE  LBRACKET RBRACKET COMMA SEMI
 %token ASSIGN DOT COLON QUES
 
 %token <strVal> INT CHAR SHORT VOID
@@ -68,12 +69,15 @@ using namespace std;
 %type ConstDecl
 %type ConstDef
 %type ConstList
-%type ConstExp
+%type <astVal> ConstExp
 %type ConstInitVal
 %type <astVal> VarDecl
 %type <strVal> Btype
 %type VarList
 %type <astVal> VarDef
+
+
+%type <exprs> ArrDef
 %type <astVal> InitVal
 
 %type <astVal> Block
@@ -155,6 +159,7 @@ ConstInitVal
 /* VarDecl       ::= BType VarDef {"," VarDef} ";"; */
 VarDecl
     : Btype VarDef VarList SEMI                     { $$ = new VarDeclAST(*$1, (VarDefAST*)$2);}
+	| Btype IDENTIFIER ArrDef SEMI					{ $$ = new ArrDefAST(*$1, *$2, (Exprs*)$3); }
     ;
 
 VarList
@@ -167,6 +172,11 @@ VarDef
     : IDENTIFIER                                    { $$ = new VarDefAST(*$1);}
     | IDENTIFIER ASSIGN InitVal                     { $$ = new VarDefAST(*$1, (ExprAST*)$3);}
     ;
+
+ArrDef
+	: ArrDef LBRACKET ConstExp RBRACKET 			{ $$ = (Exprs*)$1; $$->push_back((ExprAST*)$3); }
+	| 												{ $$ = new Exprs(); }
+	;
 
 /* InitVal       ::= Exp; */
 InitVal
@@ -264,7 +274,7 @@ PrimaryExp
 
 Constant
     : CONST_INT							{ $$ = new Constant($1); }
-    | CONST_CHAR						{ std::cout << "char" << std::endl; $$ = new Constant($1); }
+    | CONST_CHAR						{ $$ = new Constant($1); }
     ;
 
 Exp
@@ -295,6 +305,6 @@ Exp
 	;
 
 ConstExp
-	:
+	: CONST_INT							{ $$ = new Constant($1); }
 	;
 %%
