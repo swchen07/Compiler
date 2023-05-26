@@ -72,10 +72,12 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "^"                     {return BXOR;}
 
     /*分隔符*/
-"("             { return LPAREN; }
-")"             { return RPAREN; }
-"{"             { return LBRACE; }
-"}"             { return RBRACE; }
+"("             		{ return LPAREN; }
+")"             		{ return RPAREN; }
+"{"             		{ return LBRACE; }
+"}"             		{ return RBRACE; }
+"["						{return LBRACKET;}
+"]"						{return RBRACKET;}
 ","                     {return COMMA;}
 ";"                     {return SEMI;}
 

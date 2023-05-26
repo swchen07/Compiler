@@ -35,6 +35,7 @@ using namespace std;
     BaseAST *astVal;
 	CompUnits *compUnits;
 	Stmts *stmts;
+	Exprs *exprs;
 }
 
 /* 终结符 */
@@ -43,7 +44,7 @@ using namespace std;
 %token ADD SUB MUL DIV MOD
 %token AND OR NOT
 %token BAND BOR BXOR
-%token LPAREN RPAREN LBRACE RBRACE COMMA SEMI
+%token LPAREN RPAREN LBRACE RBRACE  LBRACKET RBRACKET COMMA SEMI
 %token ASSIGN DOT COLON QUES
 
 %token <strVal> INT CHAR SHORT VOID
@@ -68,22 +69,25 @@ using namespace std;
 %type ConstDecl
 %type ConstDef
 %type ConstList
-%type ConstExp
+%type <astVal> ConstExp
 %type ConstInitVal
 %type <astVal> VarDecl
 %type <strVal> Btype
 %type VarList
 %type <astVal> VarDef
+
+
+%type <exprs> ArrDef
 %type <astVal> InitVal
 
 %type <astVal> Block
 %type <astVal> BlockItem 
 %type <stmts> BlockItemNew
-%type <astVal> Stmt
+%type <astVal> Stmt SmooStmt
 
 %type <astVal> PrimaryExp
 %type <astVal> Exp
-%type ElseState
+%type <astVal> ElseState
 %type <astVal> RetState
 
 %type <astVal> LVal
@@ -155,6 +159,7 @@ ConstInitVal
 /* VarDecl       ::= BType VarDef {"," VarDef} ";"; */
 VarDecl
     : Btype VarDef VarList SEMI                     { $$ = new VarDeclAST(*$1, (VarDefAST*)$2);}
+	| Btype IDENTIFIER ArrDef SEMI					{ $$ = new ArrDefAST(*$1, *$2, (Exprs*)$3); }
     ;
 
 VarList
@@ -167,6 +172,11 @@ VarDef
     : IDENTIFIER                                    { $$ = new VarDefAST(*$1);}
     | IDENTIFIER ASSIGN InitVal                     { $$ = new VarDefAST(*$1, (ExprAST*)$3);}
     ;
+
+ArrDef
+	: ArrDef LBRACKET ConstExp RBRACKET 			{ $$ = (Exprs*)$1; $$->push_back((ExprAST*)$3); }
+	| 												{ $$ = new Exprs(); }
+	;
 
 /* InitVal       ::= Exp; */
 InitVal
@@ -225,17 +235,21 @@ BlockItem
                 | "break" ";"
                 | "continue" ";"
                 | "return" [Exp] ";"; */
+
+SmooStmt
+    : LVal ASSIGN Exp						{ $$ = new AssignAST((LeftValAST*)$1, (ExprAST*)$3); }
+    | Exp								    { $$ = $1; }
+    | 									    { $$ = NULL; }
+    | BREAK
+    | CONTINUE
+    | RETURN RetState					    {$$ = new ReturnStmtAST((ExprAST*)$2);}
+
 Stmt
-    : LVal ASSIGN Exp SEMI						{ $$ = new AssignAST((LeftValAST*)$1, (ExprAST*)$3); }
-    | Exp SEMI									{ $$ = $1; }
-    | SEMI										{ $$ = NULL; }
+    : SmooStmt SEMI						        { $$ = $1; }
     | Block										{ $$ = $1; }
-    | FOR 
-    | IF LPAREN Exp RPAREN Stmt ElseState
-    | WHILE LPAREN Exp RPAREN Stmt
-    | BREAK SEMI
-    | CONTINUE SEMI
-    | RETURN RetState SEMI						{$$ = new ReturnStmtAST((ExprAST*)$2);}
+    | FOR LPAREN SmooStmt SEMI Exp SEMI SmooStmt RPAREN Block   { $$ = new ForStmtAST((StmtAST*)$3, (ExprAST*)$5, (StmtAST*)$7, (BlockAST*)$9); }
+    | IF LPAREN Exp RPAREN Block ElseState      { $$ = new IfElseStmtAST((ExprAST*)$3, (BlockAST*)$5, (BlockAST*)$6); }
+    | WHILE LPAREN Exp RPAREN Block             { $$ = new WhileStmtAST((ExprAST*)$3, (BlockAST*)$5); }
     ;
 
 LVal
@@ -243,8 +257,8 @@ LVal
     ;
 
 ElseState
-    : ELSE Stmt
-    |
+    : ELSE Block                        {$$ = $2; }
+    |                                   {$$ = NULL; }
     ;
 
 RetState
@@ -260,7 +274,7 @@ PrimaryExp
 
 Constant
     : CONST_INT							{ $$ = new Constant($1); }
-    | CONST_CHAR						{ std::cout << "char" << std::endl; $$ = new Constant($1); }
+    | CONST_CHAR						{ $$ = new Constant($1); }
     ;
 
 Exp
@@ -291,6 +305,6 @@ Exp
 	;
 
 ConstExp
-	:
+	: CONST_INT							{ $$ = new Constant($1); }
 	;
 %%

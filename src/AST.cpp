@@ -71,12 +71,6 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
 	}
 }
 
-llvm::Type* ArrayType::ToLLVMType(IRGenerator& IRContext) {
-	auto IRBuilder = IRContext.IRBuilder;
-	llvm::Type* elemType = this->elemType_->ToLLVMType(IRContext);
-	return llvm::ArrayType::get(elemType, this->size_);
-}
-
 /**
  * @brief 
  * 
@@ -105,9 +99,10 @@ llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 	
 	// llvm::Value* initVal = CastType(this->, IRContext)
 
-	// initializa
+	// initialize
 	llvm::Value* value = this->varDef_->IRGen(IRContext);
 
+	// store will always align to 4, even for char, which is because we need a type cast for 'value'
 	IRBuilder->CreateStore(value, AllocMem);
 
 	IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
@@ -123,8 +118,37 @@ llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
 	}
 	else {
 		auto IRBuilder = IRContext.IRBuilder; 
-		return IRBuilder->getInt8('0');
+		return IRBuilder->getInt8(0);
 	}
+}
+
+llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "ArrDefAST" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder;
+	//获取数组元素
+	this->elementType_ = this->type_.ToLLVMType(IRContext);
+
+	llvm::Type* elementType = this->elementType_;
+
+	//数组构造
+	llvm::Type* arrayType = elementType;
+
+	//获取数组维度
+	for(auto expr : *(this->exprs_)){
+		//处理expr
+		llvm::Value* val = expr->IRGen(IRContext);
+		//由于是从constant转换出来的，所以可以转换为constant
+		llvm::ConstantInt* constant = llvm::dyn_cast<llvm::ConstantInt>(val);
+		//转换完之后将int提取出来
+		int convertedValue = constant->getSExtValue();
+		arrayType = llvm::ArrayType::get(arrayType, convertedValue); 
+	}
+
+	this->arrayType_ = arrayType;
+	// //创建变量
+	auto AllocMem = IRBuilder->CreateAlloca(this->arrayType_, 0, this->arrName_);
+
+	IRContext.CreateVar(this->type_, this->arrName_, AllocMem); 
 }
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
@@ -193,7 +217,7 @@ llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
 		IRBuilder->SetInsertPoint(outBlock);
 	}
 
-    return NULL; 
+    return newBlock; 
 }
 
 llvm::Value* ReturnStmtAST::IRGen(IRGenerator& IRContext) {
@@ -203,6 +227,85 @@ llvm::Value* ReturnStmtAST::IRGen(IRGenerator& IRContext) {
     return NULL; 
 }
 
+llvm::Value* IfElseStmtAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "IfElseStmtAST" << std::endl;
+
+	auto IRBuilder = IRContext.IRBuilder; 
+
+	auto CondExpr = this->cond_->IRGen(IRContext);
+	llvm::BasicBlock* CondBlock = IRBuilder->GetInsertBlock();
+
+	IRContext.ClearPreBrSignal();
+	llvm::BasicBlock* IfBlock = (llvm::BasicBlock*)this->ifBlock_->IRGen(IRContext);
+	llvm::BasicBlock* IfOutBlock = IRBuilder->GetInsertBlock(); 
+	llvm::BasicBlock* ElseBlock, *ElseOutBlock; 
+	if (this->elseBlock_) {
+		IRContext.ClearPreBrSignal();
+		ElseBlock = (llvm::BasicBlock*)this->elseBlock_->IRGen(IRContext);
+		ElseOutBlock = IRBuilder->GetInsertBlock(); 
+	}
+
+	// set exit 
+	llvm::Function* Func = IRContext.GetCurFunc();
+	llvm::BasicBlock* OutBlock = llvm::BasicBlock::Create(*(IRContext.Context), "BBExit", Func);
+	IRBuilder->SetInsertPoint(IfOutBlock);
+	IRBuilder->CreateBr(OutBlock);
+	if (this->elseBlock_) {
+		IRBuilder->SetInsertPoint(ElseOutBlock);
+		IRBuilder->CreateBr(OutBlock);
+	}
+
+	// set conditional branch
+	IRBuilder->SetInsertPoint(CondBlock);
+	IRBuilder->CreateCondBr(CondExpr, IfBlock, this->elseBlock_?ElseBlock:OutBlock);
+
+	IRBuilder->SetInsertPoint(OutBlock);
+
+	return NULL;
+}
+
+llvm::Value* ForStmtAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "ForStmtAST" << std::endl;
+
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Function* Func = IRContext.GetCurFunc();
+
+	// init generate
+	if (this->initStmt_)
+		this->initStmt_->IRGen(IRContext); 
+	llvm::BasicBlock* cmpBlock = llvm::BasicBlock::Create(*(IRContext.Context), "ForCmp", Func);
+	IRBuilder->CreateBr(cmpBlock);
+
+	// condition generate
+	IRBuilder->SetInsertPoint(cmpBlock);
+	auto cmpRes = (this->condExpr_)?this->condExpr_->IRGen(IRContext):IRBuilder->getInt1(true); 
+
+	// body generate
+	IRContext.ClearPreBrSignal();
+	llvm::BasicBlock* bodyBlock = (llvm::BasicBlock*)this->forBody_->IRGen(IRContext);
+	llvm::BasicBlock* bodyOutBlock = IRBuilder->GetInsertBlock();
+	IRBuilder->SetInsertPoint(bodyOutBlock);
+	// iteration generate
+	llvm::BasicBlock* iterBlock = llvm::BasicBlock::Create(*(IRContext.Context), "ForIter", Func);
+	IRBuilder->CreateBr(iterBlock);
+	IRBuilder->SetInsertPoint(iterBlock);
+	if (this->iterStmt_) this->iterStmt_->IRGen(IRContext);
+	IRBuilder->CreateBr(cmpBlock);
+
+	// exit generate
+	llvm::BasicBlock* exitBlock = llvm::BasicBlock::Create(*(IRContext.Context), "ForExit", Func);
+
+	IRBuilder->SetInsertPoint(cmpBlock);
+	IRBuilder->CreateCondBr(cmpRes, bodyBlock, exitBlock);
+	IRBuilder->SetInsertPoint(exitBlock);
+
+	return NULL;
+}
+
+
+llvm::Value* WhileStmtAST::IRGen(IRGenerator& IRContext) {
+	return NULL;
+}
 
 /**
  * @brief 算术运算
@@ -347,7 +450,7 @@ llvm::Value* AssignAST::IRGen(IRGenerator& IRContext){
 
 	//赋值
 	IRBuilder->CreateStore(RHS, LHSPtr);
-	return IRBuilder->CreateLoad(LHSPtr->getType()->getNonOpaquePointerElementType(), LHSPtr);
+	return RHS; 
 
 }
 

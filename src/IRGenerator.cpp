@@ -37,6 +37,18 @@ void IRGenerator::GenObjectCode(std::string outputfile) {
 }
 
 void IRGenerator::CreateVar(VarType type, std::string name, llvm::Value* value){
+    // first judge name
+    int conflictCnt; 
+    int varCnt = this->varList_.size(); 
+    if (this->curBasicBlock_) conflictCnt = this->curBasicBlock_->varCnt_; 
+    else conflictCnt = varCnt;
+    for (int i = 1; i <= conflictCnt; i++) {
+        if (this->varList_[varCnt-i]->name_ == name) {
+            // already has the same name
+            throw std::logic_error("Already Create a Variable with Name: "+name);
+        }
+    } 
+
     this->varList_.push_back(new IRVarAttr(type, name, value));
     if (this->curBasicBlock_) this->curBasicBlock_->varCnt_ += 1; 
 }

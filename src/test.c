@@ -1,21 +1,16 @@
 int main() {
-	{}
-	{{{{}
-	int c; 
-	}}}
-	{int a; }
-	int b; 
-	int ab = 1; 
-	int cd = 2*3; 
-	int ce = ab+cd;
-	char s = 1; 
-	short s3 = 16; 
-}
-
-int a() {
-
-}
-
-int b() {
-	int c;
+	int a; 
+	for (a = 0; a < 10; a=a+1) {
+		int a = 2;
+		if (a > 3) {
+			a = a+2;
+			if (a < 2) {
+				int a; 
+				a = a-2; 
+			}
+		}
+	}
+	for (;1;){
+		
+	}
 }

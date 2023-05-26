@@ -42,17 +42,6 @@ private:
     TypeID type;
 };
 
-class ArrayType {
-public:
-	VarType* elemType_;
-	size_t size_;
-
-	ArrayType(VarType* _elemType_, size_t _size_) : elemType_(_elemType_), size_(_size_) {}
-	~ArrayType() {}
-
-	llvm::Type* ToLLVMType(IRGenerator& IRContext);
-};
-
 /**
  * @brief 声明所有类
  * 
@@ -74,8 +63,13 @@ class Addition;
 
 class LeftValAST;
 
+class IfElseStmtAST; 
+class ForStmtAST; 
+class WhileStmtAST;
+
 using CompUnits = std::vector<CompUnitAST*>;
 using Stmts = std::vector<StmtAST*>;
+using Exprs = std::vector<ExprAST*>;
 /**
  * @brief 构造所有AST节点的基类，其中用指针管理对象
  * 
@@ -176,18 +170,22 @@ public:
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
-// class VarInitAST : public BaseAST {
-// public:
-// 	std::string varName_;
-// 	ExprAST* initExpr_;
+class ArrDefAST : public BaseAST {
+public:
+	llvm::Type* elementType_;
+	llvm::Type* arrayType_;
+	std::string arrName_;
+	VarType type_;
+	Exprs* exprs_;
 
-// 	VarInitAST(std::string _varName_) : 
-// 		varName_(_varName_) {}
-// 	VarInitAST(std::string _varName_, ExprAST* _initExpr_) : 
-// 		varName_(_varName_), initExpr_(_initExpr_) {}
-// 	~VarInitAST() {}
-// 	llvm::Value* IRGen(IRGenerator& IRContext) {}
-// };
+
+	ArrDefAST(std::string _typeName_, std::string _arrName_, Exprs* _exprs_) :
+	type_(_typeName_), arrName_(_arrName_), exprs_(_exprs_) {}
+	~ArrDefAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+
+};
 
 /**
  * @brief Statement抽象类
@@ -224,6 +222,48 @@ public:
 	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
 };
 
+/**
+ * @brief branch & control
+ * 
+ */
+
+class IfElseStmtAST : public StmtAST {
+public: 
+	ExprAST* cond_; 
+	BlockAST* ifBlock_; 
+	BlockAST* elseBlock_; 
+
+	IfElseStmtAST(ExprAST* _cond_, BlockAST* _ifBlock_, BlockAST* _elseBlock_):cond_(_cond_), ifBlock_(_ifBlock_), elseBlock_(_elseBlock_){}
+	~IfElseStmtAST(){}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class ForStmtAST : public StmtAST {
+public: 
+	StmtAST* initStmt_; 
+	ExprAST* condExpr_; 
+	StmtAST* iterStmt_; 
+	BlockAST* forBody_; 
+
+	ForStmtAST(StmtAST* _initStmt_, ExprAST* _condExpr_, StmtAST* _iterStmt_, BlockAST* _forBody_):
+		initStmt_(_initStmt_), condExpr_(_condExpr_), iterStmt_(_iterStmt_), forBody_(_forBody_){}
+	~ForStmtAST(){}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class WhileStmtAST : public StmtAST {
+public: 
+	ExprAST* condExpr_; 
+	BlockAST* whileBody_; 
+
+	WhileStmtAST(ExprAST* _condExpr_, BlockAST* _whileBody_): 
+		condExpr_(_condExpr_), whileBody_(_whileBody_) {}
+	~WhileStmtAST(){}; 
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
 
 /**
  * @brief 算术运算
