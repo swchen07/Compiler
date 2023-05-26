@@ -66,6 +66,8 @@ class LeftValAST;
 class IfElseStmtAST; 
 class ForStmtAST; 
 class WhileStmtAST;
+class BreakStmtAST; 
+class ContinueStmtAST; 
 
 using CompUnits = std::vector<CompUnitAST*>;
 using Stmts = std::vector<StmtAST*>;
@@ -264,6 +266,22 @@ public:
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
+
+class BreakStmtAST : public StmtAST {
+public: 
+	BreakStmtAST(){}
+	~BreakStmtAST(){}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+}; 
+
+class ContinueStmtAST : public StmtAST {
+public: 
+	ContinueStmtAST(){}
+	~ContinueStmtAST(){}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+}; 
 
 /**
  * @brief 算术运算

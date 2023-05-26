@@ -330,6 +330,14 @@ llvm::Value* WhileStmtAST::IRGen(IRGenerator& IRContext) {
 	return NULL;
 }
 
+llvm::Value* BreakStmtAST::IRGen(IRGenerator& IRContext) {
+	return NULL; 
+}
+
+llvm::Value* ContinueStmtAST::IRGen(IRGenerator& IRContext) {
+	return NULL;
+}
+
 /**
  * @brief 算术运算
  * 

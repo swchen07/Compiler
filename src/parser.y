@@ -240,9 +240,9 @@ SmooStmt
     : LVal ASSIGN Exp						{ $$ = new AssignAST((LeftValAST*)$1, (ExprAST*)$3); }
     | Exp								    { $$ = $1; }
     | 									    { $$ = NULL; }
-    | BREAK
-    | CONTINUE
-    | RETURN RetState					    {$$ = new ReturnStmtAST((ExprAST*)$2);}
+    | BREAK                                 { $$ = new BreakStmtAST(); }
+    | CONTINUE                              ( $$ = new ContinueStmtAST(); )
+    | RETURN RetState					    { $$ = new ReturnStmtAST((ExprAST*)$2);}
 
 Stmt
     : SmooStmt SEMI						        { $$ = $1; }
