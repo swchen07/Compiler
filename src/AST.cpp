@@ -147,6 +147,8 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 	this->arrayType_ = arrayType;
 	// //创建变量
 	auto AllocMem = IRBuilder->CreateAlloca(this->arrayType_, 0, this->arrName_);
+
+	IRContext.CreateVar(this->type_, this->arrName_, AllocMem); 
 }
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
@@ -284,6 +286,9 @@ llvm::Value* ForStmtAST::IRGen(IRGenerator& IRContext) {
 	llvm::BasicBlock* bodyOutBlock = IRBuilder->GetInsertBlock();
 	IRBuilder->SetInsertPoint(bodyOutBlock);
 	// iteration generate
+	llvm::BasicBlock* iterBlock = llvm::BasicBlock::Create(*(IRContext.Context), "ForIter", Func);
+	IRBuilder->CreateBr(iterBlock);
+	IRBuilder->SetInsertPoint(iterBlock);
 	if (this->iterStmt_) this->iterStmt_->IRGen(IRContext);
 	IRBuilder->CreateBr(cmpBlock);
 
