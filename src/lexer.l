@@ -88,6 +88,7 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "."                     {return DOT;}
 ":"                     {return COLON;}
 "?"                     {return QUES;}
+"..."					{return ELLIPSES;}
 
     /* 关键字 */
     /* 数据类型 */

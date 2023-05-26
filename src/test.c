@@ -1,3 +1,21 @@
+
+int a() {
+	while(1){
+		break; 
+		continue; 
+	}
+
+	int a = 1; 
+	while (a < 10) {
+		a = a+1; 
+		while (0) {
+			a = a*2;
+			continue; 
+		}
+		break; 
+	}
+}
+
 int main() {
 	int a; 
 	for (a = 0; a < 10; a=a+1) {
@@ -16,21 +34,6 @@ int main() {
 		break; 
 		continue; 
 	}
+	a();
 }
 
-int a() {
-	while(1){
-		break; 
-		continue; 
-	}
-
-	int a = 1; 
-	while (a < 10) {
-		a = a+1; 
-		while (0) {
-			a = a*2;
-			continue; 
-		}
-		break; 
-	}
-}

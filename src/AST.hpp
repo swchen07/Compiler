@@ -69,9 +69,14 @@ class WhileStmtAST;
 class BreakStmtAST; 
 class ContinueStmtAST; 
 
+class ArgAST; 
+class ArgListAST; 
+class FunctionCallAST; 
+
 using CompUnits = std::vector<CompUnitAST*>;
 using Stmts = std::vector<StmtAST*>;
 using Exprs = std::vector<ExprAST*>;
+using ExprListAST = std::vector<ExprAST*>;
 /**
  * @brief 构造所有AST节点的基类，其中用指针管理对象
  * 
@@ -92,6 +97,7 @@ public:
     
     ProgramAST(CompUnits* _compUnit_):compUnit_(_compUnit_){}
     ~ProgramAST(){};
+
     llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
@@ -111,10 +117,11 @@ class FuncDefAST : public CompUnitAST {
 public:
 	std::string funcName_; 
     VarType type_; 
+	ArgListAST* _ArgList;
     BlockAST* block_;
 
-	FuncDefAST(std::string _typeName_, std::string _funcName_, BlockAST* _block_):funcName_(_funcName_), 
-	type_(_typeName_), block_(_block_) {}
+	FuncDefAST(std::string _typeName_, std::string _funcName_, ArgListAST* _ArgList_, BlockAST* _block_ = NULL):
+		funcName_(_funcName_), type_(_typeName_), block_(_block_) , _ArgList(_ArgList_){}
 
 	~FuncDefAST(){};
     llvm::Value* IRGen(IRGenerator& IRContext);
@@ -499,4 +506,40 @@ public:
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 	llvm::Value* IRGenPtr(IRGenerator& IRContext);
+};
+
+//Function argument
+class ArgAST : public BaseAST {
+public:
+	//Its type
+	VarType type_;
+	//Its name (if any)
+	std::string _Name;
+
+	ArgAST(std::string& _typeName_, const std::string& __Name = "") :
+		type_(_typeName_), _Name(__Name) {}
+	~ArgAST(void) {}
+	llvm::Value* IRGen(IRGenerator& IRContext) { return NULL; }
+};
+
+class ArgListAST : public std::vector<ArgAST*>, public BaseAST {
+public:
+	//Set true if the argument list contains "..."
+	bool _VarArgLenth;
+	void SetVarArg(void) { this->_VarArgLenth = true; }
+
+	ArgListAST(void) : _VarArgLenth(false) {}
+	~ArgListAST(void) {}
+	llvm::Value* IRGen(IRGenerator& IRContext) { return NULL; }
+};
+
+class FunctionCallAST : public ExprAST {
+public:
+	std::string _FuncName;
+	ExprListAST* _ArgList;
+
+	FunctionCallAST(const std::string& __FuncName, ExprListAST* __ArgList) : _FuncName(__FuncName), _ArgList(__ArgList) {}
+	~FunctionCallAST(void) {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
 };

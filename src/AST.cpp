@@ -151,31 +151,31 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 	IRContext.CreateVar(this->type_, this->arrName_, AllocMem); 
 }
 
-llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
-    //Get return type
-    std::cout << "FunctionAST" << std::endl;
+// llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
+//     //Get return type
+//     std::cout << "FunctionAST" << std::endl;
 
-    auto IRBuilder = IRContext.IRBuilder; 
-    llvm::Type* ReturnType; 
-    if (this->type_.GetType() == Int)
-        ReturnType = IRBuilder->getInt32Ty();
+//     auto IRBuilder = IRContext.IRBuilder; 
+//     llvm::Type* ReturnType; 
+//     if (this->type_.GetType() == Int)
+//         ReturnType = IRBuilder->getInt32Ty();
 
-    std::vector<llvm::Type*> ArgTypes; 
+//     std::vector<llvm::Type*> ArgTypes; 
 
-    //Get function type
-    llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, false);
-    //Create function
-    llvm::Function* Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
+//     //Get function type
+//     llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, false);
+//     //Create function
+//     llvm::Function* Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
 
-	IRContext.SetCurFunc(Func);
-	IRContext.ClearPreBrSignal();
+// 	IRContext.SetCurFunc(Func);
+// 	IRContext.ClearPreBrSignal();
 
-    this->block_->IRGen(IRContext);
+//     this->block_->IRGen(IRContext);
 
-	IRContext.SetBasicBlock(NULL); 
-	IRContext.SetCurFunc(NULL); 
-    return NULL;
-}
+// 	IRContext.SetBasicBlock(NULL); 
+// 	IRContext.SetCurFunc(NULL); 
+//     return NULL;
+// }
 
 llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
     std::cout << "BlockAST" << std::endl;
@@ -528,4 +528,83 @@ llvm::Value* LeftValAST::IRGenPtr(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder;
 	llvm::Value* VarPtr = IRContext.FindVar(this->name_);
 	return VarPtr;
+}
+
+llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
+    //Get return type
+    std::cout << "FunctionAST" << std::endl;
+
+    auto IRBuilder = IRContext.IRBuilder; 
+    llvm::Type* ReturnType = this->type_.ToLLVMType(IRContext);
+
+    std::vector<llvm::Type*> ArgTypes; 
+
+	for (auto ArgType : *(this->_ArgList)) {
+		llvm::Type* LLVMType = ArgType->type_.ToLLVMType(IRContext);
+		if (!LLVMType) {
+			throw std::logic_error("Defining a function " + this->funcName_ + " using unknown type(s).");
+			return NULL;
+		}
+		ArgTypes.push_back(LLVMType);
+	}
+	
+    //Get function type
+    llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, this->_ArgList->_VarArgLenth);
+    //Create function
+    llvm::Function* Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
+
+	IRContext.CreateFunc(FuncType, this->funcName_, Func);
+
+	if(this->block_){
+		IRContext.SetCurFunc(Func);
+		IRContext.ClearPreBrSignal();
+
+		this->block_->IRGen(IRContext);
+
+		IRContext.SetBasicBlock(NULL); 
+		IRContext.SetCurFunc(NULL); 
+	}
+	
+    return NULL;
+}
+
+llvm::Value* FunctionCallAST::IRGen(IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Function* Func = IRContext.FindFunction(this->_FuncName);
+	//Get the function. Throw exception if the function doesn't exist.
+	if (Func == NULL) {
+		throw std::domain_error(this->_FuncName + " is not a defined function.");
+		return NULL;
+	}
+	//Check the number of args. If Func took a different number of args, reject.
+	if (Func->isVarArg() && this->_ArgList->size() < Func->arg_size() ||
+		!Func->isVarArg() && this->_ArgList->size() != Func->arg_size()) {
+		throw std::invalid_argument("Args doesn't match when calling function " + this->_FuncName + ". Expected " + std::to_string(Func->arg_size()) + ", got " + std::to_string(this->_ArgList->size()));
+		return NULL;
+	}
+	//Check arg types. If Func took different different arg types, reject.
+	std::vector<llvm::Value*> ArgList;
+	size_t Index = 0;
+	for (auto ArgIter = Func->arg_begin(); ArgIter < Func->arg_end(); ArgIter++, Index++) {
+		llvm::Value* Arg = this->_ArgList->at(Index)->IRGen(IRContext);
+		Arg = TypeCasting(Arg, ArgIter->getType(), IRContext);
+		if (Arg == NULL) {
+			throw std::invalid_argument(std::to_string(Index) + "-th arg type doesn't match when calling function " + this->_FuncName + ".");
+			return NULL;
+		}
+		ArgList.push_back(Arg);
+	}
+	//Continue to push arguments if this function takes a variable number of arguments
+	//According to the C standard, bool/char/short should be extended to int, and float should be extended to double
+	if (Func->isVarArg())
+		for (; Index < this->_ArgList->size(); Index++) {
+			llvm::Value* Arg = this->_ArgList->at(Index)->IRGen(IRContext);
+			if (Arg->getType()->isIntegerTy())
+				Arg = TypeUpgrading(Arg, IRBuilder->getInt32Ty(), IRContext);
+			else if (Arg->getType()->isFloatingPointTy())
+				Arg = TypeUpgrading(Arg, IRBuilder->getDoubleTy(), IRContext);
+			ArgList.push_back(Arg);
+		}
+
+	return IRBuilder->CreateCall(Func, ArgList);
 }
