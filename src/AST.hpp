@@ -42,17 +42,6 @@ private:
     TypeID type;
 };
 
-class ArrayType {
-public:
-	VarType* elemType_;
-	size_t size_;
-
-	ArrayType(VarType* _elemType_, size_t _size_) : elemType_(_elemType_), size_(_size_) {}
-	~ArrayType() {}
-
-	llvm::Type* ToLLVMType(IRGenerator& IRContext);
-};
-
 /**
  * @brief 声明所有类
  * 
@@ -79,6 +68,7 @@ class ForStmtAST;
 
 using CompUnits = std::vector<CompUnitAST*>;
 using Stmts = std::vector<StmtAST*>;
+using Exprs = std::vector<ExprAST*>;
 /**
  * @brief 构造所有AST节点的基类，其中用指针管理对象
  * 
@@ -179,18 +169,22 @@ public:
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
-// class VarInitAST : public BaseAST {
-// public:
-// 	std::string varName_;
-// 	ExprAST* initExpr_;
+class ArrDefAST : public BaseAST {
+public:
+	llvm::Type* elementType_;
+	llvm::Type* arrayType_;
+	std::string arrName_;
+	VarType type_;
+	Exprs* exprs_;
 
-// 	VarInitAST(std::string _varName_) : 
-// 		varName_(_varName_) {}
-// 	VarInitAST(std::string _varName_, ExprAST* _initExpr_) : 
-// 		varName_(_varName_), initExpr_(_initExpr_) {}
-// 	~VarInitAST() {}
-// 	llvm::Value* IRGen(IRGenerator& IRContext) {}
-// };
+
+	ArrDefAST(std::string _typeName_, std::string _arrName_, Exprs* _exprs_) :
+	type_(_typeName_), arrName_(_arrName_), exprs_(_exprs_) {}
+	~ArrDefAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+
+};
 
 /**
  * @brief Statement抽象类

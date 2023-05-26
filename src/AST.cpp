@@ -71,12 +71,6 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
 	}
 }
 
-llvm::Type* ArrayType::ToLLVMType(IRGenerator& IRContext) {
-	auto IRBuilder = IRContext.IRBuilder;
-	llvm::Type* elemType = this->elemType_->ToLLVMType(IRContext);
-	return llvm::ArrayType::get(elemType, this->size_);
-}
-
 /**
  * @brief 
  * 
@@ -126,6 +120,33 @@ llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
 		auto IRBuilder = IRContext.IRBuilder; 
 		return IRBuilder->getInt8(0);
 	}
+}
+
+llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "ArrDefAST" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder;
+	//获取数组元素
+	this->elementType_ = this->type_.ToLLVMType(IRContext);
+
+	llvm::Type* elementType = this->elementType_;
+
+	//数组构造
+	llvm::Type* arrayType = elementType;
+
+	//获取数组维度
+	for(auto expr : *(this->exprs_)){
+		//处理expr
+		llvm::Value* val = expr->IRGen(IRContext);
+		//由于是从constant转换出来的，所以可以转换为constant
+		llvm::ConstantInt* constant = llvm::dyn_cast<llvm::ConstantInt>(val);
+		//转换完之后将int提取出来
+		int convertedValue = constant->getSExtValue();
+		arrayType = llvm::ArrayType::get(arrayType, convertedValue); 
+	}
+
+	this->arrayType_ = arrayType;
+	// //创建变量
+	auto AllocMem = IRBuilder->CreateAlloca(this->arrayType_, 0, this->arrName_);
 }
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
