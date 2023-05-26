@@ -19,6 +19,7 @@ int main() {
 		break; 
 		continue; 
 	}
+	a(1);
 }
 
 int a(int x) {
@@ -36,6 +37,8 @@ int a(int x) {
 		}
 		break; 
 	}
+
+	return a;
 }
 
 
