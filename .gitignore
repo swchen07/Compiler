@@ -5,3 +5,8 @@
 /tests/toyCompiler
 /.DS_Store
 /tests/Test1/llvm.cpp
+
+build/
+lexer.cpp
+parser.cpp
+parser.hpp
