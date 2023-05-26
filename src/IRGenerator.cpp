@@ -1,3 +1,14 @@
+/**
+ * @file IRGenerator.cpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-05-17
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include "AST.hpp"
 #include "IRGenerator.hpp"
 
@@ -194,11 +205,11 @@ llvm::BasicBlock* IRGenerator::ContinueCurrentLoop() {
     return currentLoop->iterBlock_?currentLoop->iterBlock_:currentLoop->condBlock_; 
 }
 
-void IRGenerator::CreateFunc(llvm::FunctionType* type, std::string name, llvm::Function* func){
+void IRGenerator::CreateFunc(llvm::FunctionType* type, std::string name, llvm::Function* func, bool isDefined){
     if(this->FindFunction(name)){
         return;
     }
-    this->funcList_.push_back(new IRFuncAttr(type, name, func));
+    this->funcList_.push_back(new IRFuncAttr(type, name, func, isDefined));
 }
 
 void IRGenerator::DiscardFunc(int cnt) {
@@ -211,10 +222,51 @@ void IRGenerator::DiscardFunc(int cnt) {
 
 llvm::Function* IRGenerator::FindFunction(std::string Name) {
 	if (this->funcList_.size() == 0) return NULL;
-    for (auto iter = this->funcList_[this->funcList_.size()-1]; iter >= this->funcList_[0]; iter--) {
-        if (iter->getName() == Name){
-            return iter->getFunc();
+    for (auto iter = this->funcList_.end()-1; iter >= this->funcList_.begin(); iter--) {
+        if ((*iter)->getName() == Name){
+            return (*iter)->getFunc();
         }
     }
 	return NULL;
 }
+
+bool IRGenerator::IsFuncDefined(std::string Name) {
+	if (this->funcList_.size() == 0) return false;
+    for (auto iter = this->funcList_.end()-1; iter >= this->funcList_.begin(); iter--) {
+        if ((*iter)->getName() == Name){
+            if ((*iter)->getDefined()) return true; 
+            else return false; 
+        }
+    }
+	return false;
+}
+
+bool IRGenerator::SetFuncDefined(std::string Name) {
+    if (this->funcList_.size() == 0) return false;
+    for (auto iter = this->funcList_.end()-1; iter >= this->funcList_.begin(); iter--) {
+        if ((*iter)->getName() == Name){
+            (*iter)->setDefined(); 
+            return true; 
+        }
+    }
+	return false;
+}
+
+// llvm::Function* IRGenerator::CallFunction(std::string Name) {
+//     if (this->funcList_.size() == 0) {
+//         throw std::logic_error("Cannot find the function: "+Name);
+//         return NULL;
+//     }
+//     for (auto iter = this->funcList_[this->funcList_.size()-1]; iter >= this->funcList_[0]; iter--) {
+//         if (iter->getName() == Name){
+//             if (iter->getDefined()) 
+//                 return iter->getFunc();
+//             else {
+//                 throw std::logic_error("Function declared but not defined: "+Name);
+//                 return NULL;
+//             }
+//         }
+//     }
+//     throw std::logic_error("Cannot find the function: "+Name);
+//     return NULL;
+// }

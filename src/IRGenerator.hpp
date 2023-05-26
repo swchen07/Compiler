@@ -1,3 +1,14 @@
+/**
+ * @file IRGenerator.hpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-05-17
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #pragma once
 
 #include <iostream>
@@ -74,11 +85,15 @@ public:
     std::string name_; 
 
 	llvm::Function* func_;
+    bool isDefined_; 
 
-    IRFuncAttr(llvm::FunctionType* type, std::string name, llvm::Function* func):type_(type), name_(name), func_(func){}
+    IRFuncAttr(llvm::FunctionType* type, std::string name, llvm::Function* func, bool isDefined = false):
+        type_(type), name_(name), func_(func), isDefined_(isDefined){}
 
     std::string getName() {return this->name_;}
     llvm::Function* getFunc() {return this->func_;}
+    void setDefined() {this->isDefined_ = true;}
+    bool getDefined() {return this->isDefined_; }
 };
 
 class IRGenerator {
@@ -131,9 +146,12 @@ public:
     llvm::BasicBlock* BreakCurrentLoop(); 
     llvm::BasicBlock* ContinueCurrentLoop();
 
-    void CreateFunc(llvm::FunctionType*, std::string name, llvm::Function* func);
+    void CreateFunc(llvm::FunctionType*, std::string name, llvm::Function* func, bool isDefined);
     void DiscardFunc(int cnt);
     llvm::Function* FindFunction(std::string Name);
+    bool IsFuncDefined(std::string Name);
+    bool SetFuncDefined(std::string Name); 
+    // llvm::Function* CallFunction(std::string Name);
 };
 
 

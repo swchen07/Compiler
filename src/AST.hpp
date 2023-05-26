@@ -122,8 +122,8 @@ public:
 
 	FuncDefAST(std::string _typeName_, std::string _funcName_, ArgListAST* _ArgList_, BlockAST* _block_ = NULL):
 		funcName_(_funcName_), type_(_typeName_), block_(_block_) , _ArgList(_ArgList_){}
-
 	~FuncDefAST(){};
+	
     llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
