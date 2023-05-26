@@ -532,7 +532,7 @@ llvm::Value* LeftValAST::IRGenPtr(IRGenerator& IRContext) {
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
     //Get return type
-    std::cout << "FunctionAST" << std::endl;
+    std::cout << "FuncDefAST" << std::endl;
 
     auto IRBuilder = IRContext.IRBuilder; 
     llvm::Type* ReturnType = this->type_.ToLLVMType(IRContext);
@@ -569,6 +569,7 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
 }
 
 llvm::Value* FunctionCallAST::IRGen(IRGenerator& IRContext) {
+    std::cout << "FunctionCallAST" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder; 
 	llvm::Function* Func = IRContext.FindFunction(this->_FuncName);
 	//Get the function. Throw exception if the function doesn't exist.
@@ -607,4 +608,15 @@ llvm::Value* FunctionCallAST::IRGen(IRGenerator& IRContext) {
 		}
 
 	return IRBuilder->CreateCall(Func, ArgList);
+}
+
+llvm::Value* StringType::IRGen(IRGenerator& IRContext) {
+    std::cout << "StringType" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder; 
+	return IRBuilder->CreateGlobalStringPtr(this->_Content.c_str());
+}
+
+llvm::Value* StringType::IRGenPtr(IRGenerator& IRContext) {
+	throw std::logic_error("Constant string is a right-value.");
+	return NULL;
 }

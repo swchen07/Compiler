@@ -110,6 +110,12 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "for"                   {SAVE_TOKEN; return FOR;}
 "while"                 {SAVE_TOKEN; return WHILE;}
 
+"\""(\\.|[^"\\])*"\""		{
+                                yylval.strVal = new std::string("");
+                                for (int i = 1; i <= yyleng-2; i++)
+                                    yylval.strVal->push_back(yytext[i]);
+                                return CONST_STR;
+                            }
 
     /* 暂时参考北大在线文档给的demo */
     /* 标识符 */
