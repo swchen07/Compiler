@@ -1,8 +1,8 @@
 int printk(int ptr, ...);
 
-int main(void){
- int a = 2;
- printk("%d\n", a);
- return 0;
+int main(){
+	int a[105][20];
+	a[15][2] = 0;
+	return 0;
 }
 

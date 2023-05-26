@@ -141,8 +141,9 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 		llvm::ConstantInt* constant = llvm::dyn_cast<llvm::ConstantInt>(val);
 		//转换完之后将int提取出来
 		int convertedValue = constant->getSExtValue();
-		arrayType = llvm::ArrayType::get(arrayType, convertedValue); 
-	}
+		arrayType = llvm::ArrayType::get(arrayType, convertedValue);
+		std::cout << convertedValue << "  " << std::endl;
+ 	}
 
 	this->arrayType_ = arrayType;
 	// //创建变量
@@ -616,4 +617,64 @@ llvm::Value* AddressOf::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder;
 	llvm::Value* VarPtr = IRContext.FindVar(this->_Operand->name_);
 	return VarPtr;
+}
+
+llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "ArrVal" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder;
+	//this->exprs_ index索引
+	//
+	std::vector<llvm::Value*> indices;
+	//生成每个维度的索引
+	for(auto expr : *(this->exprs_)){
+		indices.push_back(expr->IRGen(IRContext));
+	}
+	
+	//搜索数组的指针
+	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
+	
+	llvm::Type* type = arrayPtr->getType()->getNonOpaquePointerElementType();
+
+	llvm::Value* elementPtr = IRBuilder->CreateGEP(type, arrayPtr, indices);
+
+	//将值返回
+	llvm::Value* val = IRBuilder->CreateLoad(type, elementPtr);
+
+	return val;
+}
+
+llvm::Value* ArrValAST::IRGenPtr(IRGenerator& IRContext) {
+	std::cout << "ArrValPtr" << std::endl;
+
+	auto IRBuilder = IRContext.IRBuilder;
+	//this->exprs_ index索引
+	//
+	std::vector<llvm::Value*> indices;
+	//生成每个维度的索引
+	for(auto expr : *(this->exprs_)){
+		indices.push_back(expr->IRGen(IRContext));
+	}
+	
+	//搜索数组的指针
+	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
+	
+	llvm::Type* type = arrayPtr->getType()->getNonOpaquePointerElementType();
+
+	type->print(llvm::outs());
+	std::cout << "" << std::endl;
+
+	llvm::Value* elementPtr = IRBuilder->CreateGEP(type, arrayPtr, indices);
+
+	return elementPtr;
+}
+
+llvm::Value* AssignArrAST::IRGen(IRGenerator& IRContext){
+	std::cout << "Assign" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);	
+	llvm::Value* LHSPtr = this->LHS_->IRGenPtr(IRContext);
+
+	//赋值
+	IRBuilder->CreateStore(RHS, LHSPtr);
+	return RHS; 
 }

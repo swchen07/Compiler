@@ -88,7 +88,7 @@ using namespace std;
 %type <astVal> VarDef
 
 
-%type <exprs> ArrDef
+%type <exprs> ArrDef ArrVal
 %type <astVal> InitVal
 
 %type <astVal> Block
@@ -104,6 +104,8 @@ using namespace std;
 %type <astVal> LVal
 %type <intVal> Number
 %type <astVal> Constant
+
+%type <astVal> ArrValF
 
 /* 优先级和结合性定义 */
 %right	ASSIGN
@@ -257,6 +259,7 @@ BlockItem
 SmooStmt
     : LVal ASSIGN Exp						{ $$ = new AssignAST((LeftValAST*)$1, (ExprAST*)$3); }
     | Exp								    { $$ = $1; }
+	| ArrValF ASSIGN Exp					{ $$ = new AssignArrAST((ArrValAST*)$1, (ExprAST*)$3); }
     | 									    { $$ = NULL; }
     | BREAK                                 { $$ = new BreakStmtAST(); }
     | CONTINUE                              { $$ = new ContinueStmtAST(); }
@@ -274,6 +277,14 @@ LVal
     : IDENTIFIER								{ $$ = new LeftValAST(*$1); }
     ;
 
+ArrValF
+	: IDENTIFIER ArrVal							{ $$ = new ArrValAST(*$1, (Exprs*)$2); }
+
+ArrVal
+	: ArrVal LBRACKET Exp RBRACKET		{ $$ = (Exprs*)$1; $$->push_back((ExprAST*)$3); }
+	|									{ $$ = new Exprs(); }
+	;
+
 ElseState
     : ELSE Block                        {$$ = $2; }
     |                                   {$$ = NULL; }
@@ -285,7 +296,7 @@ RetState
     ;
 
 PrimaryExp
-    : LPAREN Exp RPAREN	
+    : LPAREN Exp RPAREN					{ $$ = $2; }
     | LVal								{ $$ = $1; }
     | Constant							{ $$ = $1; }	
     ;
@@ -297,7 +308,8 @@ Constant
     ;
 
 Exp
-    : PrimaryExp						{ $$ = $1; }						
+    : PrimaryExp						{ $$ = $1; }	
+	| ArrValF							{ $$ = (ArrValAST*)$1; }					
     | ADD Exp %prec NOT					{ $$ = new MoncPlus((ExprAST*)$2); }
     | SUB Exp %prec NOT					{ $$ = new MoncMinus((ExprAST*)$2); }
     | NOT Exp							{ $$ = new LogicNot((ExprAST*)$2); }
