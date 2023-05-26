@@ -65,6 +65,7 @@ class LeftValAST;
 
 class IfElseStmtAST; 
 class ForStmtAST; 
+class WhileStmtAST;
 
 using CompUnits = std::vector<CompUnitAST*>;
 using Stmts = std::vector<StmtAST*>;
@@ -248,6 +249,18 @@ public:
 	ForStmtAST(StmtAST* _initStmt_, ExprAST* _condExpr_, StmtAST* _iterStmt_, BlockAST* _forBody_):
 		initStmt_(_initStmt_), condExpr_(_condExpr_), iterStmt_(_iterStmt_), forBody_(_forBody_){}
 	~ForStmtAST(){}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class WhileStmtAST : public StmtAST {
+public: 
+	ExprAST* condExpr_; 
+	BlockAST* whileBody_; 
+
+	WhileStmtAST(ExprAST* _condExpr_, BlockAST* _whileBody_): 
+		condExpr_(_condExpr_), whileBody_(_whileBody_) {}
+	~WhileStmtAST(){}; 
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };

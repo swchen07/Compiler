@@ -303,6 +303,10 @@ llvm::Value* ForStmtAST::IRGen(IRGenerator& IRContext) {
 }
 
 
+llvm::Value* WhileStmtAST::IRGen(IRGenerator& IRContext) {
+	return NULL;
+}
+
 /**
  * @brief 算术运算
  * 
