@@ -351,6 +351,7 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
     llvm::Type* ReturnType = this->type_.ToLLVMType(IRContext);
 
     std::vector<llvm::Type*> ArgTypes; 
+
 	for (auto ArgType : *(this->_ArgList)) {
 		llvm::Type* LLVMType = ArgType->type_.ToLLVMType(IRContext);
 		if (!LLVMType) {
@@ -359,8 +360,6 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
 		}
 		ArgTypes.push_back(LLVMType);
 	}
-	
-    std::cout << "xx" << std::endl;
 	
     //Get function type
     llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, this->_ArgList->_VarArgLenth);

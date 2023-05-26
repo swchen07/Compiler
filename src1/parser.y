@@ -188,7 +188,7 @@ ArgList:	_ArgList COMMA Arg										{  $$ = $1; $$->push_back($3);   }
 			| _ArgList COMMA ELLIPSES								{  $$ = $1; $$->SetVarArg();   }
 			| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
 			| ELLIPSES												{  $$ = new ArgListAST(); $$->SetVarArg();   }
-			|														{  $$ = new ArgListAST();   printf("hhh");}
+			|														{  $$ = new ArgListAST(); }
 			;
 
 _ArgList:	_ArgList COMMA Arg										{  $$ = $1; $$->push_back($3);   }	 
@@ -201,8 +201,8 @@ Arg:		Btype IDENTIFIER										{  $$ = new ArgAST(*$1, *$2);   }
 
 /* FuncDef       ::= FuncType IDENT "(" [FuncFParams] ")" Block; */
 FuncDef
-    : FuncType IDENTIFIER LPAREN ArgList RPAREN SEMI    { $$ = new FuncDefAST(*$1, *$2, (ArgListAST*)$4);}
-    | FuncType IDENTIFIER LPAREN ArgList RPAREN Block   { $$ = new FuncDefAST(*$1, *$2, (ArgListAST*)$4, (BlockAST*)$6);}
+    : FuncType IDENTIFIER LPAREN ArgList RPAREN SEMI    { $$ = new FuncDefAST(*$1, *$2, (ArgListAST*)$4); }
+    | FuncType IDENTIFIER LPAREN ArgList RPAREN Block   { $$ = new FuncDefAST(*$1, *$2, (ArgListAST*)$4, (BlockAST*)$6); }
     ;
 
 /* FuncType      ::= "void" | "int"; */

@@ -1402,7 +1402,7 @@ yyreduce:
 
   case 26: /* ArgList: %empty  */
 #line 191 "parser.y"
-                                                                                                                                        {  (yyval.argList) = new ArgListAST();   printf("hhh");}
+                                                                                                                                        {  (yyval.argList) = new ArgListAST(); }
 #line 1407 "parser.cpp"
     break;
 
@@ -1432,13 +1432,13 @@ yyreduce:
 
   case 31: /* FuncDef: FuncType IDENTIFIER LPAREN ArgList RPAREN SEMI  */
 #line 204 "parser.y"
-                                                        { (yyval.astVal) = new FuncDefAST(*(yyvsp[-5].strVal), *(yyvsp[-4].strVal), (ArgListAST*)(yyvsp[-2].argList));}
+                                                        { (yyval.astVal) = new FuncDefAST(*(yyvsp[-5].strVal), *(yyvsp[-4].strVal), (ArgListAST*)(yyvsp[-2].argList)); }
 #line 1437 "parser.cpp"
     break;
 
   case 32: /* FuncDef: FuncType IDENTIFIER LPAREN ArgList RPAREN Block  */
 #line 205 "parser.y"
-                                                        { (yyval.astVal) = new FuncDefAST(*(yyvsp[-5].strVal), *(yyvsp[-4].strVal), (ArgListAST*)(yyvsp[-2].argList), (BlockAST*)(yyvsp[0].astVal));}
+                                                        { (yyval.astVal) = new FuncDefAST(*(yyvsp[-5].strVal), *(yyvsp[-4].strVal), (ArgListAST*)(yyvsp[-2].argList), (BlockAST*)(yyvsp[0].astVal)); }
 #line 1443 "parser.cpp"
     break;
 
