@@ -14,3 +14,15 @@ int main() {
 		
 	}
 }
+
+int a() {
+	while(1){}
+
+	int a = 1; 
+	while (a < 10) {
+		a = a+1; 
+		while (0) {
+			a = a*2;
+		}
+	}
+}
