@@ -616,7 +616,9 @@ llvm::Value* StringType::IRGen(IRGenerator& IRContext) {
 	return IRBuilder->CreateGlobalStringPtr(this->_Content.c_str());
 }
 
-llvm::Value* StringType::IRGenPtr(IRGenerator& IRContext) {
-	throw std::logic_error("Constant string is a right-value.");
-	return NULL;
+llvm::Value* AddressOf::IRGen(IRGenerator& IRContext) {
+    std::cout << "AddressOf" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Value* VarPtr = IRContext.FindVar(this->_Operand->name_);
+	return VarPtr;
 }
