@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -57,16 +58,41 @@ public:
     IRVarAttr(VarType type, std::string name, llvm::Value* value):type_(type), name_(name), value_(value){}
 };
 
+class IRLoopAttr {
+public: 
+    llvm::BasicBlock* condBlock_;
+    llvm::BasicBlock* iterBlock_;
+    llvm::BasicBlock* exitBlock_; 
+
+    IRLoopAttr(llvm::BasicBlock* _condBlock_, llvm::BasicBlock* _iterBlock_, llvm::BasicBlock* _exitBlock_): 
+        condBlock_(_condBlock_), iterBlock_(_iterBlock_), exitBlock_(_exitBlock_){}
+};
+
+class IRFuncAttr {
+public: 
+    llvm::FunctionType* type_; 
+    std::string name_; 
+
+	llvm::Function* func_;
+
+    IRFuncAttr(llvm::FunctionType* type, std::string name, llvm::Function* func):type_(type), name_(name), func_(func){}
+
+    std::string getName() {return this->name_;}
+    llvm::Function* getFunc() {return this->func_;}
+};
+
 class IRGenerator {
 public: 
     llvm::LLVMContext* Context;
     llvm::IRBuilder<>* IRBuilder;
     llvm::Module* Module;
 
-    std::vector<IRVarAttr*> varList_;
     llvm::Function* curFunc_;
     BlockAST* curBasicBlock_;
     bool bbCreatePreBrSignal_;
+    std::vector<IRVarAttr*> varList_;
+    std::vector<IRFuncAttr*> funcList_;
+    std::vector<IRLoopAttr*> loopLevel_; 
 
     IRGenerator(){
         Context = new llvm::LLVMContext; 
@@ -88,6 +114,7 @@ public:
 
     void CreateVar(VarType type, std::string name, llvm::Value* value);
     void DiscardVar(); 
+	llvm::Value* FindVar(std::string name);
 
     void SetCurFunc(llvm::Function* curFunc);
     llvm::Function* GetCurFunc();
@@ -99,5 +126,17 @@ public:
     BlockAST* GetBasicBlock();
     void SetBasicBlock(BlockAST*);
 
-	llvm::Value* FindVar(std::string name);
+    void EnterLoop(llvm::BasicBlock* condBlock, llvm::BasicBlock* iterBlock, llvm::BasicBlock* exitBlock); 
+    void LeaveCurrentLoop(); 
+    llvm::BasicBlock* BreakCurrentLoop(); 
+    llvm::BasicBlock* ContinueCurrentLoop();
+
+    void CreateFunc(llvm::FunctionType*, std::string name, llvm::Function* func);
+    void DiscardFunc(int cnt);
+    llvm::Function* FindFunction(std::string Name);
 };
+
+
+llvm::Value* TypeCasting(llvm::Value* Value, llvm::Type* Type, IRGenerator& IRContext);
+
+llvm::Value* TypeUpgrading(llvm::Value* Value, llvm::Type* Type, IRGenerator& IRContext);
