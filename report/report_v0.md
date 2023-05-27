@@ -58,16 +58,31 @@ sysY 是一种简单的编程语言，通常用于教学和学术研究目的。
 ## 1.2 运行环境说明
 
 - Flex & Bison：使用flex和bison生成词法分析器和语法分析器。
-- LLVM-10：基于LLVM标准完成AST的构建、IR代码的生成；同时使用LLVM来完成编译器优化、目标代码生成。
+- LLVM-14：基于LLVM标准完成AST的构建、IR代码的生成；同时使用LLVM来完成编译器优化、目标代码生成。
 - CMake：使用CMake来构建工程。
 
 ### 1.2.1 安装参考
-
+1. 安装环境：Ubuntu22.04
+2. `Flex`:`sudo apt-get install flex`
+3. `Bison`:`sudo apt-get install Bison`
+4. `LLVM`:`sudo apt-get install llvm-14`(由于llvm不同版本接口有所变化，在实验中llvm版本在11即以下无法进行工程构建，请尽量和该版本保持一致)
 
 
 ### 1.2.2 工程搭建
-
-
+1. 进入工程根目录，工程结构如下：
+```
+doc/
+lib/
+Ref/
+simple_demo/
+src/
+tests/
+cmake_demo.sh
+cmake_src_cllean.sh
+cmake_src.sh
+README.md
+run_src_demo.sh
+```
 
 ### 1.2.3 使用说明
 
@@ -75,8 +90,7 @@ sysY 是一种简单的编程语言，通常用于教学和学术研究目的。
 
 ## 1.3 代码规范
 
-
-
+详细的代码规范请见`docs/styleGuide.md`。
 
 
 ## 1.4 分工说明
