@@ -132,6 +132,118 @@ ConstExp      ::= Exp;
 
 ha???
 
+```
+	//Subscript, e.g. a[10], b[2][3]
+	llvm::Value* Subscript::CodeGen(CodeGenerator& __Generator) {
+		return CreateLoad(this->CodeGenPtr(__Generator), __Generator);
+	}
+	llvm::Value* Subscript::CodeGenPtr(CodeGenerator& __Generator) {
+		//Get the pointer
+		llvm::Value* ArrayPtr = this->_Array->CodeGen(__Generator);
+		if (!ArrayPtr->getType()->isPointerTy()) {
+			throw std::logic_error("Subscript operator \"[]\" must be applied to pointers or arrays.");
+			return NULL;
+		}
+		//Get the index value
+		llvm::Value* Subspt = this->_Index->CodeGen(__Generator);
+		if (!(Subspt->getType()->isIntegerTy())) {
+			throw std::logic_error("Subscription should be an integer.");
+			return NULL;
+		}
+		//Return pointer addition
+		return CreateAdd(ArrayPtr, Subspt, __Generator);
+	}
+```
+
+```
+llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "ArrValPtr" << std::endl;
+
+	llvm::Value* temp;
+	auto IRBuilder = IRContext.IRBuilder;
+
+	//this->exprs_ index索引
+
+	std::vector<llvm::Value*> indices;
+	//生成每个维度的索引
+
+	for(auto expr : *(this->exprs_)){
+		indices.push_back(expr->IRGen(IRContext));
+		temp = expr->IRGen(IRContext);
+	}
+	
+	//搜索数组的指针
+	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
+
+	llvm::Value* zeroIndex = temp;
+	llvm::Value* oneIndex = temp;
+
+	// 计算第二行第二列元素的地址
+	llvm::Value* rowIndex = oneIndex;
+	llvm::Value* columnIndex = oneIndex;
+
+	llvm::Type* intType = IRBuilder->getInt32Ty();
+	llvm::ArrayType* arrayType = llvm::ArrayType::get(intType, 5);
+
+	// 第一维索引
+	llvm::Value* firstDimensionIndex = zeroIndex;
+
+	llvm::Value* firstDimensionPtr = IRBuilder->CreateGEP(arrayPtr->getType()->getNonOpaquePointerElementType(),arrayPtr, firstDimensionIndex);
+
+	// 第二维索引
+	llvm::Value* secondDimensionPtr = IRBuilder->CreateGEP(firstDimensionPtr->getType()->getNonOpaquePointerElementType(), firstDimensionPtr, rowIndex);
+
+	// 第三维索引
+	llvm::Value* thirdDimensionPtr = IRBuilder->CreateGEP(secondDimensionPtr->getType()->getNonOpaquePointerElementType(), secondDimensionPtr, columnIndex);
+
+
+	return IRBuilder->CreateLoad(secondDimensionPtr->getType()->getNonOpaquePointerElementType(), thirdDimensionPtr);
+}
+
+llvm::Value* ArrValAST::IRGenPtr(IRGenerator& IRContext) {
+	std::cout << "ArrValPtr" << std::endl;
+
+	llvm::Value* temp;
+	auto IRBuilder = IRContext.IRBuilder;
+
+	//this->exprs_ index索引
+
+	std::vector<llvm::Value*> indices;
+	//生成每个维度的索引
+
+	for(auto expr : *(this->exprs_)){
+		indices.push_back(expr->IRGen(IRContext));
+		temp = expr->IRGen(IRContext);
+	}
+	
+	//搜索数组的指针
+	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
+
+	llvm::Value* zeroIndex = temp;
+	llvm::Value* oneIndex = temp;
+
+	// 计算第二行第二列元素的地址
+	llvm::Value* rowIndex = oneIndex;
+	llvm::Value* columnIndex = oneIndex;
+
+	llvm::Type* intType = IRBuilder->getInt32Ty();
+	llvm::ArrayType* arrayType = llvm::ArrayType::get(intType, 5);
+
+	// 第一维索引
+	llvm::Value* firstDimensionIndex = zeroIndex;
+
+	llvm::Value* firstDimensionPtr = IRBuilder->CreateGEP(arrayPtr->getType()->getNonOpaquePointerElementType(),arrayPtr, firstDimensionIndex);
+
+	// 第二维索引
+	llvm::Value* secondDimensionPtr = IRBuilder->CreateGEP(firstDimensionPtr->getType()->getNonOpaquePointerElementType(), firstDimensionPtr, rowIndex);
+
+	// 第三维索引
+	llvm::Value* thirdDimensionPtr = IRBuilder->CreateGEP(secondDimensionPtr->getType()->getNonOpaquePointerElementType(), secondDimensionPtr, columnIndex);
+
+
+	return thirdDimensionPtr;
+}
+```
 
 
 
