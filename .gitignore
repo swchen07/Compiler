@@ -11,3 +11,4 @@ lexer.cpp
 parser.cpp
 parser.hpp
 test.c
+*.o
