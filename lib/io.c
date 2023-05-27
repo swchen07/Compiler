@@ -14,14 +14,19 @@ void scank(const char* format, ...) {
 
             switch (*format) {
                 case 'd': {
-                    int* value = (int*)va_arg(args, int);
+                    int* value = va_arg(args, int*);
                     scanf("%d", value);
                     break;
                 }
                 case 's': {
-                    char* value = (char*)va_arg(args, int);
+                    char* value = va_arg(args, char*);
                     scanf("%s", value);
                     break;
+                }
+                case 'c': {
+                    char* value = va_arg(args, char*);
+                    scanf("%c", value);
+                    break; 
                 }
                 default:
                     break;
@@ -50,9 +55,14 @@ void printk(const char* format, ...) {
                     break;
                 }
                 case 's': {
-                    char* value = (char*)va_arg(args, int);
+                    char* value = va_arg(args, char*);
                     printf("%s", value);
                     break;
+                }
+                case 'c': {
+                    int value = va_arg(args, int);
+                    printf("%c", value);
+                    break; 
                 }
                 default:
                     putchar(*format);

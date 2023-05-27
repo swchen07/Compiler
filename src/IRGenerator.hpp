@@ -62,11 +62,13 @@ class IRVarAttr {
 public: 
     VarType type_; 
     std::string name_; 
+    bool isPtr_; 
 
 	//llvm::Function* CurFunc;
     llvm::Value* value_;
 
-    IRVarAttr(VarType type, std::string name, llvm::Value* value):type_(type), name_(name), value_(value){}
+    IRVarAttr(VarType type, std::string name, llvm::Value* value, bool _isPtr_=false):
+        type_(type), name_(name), value_(value), isPtr_(_isPtr_){}
 };
 
 class IRLoopAttr {
@@ -127,9 +129,10 @@ public:
     void GenerateCode(BaseAST*);
     void GenObjectCode(std::string);
 
-    void CreateVar(VarType type, std::string name, llvm::Value* value);
+    void CreateVar(VarType type, std::string name, llvm::Value* value, bool isPtr=false);
     void DiscardVar(); 
 	llvm::Value* FindVar(std::string name);
+    bool IsPtrVar(std::string name);
 
     void SetCurFunc(llvm::Function* curFunc);
     llvm::Function* GetCurFunc();
