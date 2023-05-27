@@ -68,6 +68,8 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
 		case Int: return IRBuilder->getInt32Ty(); 
 		case Char: return IRBuilder->getInt8Ty(); 
 		case Short: return IRBuilder->getInt16Ty(); 
+		case Arr: return this->_BaseType_pointer->ToLLVMType(IRContext); 
+		// case Ptr: return this->_BaseType->ToLLVMType(IRContext);
 	}
 }
 
@@ -222,24 +224,29 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
 }
 
 llvm::Value* FuncCallAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "FuncCallAST" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder; 
 	llvm::Function* Func = IRContext.FindFunction(this->_FuncName);
 	
+	std::cout << "1" << std::endl;
 
 	if (Func == NULL) {
 		throw std::domain_error(this->_FuncName + " is not a defined function.");
 		return NULL;
 	}
+	std::cout << "2" << std::endl;
 	
 	if (Func->isVarArg() && this->_ArgList->size() < Func->arg_size() ||
 		!Func->isVarArg() && this->_ArgList->size() != Func->arg_size()) {
 		throw std::invalid_argument("Args doesn't match when calling function " + this->_FuncName + ". Expected " + std::to_string(Func->arg_size()) + ", got " + std::to_string(this->_ArgList->size()));
 		return NULL;
 	}
+	std::cout << "3" << std::endl;
 	
 	std::vector<llvm::Value*> ArgList;
 	size_t Index = 0;
 	for (auto ArgIter = Func->arg_begin(); ArgIter < Func->arg_end(); ArgIter++, Index++) {
+		std::cout << "4" << std::endl;
 		llvm::Value* Arg = this->_ArgList->at(Index)->IRGen(IRContext);
 		Arg = TypeCasting(Arg, ArgIter->getType(), IRContext);
 		if (Arg == NULL) {
@@ -248,6 +255,7 @@ llvm::Value* FuncCallAST::IRGen(IRGenerator& IRContext) {
 		}
 		ArgList.push_back(Arg);
 	}
+	std::cout << "5" << std::endl;
 	
 	if (Func->isVarArg())
 		for (; Index < this->_ArgList->size(); Index++) {
@@ -732,3 +740,16 @@ llvm::Value* AssignArrAST::IRGen(IRGenerator& IRContext){
 	IRBuilder->CreateStore(RHS, LHSPtr);
 	return RHS; 
 }
+
+llvm::Type* PointerType::ToLLVMType(IRGenerator& IRContext){
+	std::cout << "PointerType" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Type* BaseType = this->_BaseType.ToLLVMType(IRContext);
+	return llvm::PointerType::get(BaseType, 0U);
+}
+
+// llvm::Type* ArrayType::ToLLVMType(IRGenerator& IRContext){
+// 	auto IRBuilder = IRContext.IRBuilder;
+// 	llvm::Type* BaseType = this->_BaseType.ToLLVMType(IRContext);
+// 	return this->_LLVMType = llvm::ArrayType::get(BaseType, this->_Length);
+// }

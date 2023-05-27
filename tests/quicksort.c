@@ -4,7 +4,8 @@ int scank(char ptr, ...);
 int quicksort(int a, int left, int right){
 	int i = left;
 	int	j = right;
-	int	mid = a[(i + j) / 2];
+    int t = (i + j) / 2;
+	int	mid = a[t];
 	while (i < j){
 		while (a[i] < mid) {
             i = i + 1;
