@@ -152,7 +152,7 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 	//初始化
 
 
-	IRContext.CreateVar(this->type_, this->arrName_, AllocMem); 
+	IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true); 
 }
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
@@ -597,9 +597,14 @@ llvm::Value* LeftValAST::IRGen(IRGenerator& IRContext) {
 	std::cout << "LeftVal" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder;
 	llvm::Value* VarPtr = IRContext.FindVar(this->name_);
-	llvm::Type* type = VarPtr->getType()->getNonOpaquePointerElementType();
-	llvm::Value* val = IRBuilder->CreateLoad(type,VarPtr);
-	return val;
+	if (IRContext.IsPtrVar(this->name_)) {
+		return VarPtr; 
+	}
+	else {
+		llvm::Type* type = VarPtr->getType()->getNonOpaquePointerElementType();
+		llvm::Value* val = IRBuilder->CreateLoad(type,VarPtr);
+		return val;
+	}
 }
 
 llvm::Value* LeftValAST::IRGenPtr(IRGenerator& IRContext) {
