@@ -166,6 +166,7 @@ bool IRGenerator::IsPtrVar(std::string name) {
 			return (*symbol)->isPtr_; 
 		}
 	}
+
 	return false;
 }
 

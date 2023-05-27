@@ -1,10 +1,13 @@
 int printk(int ptr, ...);
 int scank(char ptr, ...);
 
-int quicksort(int a, int left, int right){
+static int a[10001];
+int quicksort(int left, int right){
 	int i = left;
 	int	j = right;
-	int	mid = a[(i + j) / 2];
+	int temp = (i + j) / 2;
+	int mid;
+	mid = a[temp];
 	while (i < j){
 		while (a[i] < mid) {
             i = i + 1;
@@ -21,10 +24,10 @@ int quicksort(int a, int left, int right){
 		}
 	}
 	if (left < j) {
-        quicksort(a, left, j - 1);
+        quicksort(left, j - 1);
     }
 	if (i < right) {
-        quicksort(a, i + 1, right);
+        quicksort(i + 1, right);
     }
 
     return 0;
@@ -32,22 +35,19 @@ int quicksort(int a, int left, int right){
 
 int main(void){
 	int n;
-	int a[10];
     int temp;
 
-	printk("Input the size of array:\n");
 	scank("%d", &n);
-	printk("Input %d integers:\n", n);
     int i;
+	
 	for (i = 0; i < n; i = i + 1){
         scank("%d", &temp);
         a[i] = temp;
     }
 		
-	quicksort(&a, 0, n - 1);
-	printk("Output quicksort result:\n");
+	quicksort(0, n - 1);
 	for (i = 0; i < n; i=i+1){
-		printk("%d ", a[i]);
+		printk("%d\n", a[i]);
     }
     
 	return 0;

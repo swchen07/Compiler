@@ -1,3 +1,5 @@
+static int c;
+static int d[100];
 int printk(int ptr, ...);
 int scank(int ptr, ...);
 
@@ -5,8 +7,8 @@ int main(){
 	int a2;
 	int b1;
 	int a1;
-	int b2;
-
+	int b2 =2;
+	d[1] = b2;
 	int Arr1[1000];
 	int Arr2[1000];
 	int Res[1000];
