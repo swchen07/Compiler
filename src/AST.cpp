@@ -311,7 +311,10 @@ llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
 llvm::Value* ReturnStmtAST::IRGen(IRGenerator& IRContext) {
     std::cout << "ReturnAST" << std::endl;
     auto IRBuilder = IRContext.IRBuilder; 
-    IRBuilder->CreateRet(this->RetVal_->IRGen(IRContext));
+	if (this->RetVal_)
+    	IRBuilder->CreateRet(this->RetVal_->IRGen(IRContext));
+	else
+		IRBuilder->CreateRetVoid();
     return NULL; 
 }
 

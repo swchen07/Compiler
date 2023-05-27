@@ -3,7 +3,7 @@ int scank(int ptr, ...);
 
 int a(int x){
 	printk("%d\n", x);
-	return 1;
+	return;
 }
 
 int main(){
