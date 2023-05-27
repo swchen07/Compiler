@@ -134,6 +134,7 @@ CompUnit
     : CompUnit FuncDef									{ $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
     | 													{ $$ = new CompUnits(); }
     ;
+/*    | CompUnit Decl                                     { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }*/
 
 /* Decl          ::= ConstDecl | VarDecl; */
 Decl
@@ -246,7 +247,7 @@ Block
     ;
 
 BlockItemNew
-    : BlockItemNew BlockItem					{ $$ = (Stmts*)$1; if ($2 != NULL)$$->push_back((StmtAST*)$2); }
+    : BlockItemNew BlockItem					{ $$ = (Stmts*)$1; if ($2 != NULL)$$->push_back((CompUnitAST*)$2); }
     | 											{ $$ = new Stmts(); }
     ;
 

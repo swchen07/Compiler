@@ -2,8 +2,8 @@ int printk(int ptr, ...);
 int scank(int ptr, ...);
 
 int a(int x){
-	printk("%d\n", x);
-	return;
+	printk("%10d\n", x);
+	return 1;
 }
 
 int main(){
@@ -25,6 +25,19 @@ int main(){
 	// scank("%s", b);
 	// scank("%c%c", &c, &d);
 	// printk("123131 %s %d %d %s %c\n", "1222d", 1, a, b, d);
+
+	int ma[2][2];
+	int mb[2][2];
+	int i;
+	int j;
+
+	for(i=0; i < 2; i=i+1){
+		for (j=0; j < 2; j=j+1){
+			
+		}
+		printk("\n");
+	}
+
 	return 0;
 }
 

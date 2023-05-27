@@ -92,20 +92,50 @@ llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
 
 llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 	std::cout << "VarDeclAST" << std::endl;
-	auto IRBuilder = IRContext.IRBuilder; 
 
-	//创建变量
-	auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varDef_->varName_);
-	
-	// llvm::Value* initVal = CastType(this->, IRContext)
+	if (IRContext.GetCurFunc()) {
+		// local variable
 
-	// initialize
-	llvm::Value* value = this->varDef_->IRGen(IRContext);
+		auto IRBuilder = IRContext.IRBuilder; 
 
-	// store will always align to 4, even for char, which is because we need a type cast for 'value'
-	IRBuilder->CreateStore(value, AllocMem);
+		//创建变量
+		auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varDef_->varName_);
+		
+		// llvm::Value* initVal = CastType(this->, IRContext)
 
-	IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
+		// initialize
+		llvm::Value* value = this->varDef_->IRGen(IRContext);
+
+		// store will always align to 4, even for char, which is because we need a type cast for 'value'
+		IRBuilder->CreateStore(value, AllocMem);
+
+		IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
+	}
+	else {
+		// global variable
+		// initialize
+		std::cout << "VarDeclAST -> global variable" << std::endl;
+
+		llvm::Value* value = this->varDef_->IRGen(IRContext);
+
+		// convert to const
+		llvm::Constant* initializer = llvm::cast<llvm::Constant>(value);
+		if (!initializer) {
+			throw std::logic_error("The initializer is not const type: "+this->varDef_->varName_);
+		}
+
+		//Create a global variable
+		auto AllocMem = new llvm::GlobalVariable(
+			*(IRContext.Module),
+			this->type_.ToLLVMType(IRContext),
+			false,
+			llvm::Function::ExternalLinkage,
+			initializer, 
+			this->varDef_->varName_
+		);
+		
+		IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
+	}
 
 	return NULL;
 }

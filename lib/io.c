@@ -46,27 +46,42 @@ void printk(const char* format, ...) {
 
     while (*format != '\0') {
         if (*format == '%') {
-            format++;
+            char formats[10];
+            int index = 0;
+            int loop = 1; 
+            formats[0] = '%'; 
 
-            switch (*format) {
-                case 'd': {
-                    int value = va_arg(args, int);
-                    printf("%d", value);
-                    break;
+            while (loop){
+                format++;
+                index++;
+                formats[index] = *format; 
+                formats[index+1] = '\0';
+
+                switch (*format) {
+                    case 'd': {
+                        int value = va_arg(args, int);
+                        printf(formats, value);
+                        break;
+                    }
+                    case 's': {
+                        char* value = va_arg(args, char*);
+                        printf(formats, value);
+                        break;
+                    }
+                    case 'c': {
+                        int value = va_arg(args, int);
+                        printf(formats, value);
+                        break; 
+                    }
+                    default:
+                        if (!(*format >= '0' && *format <= '9')) {
+                            loop = 0; 
+                            putchar(*format);
+                        }
+                        
+                        break;
                 }
-                case 's': {
-                    char* value = va_arg(args, char*);
-                    printf("%s", value);
-                    break;
-                }
-                case 'c': {
-                    int value = va_arg(args, int);
-                    printf("%c", value);
-                    break; 
-                }
-                default:
-                    putchar(*format);
-                    break;
+                if (!loop) break;
             }
         } else {
             putchar(*format);

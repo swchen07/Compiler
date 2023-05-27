@@ -74,7 +74,7 @@ class ArgListAST;
 class FuncCallAST; 
 
 using CompUnits = std::vector<CompUnitAST*>;
-using Stmts = std::vector<StmtAST*>;
+using Stmts = std::vector<CompUnitAST*>;
 using Exprs = std::vector<ExprAST*>;
 using ExprListAST = std::vector<ExprAST*>;
 /**
