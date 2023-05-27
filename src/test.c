@@ -5,6 +5,10 @@ int main(){
 	int a; 
 	char b[100]; 
 	char c;
+	// a
+	/*
+	sdsadassad
+	*/
 	char d; 
 	scank("%d", &a); 
 	scank("%s", b);
