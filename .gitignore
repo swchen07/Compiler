@@ -1,5 +1,5 @@
 # 测试文件
-/docs/csw_rec.md
+
 .vscode
 /llvm-project
 /tests/toyCompiler
@@ -11,4 +11,3 @@ lexer.cpp
 parser.cpp
 parser.hpp
 test.c
-*.o

@@ -559,3 +559,26 @@ public:
 	~AddressOf(void) {}
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
+
+class ArrValAST : public ExprAST {
+public:
+	std::string name_;
+	Exprs* exprs_;
+
+	ArrValAST(std::string _name_, Exprs* _exprs_) : name_(_name_), exprs_(_exprs_) {}
+	~ArrValAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+	llvm::Value* IRGenPtr(IRGenerator& IRContext);
+};
+
+class AssignArrAST : public StmtAST {
+	public:
+	ArrValAST* LHS_;
+	ExprAST* RHS_;
+
+	AssignArrAST(ArrValAST* _LHS_, ExprAST* _RHS_) : LHS_(_LHS_), RHS_(_RHS_) {}
+	~AssignArrAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};

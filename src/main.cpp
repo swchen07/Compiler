@@ -16,7 +16,7 @@ int main(int argc, const char* argv[]) {
     IRGenerator Gen;
     Gen.GenerateCode(Root);
 
-    Gen.GenObjectCode("test.o");
+    Gen.GenObjectCode("simpledemo.o");
 
     std::cout << "Hello" << std::endl;
 

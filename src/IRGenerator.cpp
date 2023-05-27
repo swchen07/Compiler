@@ -119,7 +119,7 @@ void IRGenerator::GenObjectCode(std::string outputfile) {
     Dest.flush();
 }
 
-void IRGenerator::CreateVar(VarType type, std::string name, llvm::Value* value){
+void IRGenerator::CreateVar(VarType type, std::string name, llvm::Value* value, bool isPtr){
     // first judge name
     int conflictCnt; 
     int varCnt = this->varList_.size(); 
@@ -132,7 +132,7 @@ void IRGenerator::CreateVar(VarType type, std::string name, llvm::Value* value){
         }
     } 
 
-    this->varList_.push_back(new IRVarAttr(type, name, value));
+    this->varList_.push_back(new IRVarAttr(type, name, value, isPtr));
     if (this->curBasicBlock_) this->curBasicBlock_->varCnt_ += 1; 
 }
 
@@ -155,6 +155,18 @@ llvm::Value* IRGenerator::FindVar(std::string name){
 		}
 	}
 	return NULL;
+}
+
+bool IRGenerator::IsPtrVar(std::string name) {
+    if(this->varList_.size() == 0){
+		return false;
+	}
+	for(auto symbol = this->varList_.end() - 1; symbol >= this->varList_.begin(); symbol--){
+		if((*symbol)->name_ == name){
+			return (*symbol)->isPtr_; 
+		}
+	}
+	return false;
 }
 
 void IRGenerator::SetCurFunc(llvm::Function* curFunc) {
