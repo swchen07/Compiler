@@ -582,3 +582,13 @@ class AssignArrAST : public StmtAST {
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
+
+//Pointer type.
+class PointerType : public VarType {
+public:
+	VarType _BaseType;
+
+	PointerType(VarType __BaseType) : _BaseType(__BaseType) {}
+	~PointerType(void) {}
+	llvm::Type* toLLVMType(CodeGenerator& __Generator);
+};

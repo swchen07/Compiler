@@ -226,8 +226,13 @@ _ArgList:	_ArgList COMMA Arg										{  $$ = $1; $$->push_back($3);   }
 			| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
 			;
 
-Arg:		Btype IDENTIFIER										{  $$ = new ArgAST(*$1, *$2);   }
-			| Btype												    {  $$ = new ArgAST(*$1);   }
+VarType
+    : Btype                                             { $$ = $1; }
+    | BType PTR                                         { $$ = new PointerType(*$1); }
+    ;
+
+Arg:		VarType IDENTIFIER										{  $$ = new ArgAST(*$1, *$2);   }
+			| VarType												{  $$ = new ArgAST(*$1);   }
 			;
 
 
