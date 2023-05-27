@@ -340,7 +340,7 @@ Exp
     | Exp BOR  Exp
     | Exp BXOR Exp
 
-    | IDENTIFIER LPAREN ExpList RPAREN	 {  $$ = new FunctionCallAST(*$1, $3);   }
+    | IDENTIFIER LPAREN ExpList RPAREN	 {  $$ = new FuncCallAST(*$1, $3);   }
 	;
 
 ExpList:	_ExpList COMMA Exp									{  $$ = $1; $$->push_back((ExprAST*)$3);   }

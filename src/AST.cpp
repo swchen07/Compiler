@@ -191,6 +191,13 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
 			IRContext.CreateFunc(FuncType, this->funcName_, Func, true);
 		}
 
+		int i = 0; 
+		for (auto ArgIter = Func->arg_begin(); ArgIter < Func->arg_end(); ArgIter++) {
+			auto ArgInf = this->_ArgList->at(i);
+			IRContext.RemainFutureVar(ArgInf->type_, ArgInf->_Name, ArgIter);
+			i ++; 
+		}
+
 		IRContext.SetCurFunc(Func);
 		IRContext.ClearPreBrSignal();
 
@@ -214,22 +221,22 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
     return NULL;
 }
 
-llvm::Value* FunctionCallAST::IRGen(IRGenerator& IRContext) {
+llvm::Value* FuncCallAST::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
 	llvm::Function* Func = IRContext.FindFunction(this->_FuncName);
-	//Get the function. Throw exception if the function doesn't exist.
+	
 
 	if (Func == NULL) {
 		throw std::domain_error(this->_FuncName + " is not a defined function.");
 		return NULL;
 	}
-	//Check the number of args. If Func took a different number of args, reject.
+	
 	if (Func->isVarArg() && this->_ArgList->size() < Func->arg_size() ||
 		!Func->isVarArg() && this->_ArgList->size() != Func->arg_size()) {
 		throw std::invalid_argument("Args doesn't match when calling function " + this->_FuncName + ". Expected " + std::to_string(Func->arg_size()) + ", got " + std::to_string(this->_ArgList->size()));
 		return NULL;
 	}
-	//Check arg types. If Func took different different arg types, reject.
+	
 	std::vector<llvm::Value*> ArgList;
 	size_t Index = 0;
 	for (auto ArgIter = Func->arg_begin(); ArgIter < Func->arg_end(); ArgIter++, Index++) {
@@ -241,8 +248,7 @@ llvm::Value* FunctionCallAST::IRGen(IRGenerator& IRContext) {
 		}
 		ArgList.push_back(Arg);
 	}
-	//Continue to push arguments if this function takes a variable number of arguments
-	//According to the C standard, bool/char/short should be extended to int, and float should be extended to double
+	
 	if (Func->isVarArg())
 		for (; Index < this->_ArgList->size(); Index++) {
 			llvm::Value* Arg = this->_ArgList->at(Index)->IRGen(IRContext);
@@ -280,6 +286,9 @@ llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
 
 	IRContext.SetBasicBlock(this); 
     IRBuilder->SetInsertPoint(newBlock);
+
+	// at the beginning of a function, we need to create variables for params
+	IRContext.CreateFutureVars(); 
 
 	for (auto stmt : *(this->stmts_)){
 		if(stmt){

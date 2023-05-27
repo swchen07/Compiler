@@ -110,6 +110,7 @@ public:
     std::vector<IRVarAttr*> varList_;
     std::vector<IRFuncAttr*> funcList_;
     std::vector<IRLoopAttr*> loopLevel_; 
+    std::vector<IRVarAttr*> varListForFuture_;
 
     IRGenerator(){
         Context = new llvm::LLVMContext; 
@@ -133,6 +134,9 @@ public:
     void DiscardVar(); 
 	llvm::Value* FindVar(std::string name);
     bool IsPtrVar(std::string name);
+
+    void RemainFutureVar(VarType type, std::string name, llvm::Value* value, bool isPtr=false); 
+    void CreateFutureVars(); 
 
     void SetCurFunc(llvm::Function* curFunc);
     llvm::Function* GetCurFunc();
