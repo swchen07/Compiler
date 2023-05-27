@@ -169,6 +169,38 @@ bool IRGenerator::IsPtrVar(std::string name) {
 	return false;
 }
 
+void IRGenerator::RemainFutureVar(VarType type, std::string name, llvm::Value* value, bool isPtr) {
+    // first judge name
+    int varCnt = this->varListForFuture_.size(); 
+    for (int i = 1; i <= varCnt; i++) {
+        if (this->varListForFuture_[varCnt-i]->name_ == name) {
+            // already has the same name
+            throw std::logic_error("Already Create a Variable with Name: "+name);
+        }
+    } 
+
+    this->varListForFuture_.push_back(new IRVarAttr(type, name, value, isPtr));
+}
+
+void IRGenerator::CreateFutureVars() {
+    auto IRBuilder = this->IRBuilder; 
+
+    int argCnt = this->varListForFuture_.size();
+    for (int i = 1; i <= argCnt; i++) {
+        auto arg = this->varListForFuture_[argCnt-i];
+
+        //创建变量
+        auto AllocMem = IRBuilder->CreateAlloca(arg->type_.ToLLVMType(*this), 0, arg->name_);
+        IRBuilder->CreateStore(arg->value_, AllocMem);
+
+        this->CreateVar(arg->type_, arg->name_, AllocMem, arg->isPtr_); 
+
+        // delete this one
+        this->varListForFuture_.pop_back();
+        delete arg; 
+    }
+}
+
 void IRGenerator::SetCurFunc(llvm::Function* curFunc) {
     this->curFunc_ = curFunc; 
 }

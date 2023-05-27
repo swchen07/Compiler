@@ -71,7 +71,7 @@ class ContinueStmtAST;
 
 class ArgAST; 
 class ArgListAST; 
-class FunctionCallAST; 
+class FuncCallAST; 
 
 using CompUnits = std::vector<CompUnitAST*>;
 using Stmts = std::vector<StmtAST*>;
@@ -135,6 +135,7 @@ public:
     BlockAST(Stmts* _stmts_): stmts_(_stmts_), varCnt_(0){}
     ~BlockAST(){}
 
+	// void CreatePreDefinedVars(IRGenerator& IRContext); 
     llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
@@ -533,13 +534,13 @@ public:
 	llvm::Value* IRGen(IRGenerator& IRContext) { return NULL; }
 };
 
-class FunctionCallAST : public ExprAST {
+class FuncCallAST : public ExprAST {
 public:
 	std::string _FuncName;
 	ExprListAST* _ArgList;
 
-	FunctionCallAST(const std::string& __FuncName, ExprListAST* __ArgList) : _FuncName(__FuncName), _ArgList(__ArgList) {}
-	~FunctionCallAST(void) {}
+	FuncCallAST(const std::string& __FuncName, ExprListAST* __ArgList) : _FuncName(__FuncName), _ArgList(__ArgList) {}
+	~FuncCallAST(void) {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
