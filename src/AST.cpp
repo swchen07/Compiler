@@ -68,6 +68,7 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
 		case Int: return IRBuilder->getInt32Ty(); 
 		case Char: return IRBuilder->getInt8Ty(); 
 		case Short: return IRBuilder->getInt16Ty(); 
+		case Ptr: return this->_BaseType_pointer->ToLLVMType(IRContext);
 	}
 }
 
@@ -182,7 +183,7 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 	//初始化
 
 
-	IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true); 
+	IRContext.CreateVar(this->elementType_, this->arrName_, AllocMem, true); 
 }
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
@@ -691,9 +692,21 @@ llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
 	llvm::Value* v1, *v2;
 
 	for(auto indice: indices){
-		v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
-
-		v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
+		if(arrayPtr->getType()->isArrayTy()){
+			v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());	
+		}
+		else if(arrayPtr->getType()->isPointerTy()){
+			v1 = arrayPtr;
+		}
+		else{
+			throw std::logic_error("The sunsciption operation received neither array type nor pointer type");
+		}
+		if(indice->getType()->isIntegerTy()){
+			v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
+		}
+		else{
+			throw std::logic_error("The sunsciption operation received not integer");
+		}
 	}
 	
 	// llvm::Value* v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
@@ -764,4 +777,11 @@ llvm::Value* AssignArrAST::IRGen(IRGenerator& IRContext){
 	//赋值
 	IRBuilder->CreateStore(RHS, LHSPtr);
 	return RHS; 
+}
+
+llvm::Type* PointerType::ToLLVMType(IRGenerator& IRContext){
+	std::cout << "PointerType" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Type* BaseType = this->_BaseType.ToLLVMType(IRContext);
+	return llvm::PointerType::get(BaseType, 0U);
 }
