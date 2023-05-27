@@ -301,7 +301,7 @@ ElseState
 
 RetState
     : Exp								{$$ = $1;}
-    |
+    |                                   {$$ = NULL; }
     ;
 
 PrimaryExp
