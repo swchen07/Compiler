@@ -1,33 +1,40 @@
 int printk(int ptr, ...);
 int scank(char ptr, ...);
 
-static int a[10008];
-int quicksort(int left, int right){
+int quicksort(int ptr a, int left, int right){
+	//printk("QuickSort\n");
 	int i = left;
 	int	j = right;
-	int temp = (i + j) / 2;
+	int temp = i + j;
+	temp = temp/2;
+	//printk(" %d %d %d @@@", temp, left, right);
 	int mid;
 	mid = a[temp];
+	//printk(" %d# ", mid);
 	while (i < j){
 		while (a[i] < mid) {
             i = i + 1;
+			//printk("What i%d?\n",i);
         }
 		while (mid < a[j]){
             j = j - 1;
+			//printk("What j%d?\n",j);
         }
-		if (i < j){
+		if (i <= j){
 			int temp = a[i];
 			a[i] = a[j];
 			a[j] = temp;
 			i = i + 1;
             j = j - 1;
 		}
+		//printk("\n");
 	}
+	
 	if (left < j) {
-        quicksort(left, j - 1);
+        quicksort(a, left, j);
     }
 	if (i < right) {
-        quicksort(i + 1, right);
+        quicksort(a, i, right);
     }
 
     return 0;
@@ -35,20 +42,17 @@ int quicksort(int left, int right){
 
 int main(){
 	int n;
-    int i;
     int temp;
-
+	int a[10000];
 	scank("%d", &n);
-
-	// a[6000] = 3;
-	// printk("Test: %d\n", a[6000]);
+    int i;
 	
 	for (i = 0; i < n; i = i + 1){
         scank("%d", &temp);
-		// printk("Read Complete %d %d!\n", i, temp);
         a[i] = temp;
     }
-	quicksort(0, n - 1);
+		
+	quicksort(a, 0, n - 1);
 	for (i = 0; i < n; i=i+1){
 		printk("%d\n", a[i]);
     }

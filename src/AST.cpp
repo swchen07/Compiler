@@ -689,53 +689,6 @@ llvm::Value* AddressOf::IRGen(IRGenerator& IRContext) {
 	return VarPtr;
 }
 
-// llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
-// 	std::cout << "ArrVal" << std::endl;
-
-// 	auto IRBuilder = IRContext.IRBuilder;
-
-// 	//搜索数组的指针
-// 	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
-	
-// 	//this->exprs_ index索引
-
-// 	std::vector<llvm::Value*> indices;
-
-// 	//生成每个维度的索引
-
-// 	for(auto expr : *(this->exprs_)){
-// 		indices.push_back(expr->IRGen(IRContext));
-
-// 	}
-
-// 	llvm::Value* v1, *v2;
-
-// 	for(auto indice: indices){
-// 		if(arrayPtr->getType()->isArrayTy()){
-// 			v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());	
-// 		}
-// 		else if(arrayPtr->getType()->isPointerTy()){
-// 			v1 = arrayPtr;
-// 		}
-// 		else{
-// 			throw std::logic_error("The sunsciption operation received neither array type nor pointer type");
-// 		}
-// 		if(indice->getType()->isIntegerTy()){
-// 			v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
-// 		}
-// 		else{
-// 			throw std::logic_error("The sunsciption operation received not integer");
-// 		}
-// 	}
-	
-// 	// llvm::Value* v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
-
-// 	// llvm::Value* v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indices[0]);
-	
-// 	return IRBuilder->CreateLoad(v1->getType()->getNonOpaquePointerElementType(), v2);
-
-// }
-
 llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
 	std::cout << "ArrVal" << std::endl;
 
@@ -795,7 +748,6 @@ llvm::Value* ArrValAST::IRGenPtr(IRGenerator& IRContext) {
 	//搜索数组的指针
 	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
 	arrayPtr->print(llvm::outs());
-	std::cout << "We find the type!!!!!!!!!!!!!!" << std::endl;
 	
 	//this->exprs_ index索引
 
@@ -811,40 +763,21 @@ llvm::Value* ArrValAST::IRGenPtr(IRGenerator& IRContext) {
 	llvm::Value* v1, *v2;
 
 	for(auto indice: indices){
-		v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
+		if(arrayPtr->getType()->getNonOpaquePointerElementType()->isArrayTy()){
+			v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());	
+		}
+		else if(arrayPtr->getType()->isPointerTy()){
+			v1 = IRBuilder->CreateLoad(arrayPtr->getType()->getNonOpaquePointerElementType(), arrayPtr);
+		}
+		else{
+			throw std::logic_error("The sunsciption operation received neither array type nor pointer type");
+		}
+		// v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
 
-		
 		v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
 	}
-	v1->print(llvm::outs());
-		std::cout << "We find the type!!!!!!!!!!!!!!" << std::endl;
-		v2->print(llvm::outs());
-		std::cout << "We find the type!!!!!!!!!!!!!!" << std::endl;
 	return v2;
-
-
-	// llvm::Value* zeroIndex = indices;
-	// llvm::Value* oneIndex = indices;
-
-	// // 计算第二行第二列元素的地址
-	// llvm::Value* rowIndex = oneIndex;
-	// llvm::Value* columnIndex = oneIndex;
-
-	// llvm::Type* intType = IRBuilder->getInt32Ty();
-	// llvm::ArrayType* arrayType = llvm::ArrayType::get(intType, 5);
-
-	// // 第一维索引
-	// llvm::Value* firstDimensionIndex = zeroIndex;
-
-	// llvm::Value* firstDimensionPtr = IRBuilder->CreateGEP(arrayPtr->getType()->getNonOpaquePointerElementType(),arrayPtr, firstDimensionIndex);
-
-	// // 第二维索引
-	// llvm::Value* secondDimensionPtr = IRBuilder->CreateGEP(firstDimensionPtr->getType()->getNonOpaquePointerElementType(), firstDimensionPtr, rowIndex);
-
-
-	// return secondDimensionPtr;
 }
-
 llvm::Value* AssignArrAST::IRGen(IRGenerator& IRContext){
 	std::cout << "Assign" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder;
