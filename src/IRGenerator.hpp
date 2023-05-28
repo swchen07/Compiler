@@ -129,6 +129,7 @@ public:
 
     void GenerateCode(BaseAST*);
     void GenObjectCode(std::string);
+    void DumpIRCode(std::string FileName);
 
     void CreateVar(VarType type, std::string name, llvm::Value* value, bool isPtr=false);
     void DiscardVar(); 

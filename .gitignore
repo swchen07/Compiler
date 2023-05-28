@@ -17,11 +17,8 @@ test.c
 a.out
 simpledemo.o
 Compiler.o
+Compiler.ir
 quickSort.out
 matrix.out
 Advisor.out
-Sort_run.sh
-Array_run.sh
-Advisor_run.sh
-Test_run.sh
 
