@@ -794,13 +794,13 @@ ConstExp
 
 AST的结构和表示方式可以根据具体的语言和编译器实现而有所不同，但通常包含以下类型的节点：
 
-1. 标识符（Identifier）节点：用于表示变量、函数名等标识符的节点。
-2. 常量（Const）节点：用于表示常量值的节点，如整数、浮点数、字符串等。
-3. 表达式（Expression）节点：用于表示各种表达式，如算术表达式、逻辑表达式、赋值表达式等。
-4. 语句（Statement）节点：用于表示各种语句，如条件语句、循环语句、函数调用语句等。
-5. 声明（Declaration）节点：用于表示变量声明、函数声明等语句。
-6. 类型（Type）节点：用于表示变量或表达式的数据类型。
-7. 控制流（Control Flow）节点：用于表示程序的控制流结构，如条件分支、循环等。
+1. **标识符（Identifier）**节点：用于表示变量、函数名等标识符的节点。
+2. **常量（Const）节点**：用于表示常量值的节点，如整数、浮点数、字符串等。
+3. **表达式（Expression）节点**：用于表示各种表达式，如算术表达式、逻辑表达式、赋值表达式等。
+4. **语句（Statement）节点**：用于表示各种语句，如条件语句、循环语句、函数调用语句等。
+5. **声明（Declaration）节点**：用于表示变量声明、函数声明等语句。
+6. **类型（Type）节点**：用于表示变量或表达式的数据类型。
+7. **控制流（Control Flow）节点**：用于表示程序的控制流结构，如条件分支、循环等。
 
 ![image-20230528194044712](image/image-20230528194044712.png)
 
@@ -808,7 +808,7 @@ AST的结构和表示方式可以根据具体的语言和编译器实现而有�
 
 #### 2.2.4.1 BaseAST类
 
-BaseAST类是抽象语法树每个节点的纯虚类型，包括空的构造、析构函数和纯虚函数`IRGen`
+BaseAST类是抽象语法树每个节点的纯虚类型，包括空的构造、析构函数和纯虚函数`IRGen`。
 
 ```cpp
 // 所有 AST 的基类
@@ -821,42 +821,150 @@ public:
 };
 ```
 
-
-
 #### 2.2.4.2 ProgramAST类
 
-##### Todo
+ProgramAST类是整个程序的根节点，本次使用中是为了将原来EBNF的文法转换成为BNF文法二产生的一个根节点。
+而一个程序是由若干个函数声明（定义）和变量声明（定义组成），在我们的程序中，函数声明（定义）和变量声明（定义）具有共同的抽象类`CompUnitAST`，所以`ProgramAST`具有`std::vector<CompUnitAST*>`类型的成员变量。
 
+```C++
+class ProgramAST : public BaseAST {
+public:
+	CompUnits* compUnit_;
+    
+    ProgramAST(CompUnits* _compUnit_):compUnit_(_compUnit_){}
+    ~ProgramAST(){};
+
+    llvm::Value* IRGen(IRGenerator& IRContext);
+};
+```
 
 
 #### 2.2.4.3 DeclAST类
 
-##### Todo
+Decl类是纯虚类型，是普通变量和数组变量声明的父类。
+1. 所有变量声明的抽象类父类
+```C++
+class DeclAST : public CompUnitAST {
+public:
+	DeclAST() {}
+	~DeclAST() {}
+
+	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+};
+```
+
+2. 变量声明包括了变量定义列表和变量类型。
+```C++
+class VarDeclAST : public DeclAST {
+public:
+	VarDefAST* varDef_;
+    VarType type_; 
+
+	VarDeclAST(std::string _typeName_, VarDefAST* _varDef_) : 
+		varDef_(_varDef_), type_(_typeName_) {}
+	~VarDeclAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+```
+
+3. 数组声明包括了基本元素类型、数组元素类型、数组名、数组索引列表。
+```C++
+class ArrDefAST : public BaseAST {
+public:
+	llvm::Type* elementType_;
+	llvm::Type* arrayType_;
+	std::string arrName_;
+	VarType type_;
+	Exprs* exprs_;
 
 
+	ArrDefAST(std::string _typeName_, std::string _arrName_, Exprs* _exprs_) :
+	type_(_typeName_), arrName_(_arrName_), exprs_(_exprs_) {}
+	~ArrDefAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+
+};
+```
 
 #### 2.2.4.4 StmtAST类
 
-##### Todo
+StmtAST类是无返回值的statement语句，是条件语句、循环语句、选择语句等子类的抽象父类。
+```C++
+class StmtAST: public BaseAST {
+public: 
+	StmtAST() {}
+	~StmtAST() {}
 
+    virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+};
+```
 
 
 #### 2.2.4.5 ExprAST类
 
-##### Todo
+ExprAST类是有返回值的expression语句，是常量表达式、变量表达式和操作符表达式等子类的抽象父类。
+```C++
+class ExprAST : public BaseAST {
+public:
+	ExprAST(void) {}
+	~ExprAST(void) {}
 
+	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+};
+```
 
 
 #### 2.2.4.6 BlockAST类
 
-##### Todo
+BlockAST类是基本语句块，而基本语句块包括stmt类语句和统计stmt数目。
+```C++
+class BlockAST : public BaseAST {
+public:
+    Stmts* stmts_;
+	int varCnt_;
 
+    BlockAST(Stmts* _stmts_): stmts_(_stmts_), varCnt_(0){}
+    ~BlockAST(){}
+
+	// void CreatePreDefinedVars(IRGenerator& IRContext); 
+    llvm::Value* IRGen(IRGenerator& IRContext);
+};
+```
 
 
 #### 2.2.4.7 VarType类
 
-##### Todo
+Varype是定义在BaseAST之外的类，用来定义和LLVM之间的数据类型链接。
+```C++
+class VarType {
+public:
+	PointerType* _BaseType_pointer;
 
+    VarType(int) {type=Int;}
+    VarType(char) {type=Char;}
+	VarType(short) {type=Short;}
+	VarType(double) {type=Double;}
+	// VarType(ArrayType* __BaseType):_BaseType(__BaseType) {type=Arr;}
+	VarType(PointerType* __BaseType):_BaseType_pointer(__BaseType) {type=Ptr;}
+    VarType(std::string name);
+    ~VarType(){}
+    TypeID GetType() {return type;}
+	llvm::Type* ToLLVMType(IRGenerator&); 
+private: 
+    TypeID type;
+};
+
+enum TypeID{
+    Int, 
+    Char, 
+	Short,
+	Double,
+	Ptr
+};
+
+```
 
 
 #### 2.2.4.5 示例代码及对应AST结构介绍
