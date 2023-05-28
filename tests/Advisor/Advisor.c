@@ -101,6 +101,9 @@ int getSubStr(char ptr substr, char ptr str, int index, char seq) {
 int getSubCnt(char ptr str, char seq) {
     int index; 
     int cnt = 1; 
+    if (str[0] == strend) {
+        return 0;
+    }
     for (index = 0; str[index] != strend; index = index+1){
         if (str[index] == seq) {
             cnt = cnt+1;
@@ -230,6 +233,9 @@ int main(){
                     learnable[cursor] = 0;
                     getSubStr(coursepre, pres, cursor, strspace); 
                     orCnt = getSubCnt(coursepre, strsemicolon); 
+                    if (orCnt == 0) {
+                        learnable[cursor] = 1; 
+                    }
                     for (i = 0; i < orCnt && learnable[cursor]==0; i=i+1) {
                         learn = 1;
                         getSubStr(orStr, coursepre, i, strsemicolon);
@@ -239,7 +245,7 @@ int main(){
                             getSubStr(andStr, orStr, j, strcomma);
 
                             index = getStrIndex(andStr, names, strspace); 
-                            printk("%d %d %s\n", cursor, index, andStr);
+                            // printk("%d %d %s\n", cursor, index, andStr);
                             if (index == 0) {
                                 learn = 0; 
                             }
@@ -257,7 +263,12 @@ int main(){
             }
 
             // print the result
-            printk("GPA: %d\n", gpa);
+            if (score_learn != 0){
+                printk("GPA: %.1f\n", (1.0*gpa)/score_learn);
+            }
+            else {
+                printk("GPA: 0.0\n");
+            }
             printk("Hours Attempted: %d\n", score_learn); 
             printk("Hours Completed: %d\n", score_get);
             printk("Credits Remaining: %d\n\n", score_remain); 
@@ -268,12 +279,12 @@ int main(){
                 for (cursor = 0; cursor < cnt; cursor = cursor+1) {
                     if (learnable[cursor] == 1) {
                         getSubStr(coursename, names, cursor, strspace);
-                        printk("\t%s\n", coursename);
+                        printk("  %s\n", coursename);
                     }
                 }
             }
             else {
-                printk("\tNone - Congratulations!\n"); 
+                printk("  None - Congratulations!\n"); 
             }
 
             return 0;
