@@ -33,12 +33,12 @@ int quicksort(int left, int right){
     return 0;
 }
 
-int main(void){
+int main(){
 	int n;
+    int i;
     int temp;
 
 	scank("%d", &n);
-    int i;
 	
 	for (i = 0; i < n; i = i + 1){
         scank("%d", &temp);
