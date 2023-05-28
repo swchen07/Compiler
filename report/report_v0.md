@@ -88,16 +88,11 @@ CmakeLists.txt
 2. 用CMake搭建工程，在`Compiler`文件夹下进行以下命令
 
    ```
-   cmake -S . -B ./build 
-   
-   cd ./build
-   
-   make
+   cd Compiler
+   bash ./scripts/cmake_srcs.sh
    ```
 
-   `cmake`这一步会自动调用`flex`和`bison`，在`src/`目录下生成`Lexer.cpp`，`Parser.hpp`和`Parser.cpp`。
-
-​		CMake默认会生成一个含`Makefile`的工程。使用`make`指令来编译。
+   以上命令在Complier/build 目录编译得到可执行文件`Compiler`
 
 
 
@@ -105,23 +100,24 @@ CmakeLists.txt
 
 测试代码在`tests`文件夹下
 
+<img src="image/image-20230528213939578.png" alt="image-20230528213939578" style="zoom:50%;" />
+
 测试指令在`scrips`文件夹下
 
+<img src="/Users/wangzijun/Library/Application Support/typora-user-images/image-20230528214009410.png" alt="image-20230528214009410" style="zoom:50%;" />
 
-
-当前目录下有编译得到的可执行文件`Compiler`
+Complier/build 目录下有编译得到的可执行文件`Compiler`
 
 执行以下指令：
 
-`./C-Compiler -i ./Test.c -o Test.o -O3 -l`
+```
+cd Compiler
+bash ./scripts/Quicksort_run.sh
+bash ./scripts/Matrix_run.sh 
+bash ./scripts/Advisor_run.sh 
+```
 
-我们的编译器会把`Test.c`作为输入。开启`O3`优化。中间代码会输出到控制台屏幕。目标代码写入`Test.o`文件。
-
-最后，可以使用任何链接器将`Test.o`转为可执行文件并执行，例如：
-
-`gcc ./Test.o`
-
-`./a.exe`(Windows) or `./a.out`(Linux)
+以上三个sh文件分别测试三个测试点
 
 
 
@@ -130,9 +126,10 @@ CmakeLists.txt
 详细的代码规范请见`docs/styleGuide.md`。
 
 
+
 ## 1.4 分工说明
 
-
+详见`git_log.txt`
 
 
 
