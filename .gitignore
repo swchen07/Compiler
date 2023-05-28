@@ -6,6 +6,9 @@
 /.DS_Store
 /tests/Test1/llvm.cpp
 
+src/
+test.c
+
 build/
 lexer.cpp
 parser.cpp
@@ -20,4 +23,5 @@ Advisor.out
 Sort_run.sh
 Array_run.sh
 Advisor_run.sh
+Test_run.sh
 
