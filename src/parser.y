@@ -221,24 +221,27 @@ FuncType
     ;
 
 
-ArgList:	_ArgList COMMA Arg										{  $$ = $1; $$->push_back($3);   }
-			| _ArgList COMMA ELLIPSES								{  $$ = $1; $$->SetVarArg();   }
-			| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
-			| ELLIPSES												{  $$ = new ArgListAST(); $$->SetVarArg();   }
-			|														{  $$ = new ArgListAST(); }
-			;
+ArgList
+    : _ArgList COMMA Arg									{  $$ = $1; $$->push_back($3);   }
+	| _ArgList COMMA ELLIPSES								{  $$ = $1; $$->SetVarArg();   }
+	| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
+	| ELLIPSES												{  $$ = new ArgListAST(); $$->SetVarArg();   }
+	|														{  $$ = new ArgListAST(); }
+	;
 
-_ArgList:	_ArgList COMMA Arg										{  $$ = $1; $$->push_back($3);   }	 
-			| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
-			;
+_ArgList
+    : _ArgList COMMA Arg										{  $$ = $1; $$->push_back($3);   }	 
+	| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
+	;
 
 PtrType
     : Btype PTR                                                     { $$ = new PointerType(*$1); }
     ;
 
-Arg:		Btype IDENTIFIER										{  $$ = new ArgAST(*$1, *$2);   }
-			| PtrType IDENTIFIER							        {  $$ = new ArgAST($1, *$2);   }
-			| PtrType 							                    {  $$ = new ArgAST($1);   }
+Arg
+    : Btype IDENTIFIER										{  $$ = new ArgAST(*$1, *$2);   }
+	| PtrType IDENTIFIER							        {  $$ = new ArgAST($1, *$2);   }
+	| PtrType 							                    {  $$ = new ArgAST($1);   }
 
 
 /* Block         ::= "{" {BlockItem} "}"; */
@@ -349,14 +352,16 @@ Exp
     | IDENTIFIER LPAREN ExpList RPAREN	 {  $$ = new FuncCallAST(*$1, $3);   }
 	;
 
-ExpList:	_ExpList COMMA Exp									{  $$ = $1; $$->push_back((ExprAST*)$3);   }
-			| Exp                           					{  $$ = new ExprListAST(); $$->push_back((ExprAST*)$1);   }
-			|													{  $$ = new ExprListAST();   }
-			;
+ExpList
+    : _ExpList COMMA Exp							    {  $$ = $1; $$->push_back((ExprAST*)$3);   }
+	| Exp                           					{  $$ = new ExprListAST(); $$->push_back((ExprAST*)$1);   }
+	|													{  $$ = new ExprListAST();   }
+	;
 
-_ExpList:	_ExpList COMMA Exp 									{  $$ = $1; $$->push_back((ExprAST*)$3);   }
-			| Exp                       						{  $$ = new ExprListAST(); $$->push_back((ExprAST*)$1);   }
-			;
+_ExpList
+    : _ExpList COMMA Exp 								{  $$ = $1; $$->push_back((ExprAST*)$3);   }
+	| Exp                       						{  $$ = new ExprListAST(); $$->push_back((ExprAST*)$1);   }
+	;
 
 ConstExp
 	: CONST_INT							{ $$ = new Constant($1); }
