@@ -71,20 +71,57 @@ sysY 是一种简单的编程语言，通常用于教学和学术研究目的。
 ### 1.2.2 工程搭建
 1. 进入工程根目录，工程结构如下：
 ```
-doc/
+docs/
+io/
 lib/
+out/
 Ref/
 simple_demo/
 src/
 tests/
-cmake_demo.sh
-cmake_src_cllean.sh
-cmake_src.sh
+scrips/
 README.md
-run_src_demo.sh
+git_log.txt
+CmakeLists.txt
 ```
 
+2. 用CMake搭建工程，在`Compiler`文件夹下进行以下命令
+
+   ```
+   cmake -S . -B ./build 
+   
+   cd ./build
+   
+   make
+   ```
+
+   `cmake`这一步会自动调用`flex`和`bison`，在`src/`目录下生成`Lexer.cpp`，`Parser.hpp`和`Parser.cpp`。
+
+​		CMake默认会生成一个含`Makefile`的工程。使用`make`指令来编译。
+
+
+
 ### 1.2.3 使用说明
+
+测试代码在`tests`文件夹下
+
+测试指令在`scrips`文件夹下
+
+
+
+当前目录下有编译得到的可执行文件`Compiler`
+
+执行以下指令：
+
+`./C-Compiler -i ./Test.c -o Test.o -O3 -l`
+
+我们的编译器会把`Test.c`作为输入。开启`O3`优化。中间代码会输出到控制台屏幕。目标代码写入`Test.o`文件。
+
+最后，可以使用任何链接器将`Test.o`转为可执行文件并执行，例如：
+
+`gcc ./Test.o`
+
+`./a.exe`(Windows) or `./a.out`(Linux)
 
 
 
@@ -1967,7 +2004,11 @@ BBEntry35:                                        ; preds = %ForCmp32
 
 ## 3.3 Advisor
 
+#### 测试代码：
 
+```c
+
+```
 
 
 
