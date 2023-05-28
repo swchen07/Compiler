@@ -969,38 +969,44 @@ enum TypeID{
 
 #### 2.2.4.5 示例代码及对应AST结构介绍
 
-##### Todo： 要根据我们的AST修改，下面给出模版
-
-下面是一个示例代码和其对应的简化的AST结构：
 
 示例代码：
 
 ```
-cssCopy code
-int a = 10;
-int b = 5;
-int result = a + b;
+int main(){
+	int a = 10;
+	int b[100];
+	int c;
+	b[10] = a;
+	c = b[10] + a;
+}
 ```
 
 对应的AST结构：
 
 ```
-markdownCopy code
-- Program
-  - DeclarationStatement
-    - TypeNode (int)
-    - IdentifierNode (a)
-    - LiteralNode (10)
-  - DeclarationStatement
-    - TypeNode (int)
-    - IdentifierNode (b)
-    - LiteralNode (5)
-  - DeclarationStatement
-    - TypeNode (int)
-    - IdentifierNode (result)
-    - BinaryExpressionNode (+)
-      - IdentifierNode (a)
-      - IdentifierNode (b)
+- ProgramAST
+  - ValDeclAST
+    - BType         (int)
+    - LeftValAST 	(a)
+    - Constant   	(10)
+  - ArrDeclAST	
+    - BType      	(int)
+	- ArrayType  	(int[])
+	- Constant   	(100)
+    - LeftValAST 	(b)
+  - ValDeclAST	
+    - TypeNode   	(int)
+  - AssignAST
+	- LeftValAST 	(a)
+    - ArrValAST  	(b[])
+  - AssignAST    	(+)
+	- Addition
+	  - LeftValAST  (a)
+      - ArrValAST   (b[])
+	- LeftValAST    (c)
+
+    
 ```
 
 在这个简化的AST中，根节点是Program节点，表示整个程序。每个DeclarationStatement节点表示一个变量的声明语句，包含变量的类型、标识符和初始值（如果有）。BinaryExpressionNode节点表示两个标识符相加的表达式。
@@ -1076,29 +1082,170 @@ sysY语言要求在使用变量之前先进行声明。语义分析器将检查�
 
 #### 2.3.3.1 Program类
 
-##### Todo
+`Program::IRGen()`的作用是循环调用子结点的`IRGen()`。
+```C++
+llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
 
+	for (auto compUnit : *(this->compUnit_)){
+		if(compUnit){
+			compUnit->IRGen(IRContext);
+		}
+	}
 
+	return NULL;
+}
+```
 
 #### 2.3.3.2 Declare抽象类
 
 ##### 2.3.3.2.1 VarDeclAST
+该类负责变量声明的实现。在我们的实验环境下，变量定义分为全局变量和局部变量两种，结合LLVM的使用方式，需要对全局变量使用`new llvm::GlobalVariable()`进行创建，其中变量的信息则来自成员变量`varDef_`，类型为`VarDef`。
+```C++
+llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 
-##### Todo
+	if (IRContext.GetCurFunc()) {
+		// local variable
 
+		auto IRBuilder = IRContext.IRBuilder; 
 
+		//创建变量
+		auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varDef_->varName_);
+		
+		// llvm::Value* initVal = CastType(this->, IRContext)
+
+		// initialize
+		llvm::Value* value = this->varDef_->IRGen(IRContext);
+
+		// store will always align to 4, even for char, which is because we need a type cast for 'value'
+		IRBuilder->CreateStore(value, AllocMem);
+
+		IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
+	}
+	else {
+		// global variable
+		// initialize
+		std::cout << "VarDeclAST -> global variable" << std::endl;
+
+		llvm::Value* value = this->varDef_->IRGen(IRContext);
+
+		// convert to const
+		llvm::Constant* initializer = llvm::cast<llvm::Constant>(value);
+		if (!initializer) {
+			throw std::logic_error("The initializer is not const type: "+this->varDef_->varName_);
+		}
+
+		//Create a global variable
+		auto AllocMem = new llvm::GlobalVariable(
+			*(IRContext.Module),
+			this->type_.ToLLVMType(IRContext),
+			false,
+			llvm::Function::ExternalLinkage,
+			initializer, 
+			this->varDef_->varName_
+		);
+		
+		IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
+	}
+
+	return NULL;
+}
+```
 
 ##### 2.3.3.2.2 VarDefAST
 
-##### Todo
-
-
+该类主要负责存储和创建变量的具体信息并转换成LLVM提供的变量类型，传给VarDeclAST进行变量声明。
+```C++
+llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
+	if (this->initValue_) {
+		//std::cout << "Have init" << std::endl;
+		return this->initValue_->IRGen(IRContext);
+	}
+	else {
+		auto IRBuilder = IRContext.IRBuilder;
+		VarType* v = new VarType(this->varName_);
+		switch(v->GetType()) {
+		case Int: return IRBuilder->getInt32(0); 
+		case Char: return IRBuilder->getInt8(0);
+		case Double:return llvm::ConstantFP::get(IRBuilder->getDoubleTy(), 0.0);
+		}
+	}
+}
+```
 
 ##### 2.3.3.2.3 FuncDefAST
 
-##### Todo
+`FuncDefAST`涉及到函数声明和函数定义两种，在该类的`IRFen()`函数中，有以下注意事项：
+1. 函数名不能重复；
+2. 区分是声明还是定义；
+3. 确认返回值；
+4. 参数列表的检查；
+5. 构造函数基本块。
+```C++
+llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
+    //Get return type
 
+    auto IRBuilder = IRContext.IRBuilder; 
+    llvm::Type* ReturnType = this->type_.ToLLVMType(IRContext);
 
+    std::vector<llvm::Type*> ArgTypes; 
+
+	for (auto ArgType : *(this->_ArgList)) {
+		llvm::Type* LLVMType = ArgType->type_.ToLLVMType(IRContext);
+		if (!LLVMType) {
+			throw std::logic_error("Defining a function " + this->funcName_ + " using unknown type(s).");
+			return NULL;
+		}
+		ArgTypes.push_back(LLVMType);
+	}
+	
+    //Get function type
+    llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, this->_ArgList->_VarArgLenth);
+
+	if (this->block_) {
+		// define function
+		if (IRContext.IsFuncDefined(this->funcName_)) {
+			throw std::logic_error("Function redeclared: "+this->funcName_);
+		}
+
+		llvm::Function* Func = IRContext.FindFunction(this->funcName_);
+		if (Func) {
+			IRContext.SetFuncDefined(this->funcName_); 
+		}
+		else {
+			Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
+			IRContext.CreateFunc(FuncType, this->funcName_, Func, true);
+		}
+
+		int i = 0; 
+		for (auto ArgIter = Func->arg_begin(); ArgIter < Func->arg_end(); ArgIter++) {
+			auto ArgInf = this->_ArgList->at(i);
+			IRContext.RemainFutureVar(ArgInf->type_, ArgInf->_Name, ArgIter);
+			i ++; 
+		}
+
+		IRContext.SetCurFunc(Func);
+		IRContext.ClearPreBrSignal();
+
+		this->block_->IRGen(IRContext);
+
+		IRContext.SetBasicBlock(NULL); 
+		IRContext.SetCurFunc(NULL); 
+
+	}
+	else {
+		// declare function
+		if (IRContext.FindFunction(this->funcName_)) {
+			// no need to declare again
+			return NULL; 
+		}
+		llvm::Function* Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
+
+		IRContext.CreateFunc(FuncType, this->funcName_, Func, false);
+	}
+	
+    return NULL;
+}
+```
 
 #### 2.3.3.3 Stmt抽象类
 
@@ -1151,25 +1298,105 @@ sysY语言要求在使用变量之前先进行声明。语义分析器将检查�
 
 而在LLVM中，所有创建的变量都是通过提供指向这一变量存储空间的指针来实现的，当要获取变量的值时通过`CreateLoad()`进行获取，当要改变变量的值时通过`CreateStore()`来实现。因此在我们实现的编译器中，对上述提到的合法左值提供一个`IRGenPtr()`函数以获取指向存储空间的指针，对所有表达式提供`IRGen()`函数来获取其存储空间内的值。
 
-设计的`ExprAST`抽象类如下：
 
-```
-
-```
-
-##### 支持字面量
+##### 2.3.3.4.1 支持字面量
 
 我们编译器支持以下字面量：
 
 - INTEGER
 - CHAR
-- REAL
+- DOUBLE
+- STRING
 
-##### 右值支持类
+###### 2.3.3.4.2 右值支持类
 
 如上文所说，一般的右值支持类只需要返回结果而不需要提供存储地址，因此只需要实现`IRGen()`函数即可。
 
-###### 一般运算
+###### 算术运算
+本次实验中实现了基本的算术运算，包括加、减、乘、除、取模、单目加、单目减。在`IRGen()`中需要注意类型转换，该部分的程序结构如下：
+
+```C++
+llvm::Value* Addition::IRGen(IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	if (LHS->getType()->isIntegerTy())
+		return IRBuilder->CreateAdd(LHS, RHS);
+	else
+		return IRBuilder->CreateFAdd(LHS, RHS);
+}
+
+```
+
+
+###### 逻辑运算
+本次实验中实现了基本的逻辑运算，包括取反操作、与操作、或操作。在`IRGen()`，该部分的程序结构如下：
+
+```C++
+llvm::Value* AndOp::IRGen(IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = ToBoolType(this->LHS_->IRGen(IRContext), IRContext);
+	llvm::Value* RHS = ToBoolType(this->RHS_->IRGen(IRContext), IRContext);
+	return IRBuilder->CreateLogicalAnd(LHS, RHS);
+}
+
+```
+###### 比较运算
+本次实验中实现了基本的比较运算，包括等于、不等于、大于、小于、大于等于、小于等于。在`IRGen()`，该部分的程序结构如下：
+
+```C++
+llvm::Value* Equal::IRGen(IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
+	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
+	return IRBuilder->CreateICmpEQ(LHS, RHS);
+}
+```
+###### 函数调用
+
+本实验中的函数调用支持的参数包括**变量传参**和**数组传指针**。
+```C++
+llvm::Value* FuncCallAST::IRGen(IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder; 
+	llvm::Function* Func = IRContext.FindFunction(this->_FuncName);
+	
+
+	if (Func == NULL) {
+		throw std::domain_error(this->_FuncName + " is not a defined function.");
+		return NULL;
+	}
+	
+	if (Func->isVarArg() && this->_ArgList->size() < Func->arg_size() ||
+		!Func->isVarArg() && this->_ArgList->size() != Func->arg_size()) {
+		throw std::invalid_argument("Args doesn't match when calling function " + this->_FuncName + ". Expected " + std::to_string(Func->arg_size()) + ", got " + std::to_string(this->_ArgList->size()));
+		return NULL;
+	}
+	
+	std::vector<llvm::Value*> ArgList;
+	size_t Index = 0;
+	for (auto ArgIter = Func->arg_begin(); ArgIter < Func->arg_end(); ArgIter++, Index++) {
+		llvm::Value* Arg = this->_ArgList->at(Index)->IRGen(IRContext);
+		Arg = TypeCasting(Arg, ArgIter->getType(), IRContext);
+		if (Arg == NULL) {
+			throw std::invalid_argument(std::to_string(Index) + "-th arg type doesn't match when calling function " + this->_FuncName + ".");
+			return NULL;
+		}
+		ArgList.push_back(Arg);
+	}
+	
+	if (Func->isVarArg())
+		for (; Index < this->_ArgList->size(); Index++) {
+			llvm::Value* Arg = this->_ArgList->at(Index)->IRGen(IRContext);
+			if (Arg->getType()->isIntegerTy())
+				Arg = TypeUpgrading(Arg, IRBuilder->getInt32Ty(), IRContext);
+			else if (Arg->getType()->isFloatingPointTy())
+				Arg = TypeUpgrading(Arg, IRBuilder->getDoubleTy(), IRContext);
+			ArgList.push_back(Arg);
+		}
+
+	return IRBuilder->CreateCall(Func, ArgList);
+}
+```
 
 ##### 左值支持类
 
@@ -1177,19 +1404,123 @@ sysY语言要求在使用变量之前先进行声明。语义分析器将检查�
 
 ###### LeftValAST类
 
-`LeftValAST`类表示一般的变量，
+`LeftValAST`类表示一般的变量，当它为左值时，由于LLVM里是通过指针来实现，因此结果存储需要提供一个指向存储地址的指针，因此为`leftValAST`类提供一个`IRGenPtr()`函数来获取指针。
+
+```C++
+
+llvm::Value* LeftValAST::IRGenPtr(IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Value* VarPtr = IRContext.FindVar(this->name_);
+	return VarPtr;
+}
+```
+当它为右值时（即需要在运算中提供值），其`IRGen()`函数在获取指针的基础上使用`CreateLoad()`函数将值提取到`LLVM::Value*`中。
+
+```C++
+llvm::Value* LeftValAST::IRGen(IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Value* VarPtr = IRContext.FindVar(this->name_);
+	if (IRContext.IsPtrVar(this->name_)) {
+		return VarPtr; 
+	}
+	else {
+		llvm::Type* type = VarPtr->getType()->getNonOpaquePointerElementType();
+		llvm::Value* val = IRBuilder->CreateLoad(type,VarPtr);
+		return val;
+	}
+}
+```
 
 ###### ArrValAST类
 
-`ArrValAST`类表示数组类变量。
+`ArrValAST`类表示数组类变量。数组的表示也是本次实验中的一个难点，通过查询LLVM的相关文档，LLVM构造数组的方式是以基础类作为元素封装成更高维，根据维度决定封装层数；而重点是数组元素的获取，LLVM提供了两种方式，一种是通过一个指向原数组的指针然后提供所有索引直接获取，还有一种是指针层层深入，降低维度，最终指向具体元素。在具体的实现过程中，我们选择了后者进行实现，因为我们在实验中发现前者虽然能够产生合理的IR，但是产生的IR在生成目标代码。
 
+以下是该类的`IRGen()`。
 
+```C++
+llvm::Value* ArrValAST::IRGenPtr(IRGenerator& IRContext) {
+	std::cout << "ArrValPtr" << std::endl;
 
-##### 2.3.3.4.1 LeftValAST
+	auto IRBuilder = IRContext.IRBuilder;
 
-##### Todo
+	//搜索数组的指针
+	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
+	arrayPtr->print(llvm::outs());
+	
+	//this->exprs_ index索引
 
+	std::vector<llvm::Value*> indices;
 
+	//生成每个维度的索引
+
+	for(auto expr : *(this->exprs_)){
+		indices.push_back(expr->IRGen(IRContext));
+
+	}
+	
+	llvm::Value* v1, *v2;
+
+	for(auto indice: indices){
+		if(arrayPtr->getType()->getNonOpaquePointerElementType()->isArrayTy()){
+			v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());	
+		}
+		else if(arrayPtr->getType()->isPointerTy()){
+			v1 = IRBuilder->CreateLoad(arrayPtr->getType()->getNonOpaquePointerElementType(), arrayPtr);
+		}
+		else{
+			throw std::logic_error("The sunsciption operation received neither array type nor pointer type");
+		}
+		v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
+	}
+	return v2;
+}
+
+```
+以下是该类的`IRGen()`，该函数实际上是在找到指向地址的基础上调用`CreateLoad()`进行实现。
+```C++
+llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "ArrVal" << std::endl;
+
+	auto IRBuilder = IRContext.IRBuilder;
+
+	//搜索数组的指针
+	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
+	// auto* arrayPtr = IRContext.Module->getGlobalVariable(this->name_);
+	std::cout << "Array Ptr " << arrayPtr << std::endl; 
+	
+	//this->exprs_ index索引
+
+	std::vector<llvm::Value*> indices;
+
+	//生成每个维度的索引
+
+	for(auto expr : *(this->exprs_)){
+		indices.push_back(expr->IRGen(IRContext));
+
+	}
+
+	llvm::Value* v1, *v2;
+
+	for(auto indice: indices){
+		if(arrayPtr->getType()->getNonOpaquePointerElementType()->isArrayTy()){
+			v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());	
+		}
+		else if(arrayPtr->getType()->isPointerTy()){
+			v1 = IRBuilder->CreateLoad(arrayPtr->getType()->getNonOpaquePointerElementType(), arrayPtr);
+		}
+		else{
+			throw std::logic_error("The sunsciption operation received neither array type nor pointer type");
+		}
+		// v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
+
+		v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
+
+	}
+	
+	return IRBuilder->CreateLoad(v1->getType()->getNonOpaquePointerElementType(), v2);
+
+}
+```
 
 2.3.3.4.2 
 
@@ -1197,9 +1528,32 @@ sysY语言要求在使用变量之前先进行声明。语义分析器将检查�
 
 #### 2.3.3.5  VarType抽象类
 
+本次实验中，我们将`VarType()`类定义独立在`BaseAST()`之外，由于函数类型在lexer和parser中是以字符串的形式传递的，所以需要根据字符串构建出相应的数据类型，同时匹配对应的`LLVM::Type`。
+以下是先根据字符串匹配对应的枚举值。
 
+```C++
+VarType::VarType(std::string name) {
+	if (name == "int") type = Int; 
+	else if (name == "char") type = Char; 
+	else if (name == "short") type = Short;
+	else if (name == "double") type = Double;
+} 
+```
+以下是根据枚举值生成对应的LLVM::Type。
 
+```C++
+llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
+	auto IRBuilder = IRContext.IRBuilder;
+	switch(this->type) {
+		case Int: return IRBuilder->getInt32Ty(); 
+		case Char: return IRBuilder->getInt8Ty(); 
+		case Short: return IRBuilder->getInt16Ty();
+		case Double: return IRBuilder->getDoubleTy(); 
+		case Ptr: return this->_BaseType_pointer->ToLLVMType(IRContext);
+	}
+}
 
+```
 
 
 
