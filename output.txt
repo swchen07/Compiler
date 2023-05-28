@@ -1,14 +1,16 @@
-c0 c1 c2 c3 c4 c5 c6
- c0 c0 c1 c2 c3 c2
-4 3 c2
-5 4 c3
-6 3 c2
-GPA: 34
-Hours Attempted: 14
-Hours Completed: 14
-Credits Remaining: 10
-
-Possible Courses to Take Next
-	c4
-	c5
-	c6
+fixed case 0...pass!
+fixed case 1...pass!
+fixed case 2...pass!
+fixed case 3...pass!
+randomly generated case 0...pass!
+randomly generated case 1...pass!
+randomly generated case 2...pass!
+randomly generated case 3...pass!
+randomly generated case 4...pass!
+randomly generated case 5...pass!
+randomly generated case 6...pass!
+randomly generated case 7...pass!
+randomly generated case 8...pass!
+randomly generated case 9...pass!
+----------------------------------------
+2023-05-28 20:00:18.12
