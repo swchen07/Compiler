@@ -1,0 +1,147 @@
+1
+ProgramAST
+FunctionAST
+PointerType
+FunctionAST
+PointerType
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+VarDeclAST
+VarDeclAST -> global variable
+VarDefAST
+Constant
+FunctionAST
+PointerType
+BlockAST
+PointerType
+VarDeclAST
+VarDefAST
+ForStmtAST
+Assign
+Constant
+LeftValPtr
+cast1
+ExprAST !=
+ArrVal
+Array Ptr 0x5582a7145c70
+LeftVal
+LeftVal
+BlockAST
+Assign
+ExprAST +
+LeftVal
+Constant
+LeftValPtr
+cast1
+ReturnAST
+LeftVal
+FunctionAST
+PointerType
+BlockAST
+PointerType
+VarDeclAST
+VarDefAST
+Assign
+ExprAST +
+LeftVal
+Constant
+LeftValPtr
+cast1
+ForStmtAST
+ExprAST >
+LeftVal
+Constant
+BlockAST
+Assign
+ArrVal
+Array Ptr 0x5582a7146b50
+ExprAST -
+LeftVal
+Constant
+ArrValPtr
+  %s = alloca i8*, align 8LeftVal
+Assign
+ExprAST -
+LeftVal
+Constant
+LeftValPtr
+cast1
+Assign
+LeftVal
+ArrValPtr
+  %s = alloca i8*, align 8Constant
+ReturnAST
+Constant
+FunctionAST
+PointerType
+BlockAST
+PointerType
+VarDeclAST
+VarDefAST
+Advisor_run.sh: line 1: 138883 Segmentation fault      (core dumped) ./src/build/src ./tests/Advisor/Advisor.c
