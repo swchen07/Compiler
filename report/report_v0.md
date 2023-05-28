@@ -1640,7 +1640,97 @@ void IRGenerator::GenObjectCode(std::string outputfile) {
 
 ## 2.6 符号表设计
 
-##### Todo
+LLVM本身不支持不同作用阈内的变量重名（它会把重名变量自动添加序号），因此在本次实验中，我们通过构造一个栈来实现符号表，以保证变量作用阈的合理性。
+
+以下是符号表的结构，首先需要定义栈的元素类型，需要说明的是，我们是通过变量名来搜索，得到指向元素的指针。
+```C++
+class IRGenerator {
+public: 
+	...
+	std::vector<IRVarAttr*> varList_;
+	...
+}
+class IRVarAttr {
+public: 
+    VarType type_; 
+    std::string name_; 
+    bool isPtr_; 
+
+	//llvm::Function* CurFunc;
+    llvm::Value* value_;
+
+    IRVarAttr(VarType type, std::string name, llvm::Value* value, bool _isPtr_=false):
+        type_(type), name_(name), value_(value), isPtr_(_isPtr_){}
+};
+
+```
+
+以下是符号表的相关操作：
+1. 创建变量存入符号表
+```C++
+void IRGenerator::CreateVar(VarType type, std::string name, llvm::Value* value, bool isPtr){
+    // first judge name
+    int conflictCnt; 
+    int varCnt = this->varList_.size(); 
+    if (this->curBasicBlock_) conflictCnt = this->curBasicBlock_->varCnt_; 
+    else conflictCnt = varCnt;
+
+    // std::cout << "CreateVar " << conflictCnt << " " << varCnt << std::endl; 
+    for (int i = 1; i <= conflictCnt; i++) {
+        if (this->varList_[varCnt-i]->name_ == name) {
+            // already has the same name
+            throw std::logic_error("Already Create a Variable with Name: "+name);
+        }
+    } 
+
+    this->varList_.push_back(new IRVarAttr(type, name, value, isPtr));
+    if (this->curBasicBlock_) this->curBasicBlock_->varCnt_ += 1; 
+}
+```
+
+2. 查找符号
+```C++
+llvm::Value* IRGenerator::FindVar(std::string name){
+	if(this->varList_.size() == 0){
+		return NULL;
+	}
+	for(auto symbol = this->varList_.end() - 1; symbol >= this->varList_.begin(); symbol--){
+        // std::cout << "FindVar " << (*symbol)->name_ << " " << name << std::endl; 
+		if((*symbol)->name_ == name){
+			return (*symbol)->value_;
+		}
+	}
+	return NULL;
+}
+```
+3. 删除符号
+```C++
+void IRGenerator::DiscardVar() {
+    if (this->curBasicBlock_)
+        for (int i = 0; i < this->curBasicBlock_->varCnt_; i++) {
+            auto var = this->varList_[this->varList_.size()-1];
+            this->varList_.pop_back();
+            delete var; 
+        }
+}
+```
+4. 指针查找
+```C++
+bool IRGenerator::IsPtrVar(std::string name) {
+    if(this->varList_.size() == 0){
+		return false;
+	}
+	for(auto symbol = this->varList_.end() - 1; symbol >= this->varList_.begin(); symbol--){
+		if((*symbol)->name_ == name){
+			return (*symbol)->isPtr_; 
+		}
+	}
+
+	return false;
+}
+
+```
+
 
 
 
