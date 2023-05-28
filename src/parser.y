@@ -53,7 +53,7 @@ using namespace std;
 %token ASSIGN DOT COLON QUES ELLIPSES PTR
 
 %token <strVal> INT CHAR SHORT VOID
-%token RETURN CONTINUE BREAK
+%token RETURN CONTINUE BREAK STATIC
 %token IF ELSE
 %token FOR WHILE
 
@@ -134,6 +134,7 @@ Program
 
 CompUnit
     : CompUnit FuncDef									{ $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
+	| CompUnit STATIC Decl                                     { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
     | 													{ $$ = new CompUnits(); }
     ;
 /*    | CompUnit Decl                                     { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }*/

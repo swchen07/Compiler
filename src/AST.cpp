@@ -155,7 +155,6 @@ llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
 
 llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 	std::cout << "ArrDefAST" << std::endl;
-	auto IRBuilder = IRContext.IRBuilder;
 	//获取数组元素
 	this->elementType_ = this->type_.ToLLVMType(IRContext);
 
@@ -174,16 +173,36 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 		int convertedValue = constant->getSExtValue();
 		arrayType = llvm::ArrayType::get(arrayType, convertedValue);
 		std::cout << convertedValue << "  " << std::endl;
- 	}
+	}
 
 	this->arrayType_ = arrayType;
-	// //创建变量
-	auto AllocMem = IRBuilder->CreateAlloca(this->arrayType_, 0, this->arrName_);
+	if(IRContext.GetCurFunc()){
+		auto IRBuilder = IRContext.IRBuilder;
+		
+		// //创建变量
+		auto AllocMem = IRBuilder->CreateAlloca(this->arrayType_, 0, this->arrName_);
 
-	//初始化
+		//初始化
+		IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true); 
+	}else{
+		llvm::Type* intType = this->type_.ToLLVMType(IRContext);
+		llvm::ArrayType* arrayType = llvm::ArrayType::get(intType, 100);
+		llvm::Constant* Initializer = NULL;
+		Initializer = llvm::UndefValue::get(arrayType);
 
-
-	IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true); 
+		auto AllocMem = new llvm::GlobalVariable(
+			*(IRContext.Module),
+			arrayType,
+			false,
+			llvm::Function::ExternalLinkage,
+			Initializer, 
+			this->arrName_
+		);
+		
+		IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true);
+	}
+	
+	
 }
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
@@ -768,6 +787,8 @@ llvm::Value* ArrValAST::IRGenPtr(IRGenerator& IRContext) {
 
 	//搜索数组的指针
 	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
+	arrayPtr->print(llvm::outs());
+	std::cout << "We find the type!!!!!!!!!!!!!!" << std::endl;
 	
 	//this->exprs_ index索引
 
@@ -785,9 +806,13 @@ llvm::Value* ArrValAST::IRGenPtr(IRGenerator& IRContext) {
 	for(auto indice: indices){
 		v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
 
+		
 		v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
 	}
-	
+	v1->print(llvm::outs());
+		std::cout << "We find the type!!!!!!!!!!!!!!" << std::endl;
+		v2->print(llvm::outs());
+		std::cout << "We find the type!!!!!!!!!!!!!!" << std::endl;
 	return v2;
 
 

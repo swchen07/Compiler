@@ -112,6 +112,8 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "for"                   {SAVE_TOKEN; return FOR;}
 "while"                 {SAVE_TOKEN; return WHILE;}
 
+"static"                {SAVE_TOKEN; return STATIC;}
+
 {STRING}                {
                             yylval.strVal = new std::string("");
                             for (int i = 1; i <= yyleng-2; i++){
