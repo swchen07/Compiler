@@ -1,6 +1,9 @@
 int printk(int ptr, ...);
 int scank(int ptr, ...);
 
+static int y;
+static int ym[20];
+
 int a(int x){
 	printk("%10d\n", x);
 	return 1;
@@ -9,6 +12,10 @@ int a(int x){
 int main(){
 	int a = 4; 
 	int a2 = 8; 
+	y = 2;
+	// ym[3] = 3;
+	printk("%d ", y);
+	printk("%d\n", ym[3]);
 	a(100);
 	a(a);
 	a(100*a);

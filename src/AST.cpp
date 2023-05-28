@@ -154,6 +154,7 @@ llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
 
 llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 	std::cout << "ArrDefAST" << std::endl;
+
 	auto IRBuilder = IRContext.IRBuilder;
 	//获取数组元素
 	this->elementType_ = this->type_.ToLLVMType(IRContext);
@@ -172,17 +173,39 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 		//转换完之后将int提取出来
 		int convertedValue = constant->getSExtValue();
 		arrayType = llvm::ArrayType::get(arrayType, convertedValue);
-		std::cout << convertedValue << "  " << std::endl;
- 	}
+		// std::cout << convertedValue << "  " << std::endl;
+	}
 
 	this->arrayType_ = arrayType;
-	// //创建变量
-	auto AllocMem = IRBuilder->CreateAlloca(this->arrayType_, 0, this->arrName_);
 
-	//初始化
+	if (IRContext.GetCurFunc()) {
+		// local variable
 
+		// //创建变量
+		auto AllocMem = IRBuilder->CreateAlloca(this->arrayType_, 0, this->arrName_);
 
-	IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true); 
+		IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true); 
+	}
+	else {
+		// global variable
+		llvm::Constant* initializer = NULL;
+
+		//Create a global variable
+		auto AllocMem = new llvm::GlobalVariable(
+			*(IRContext.Module),
+			this->arrayType_, 
+			false,
+			llvm::Function::ExternalLinkage,
+			initializer, 
+			this->arrName_
+		);
+
+		std::cout << "Array Ptr " << AllocMem << std::endl; 
+
+		IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true);
+	}
+
+	return NULL;
 }
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
@@ -676,6 +699,8 @@ llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
 
 	//搜索数组的指针
 	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
+	// auto* arrayPtr = IRContext.Module->getGlobalVariable(this->name_);
+	std::cout << "Array Ptr " << arrayPtr << std::endl; 
 	
 	//this->exprs_ index索引
 

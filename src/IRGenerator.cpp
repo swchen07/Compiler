@@ -125,6 +125,8 @@ void IRGenerator::CreateVar(VarType type, std::string name, llvm::Value* value, 
     int varCnt = this->varList_.size(); 
     if (this->curBasicBlock_) conflictCnt = this->curBasicBlock_->varCnt_; 
     else conflictCnt = varCnt;
+
+    std::cout << "CreateVar " << conflictCnt << " " << varCnt << std::endl; 
     for (int i = 1; i <= conflictCnt; i++) {
         if (this->varList_[varCnt-i]->name_ == name) {
             // already has the same name
@@ -150,6 +152,7 @@ llvm::Value* IRGenerator::FindVar(std::string name){
 		return NULL;
 	}
 	for(auto symbol = this->varList_.end() - 1; symbol >= this->varList_.begin(); symbol--){
+        std::cout << "FindVar " << (*symbol)->name_ << " " << name << std::endl; 
 		if((*symbol)->name_ == name){
 			return (*symbol)->value_;
 		}
