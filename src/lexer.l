@@ -90,6 +90,7 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 ":"                     {return COLON;}
 "?"                     {return QUES;}
 "..."					{return ELLIPSES;}
+"ptr"				    {return PTR;}
 
     /* 关键字 */
     /* 数据类型 */

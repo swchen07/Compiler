@@ -18,31 +18,6 @@
 class IRGenerator;
 
 /**
- * @brief type类型的id
- * 
- */
-
-enum TypeID{
-    Int, 
-    Char, 
-	Short,
-	Double
-};
-
-class VarType {
-public:
-    VarType(int) {type=Int;}
-    VarType(char) {type=Char;}
-	VarType(short) {type=Short;}
-    VarType(std::string name);
-    ~VarType(){}
-    TypeID GetType() {return type;}
-	llvm::Type* ToLLVMType(IRGenerator&); 
-private: 
-    TypeID type;
-};
-
-/**
  * @brief 声明所有类
  * 
  */
@@ -72,11 +47,43 @@ class ContinueStmtAST;
 class ArgAST; 
 class ArgListAST; 
 class FuncCallAST; 
+class PointerType;
 
 using CompUnits = std::vector<CompUnitAST*>;
 using Stmts = std::vector<CompUnitAST*>;
 using Exprs = std::vector<ExprAST*>;
 using ExprListAST = std::vector<ExprAST*>;
+
+/**
+ * @brief type类型的id
+ * 
+ */
+
+enum TypeID{
+    Int, 
+    Char, 
+	Short,
+	Double,
+	Ptr
+};
+
+class VarType {
+public:
+	PointerType* _BaseType_pointer;
+
+    VarType(int) {type=Int;}
+    VarType(char) {type=Char;}
+	VarType(short) {type=Short;}
+	// VarType(ArrayType* __BaseType):_BaseType(__BaseType) {type=Arr;}
+	VarType(PointerType* __BaseType):_BaseType_pointer(__BaseType) {type=Ptr;}
+    VarType(std::string name);
+    ~VarType(){}
+    TypeID GetType() {return type;}
+	llvm::Type* ToLLVMType(IRGenerator&); 
+private: 
+    TypeID type;
+};
+
 /**
  * @brief 构造所有AST节点的基类，其中用指针管理对象
  * 
@@ -519,6 +526,8 @@ public:
 
 	ArgAST(std::string& _typeName_, const std::string& __Name = "") :
 		type_(_typeName_), _Name(__Name) {}
+	ArgAST(PointerType* _typeName_, const std::string& __Name = "") :
+		type_(_typeName_), _Name(__Name) {}
 	~ArgAST(void) {}
 	llvm::Value* IRGen(IRGenerator& IRContext) { return NULL; }
 };
@@ -584,12 +593,11 @@ class AssignArrAST : public StmtAST {
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
-// //Pointer type.
-// class PointerType : public VarType {
-// public:
-// 	VarType _BaseType;
+class PointerType{
+public:
+	VarType _BaseType;
 
-// 	PointerType(VarType __BaseType) : _BaseType(__BaseType) {}
-// 	~PointerType(void) {}
-// 	llvm::Type* toLLVMType(IRGenerator& IRContext);
-// };
+	PointerType(VarType __BaseType) : _BaseType(__BaseType) {}
+	~PointerType(void) {}
+	llvm::Type* ToLLVMType(IRGenerator& IRContext);
+};

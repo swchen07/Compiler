@@ -25,7 +25,5 @@ int main(){
 
 	st();
 	
-
-	return 0;
+ return 0;
 }
-
