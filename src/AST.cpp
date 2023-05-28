@@ -68,6 +68,7 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
 		case Int: return IRBuilder->getInt32Ty(); 
 		case Char: return IRBuilder->getInt8Ty(); 
 		case Short: return IRBuilder->getInt16Ty(); 
+		case Ptr: return this->_BaseType_pointer->ToLLVMType(IRContext);
 	}
 }
 
@@ -155,7 +156,6 @@ llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
 llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 	std::cout << "ArrDefAST" << std::endl;
 
-	auto IRBuilder = IRContext.IRBuilder;
 	//获取数组元素
 	this->elementType_ = this->type_.ToLLVMType(IRContext);
 
@@ -177,35 +177,32 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 	}
 
 	this->arrayType_ = arrayType;
-
-	if (IRContext.GetCurFunc()) {
-		// local variable
-
+	if(IRContext.GetCurFunc()){
+		auto IRBuilder = IRContext.IRBuilder;
+		
 		// //创建变量
 		auto AllocMem = IRBuilder->CreateAlloca(this->arrayType_, 0, this->arrName_);
 
+		//初始化
 		IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true); 
-	}
-	else {
-		// global variable
-		llvm::Constant* initializer = NULL;
+	}else{
+		llvm::Type* intType = this->type_.ToLLVMType(IRContext);
+		llvm::ArrayType* arrayType = llvm::ArrayType::get(intType, 100);
+		llvm::Constant* Initializer = NULL;
+		Initializer = llvm::UndefValue::get(arrayType);
 
-		//Create a global variable
 		auto AllocMem = new llvm::GlobalVariable(
 			*(IRContext.Module),
-			this->arrayType_, 
+			arrayType,
 			false,
 			llvm::Function::ExternalLinkage,
-			initializer, 
+			Initializer, 
 			this->arrName_
 		);
-
-		std::cout << "Array Ptr " << AllocMem << std::endl; 
-
+		
 		IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true);
 	}
-
-	return NULL;
+	
 }
 
 llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
@@ -692,6 +689,53 @@ llvm::Value* AddressOf::IRGen(IRGenerator& IRContext) {
 	return VarPtr;
 }
 
+// llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
+// 	std::cout << "ArrVal" << std::endl;
+
+// 	auto IRBuilder = IRContext.IRBuilder;
+
+// 	//搜索数组的指针
+// 	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
+	
+// 	//this->exprs_ index索引
+
+// 	std::vector<llvm::Value*> indices;
+
+// 	//生成每个维度的索引
+
+// 	for(auto expr : *(this->exprs_)){
+// 		indices.push_back(expr->IRGen(IRContext));
+
+// 	}
+
+// 	llvm::Value* v1, *v2;
+
+// 	for(auto indice: indices){
+// 		if(arrayPtr->getType()->isArrayTy()){
+// 			v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());	
+// 		}
+// 		else if(arrayPtr->getType()->isPointerTy()){
+// 			v1 = arrayPtr;
+// 		}
+// 		else{
+// 			throw std::logic_error("The sunsciption operation received neither array type nor pointer type");
+// 		}
+// 		if(indice->getType()->isIntegerTy()){
+// 			v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
+// 		}
+// 		else{
+// 			throw std::logic_error("The sunsciption operation received not integer");
+// 		}
+// 	}
+	
+// 	// llvm::Value* v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
+
+// 	// llvm::Value* v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indices[0]);
+	
+// 	return IRBuilder->CreateLoad(v1->getType()->getNonOpaquePointerElementType(), v2);
+
+// }
+
 llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
 	std::cout << "ArrVal" << std::endl;
 
@@ -716,7 +760,16 @@ llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
 	llvm::Value* v1, *v2;
 
 	for(auto indice: indices){
-		v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
+		if(arrayPtr->getType()->getNonOpaquePointerElementType()->isArrayTy()){
+			v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());	
+		}
+		else if(arrayPtr->getType()->isPointerTy()){
+			v1 = IRBuilder->CreateLoad(arrayPtr->getType()->getNonOpaquePointerElementType(), arrayPtr);
+		}
+		else{
+			throw std::logic_error("The sunsciption operation received neither array type nor pointer type");
+		}
+		// v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
 
 		v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
 	}
@@ -736,6 +789,8 @@ llvm::Value* ArrValAST::IRGenPtr(IRGenerator& IRContext) {
 
 	//搜索数组的指针
 	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
+	arrayPtr->print(llvm::outs());
+	std::cout << "We find the type!!!!!!!!!!!!!!" << std::endl;
 	
 	//this->exprs_ index索引
 
@@ -753,10 +808,15 @@ llvm::Value* ArrValAST::IRGenPtr(IRGenerator& IRContext) {
 	for(auto indice: indices){
 		v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
 
+		
 		v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
 	}
-	
+	v1->print(llvm::outs());
+		std::cout << "We find the type!!!!!!!!!!!!!!" << std::endl;
+		v2->print(llvm::outs());
+		std::cout << "We find the type!!!!!!!!!!!!!!" << std::endl;
 	return v2;
+
 
 	// llvm::Value* zeroIndex = indices;
 	// llvm::Value* oneIndex = indices;
@@ -789,4 +849,11 @@ llvm::Value* AssignArrAST::IRGen(IRGenerator& IRContext){
 	//赋值
 	IRBuilder->CreateStore(RHS, LHSPtr);
 	return RHS; 
+}
+
+llvm::Type* PointerType::ToLLVMType(IRGenerator& IRContext){
+	std::cout << "PointerType" << std::endl;
+	auto IRBuilder = IRContext.IRBuilder;
+	llvm::Type* BaseType = this->_BaseType.ToLLVMType(IRContext);
+	return llvm::PointerType::get(BaseType, 0U);
 }

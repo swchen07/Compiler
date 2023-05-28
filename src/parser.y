@@ -40,6 +40,7 @@ using namespace std;
     ArgListAST *argList;
     ExprListAST *exprList;
     ExprAST *expVal;
+    PointerType *ptrType;
 }
 
 /* 终结符 */
@@ -49,10 +50,10 @@ using namespace std;
 %token AND OR NOT
 %token BAND BOR BXOR
 %token LPAREN RPAREN LBRACE RBRACE  LBRACKET RBRACKET COMMA SEMI
-%token ASSIGN DOT COLON QUES ELLIPSES
+%token ASSIGN DOT COLON QUES ELLIPSES PTR
 
 %token <strVal> INT CHAR SHORT VOID
-%token RETURN CONTINUE BREAK
+%token RETURN CONTINUE BREAK STATIC
 %token IF ELSE
 %token FOR WHILE
 %token STATIC
@@ -73,6 +74,7 @@ using namespace std;
 %type <argList> ArgList
 %type <argList> _ArgList
 %type <argVal> Arg
+%type <ptrType> PtrType
 
 %type <exprList> ExpList
 %type <exprList> _ExpList
@@ -132,8 +134,9 @@ Program
 	;
 
 CompUnit
-    : CompUnit STATIC Decl                                    { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
-    | CompUnit FuncDef                                  { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
+    : CompUnit FuncDef									        { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
+    | CompUnit STATIC Decl                      { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
+
     | 													{ $$ = new CompUnits(); }
     ;
 
@@ -228,19 +231,14 @@ _ArgList:	_ArgList COMMA Arg										{  $$ = $1; $$->push_back($3);   }
 			| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
 			;
 
-/* VarType
-    : Btype                                             { $$ = $1; }
-    | BType PTR                                         { $$ = new PointerType(*$1); }
+PtrType
+    : Btype PTR                                                     { $$ = new PointerType(*$1); }
     ;
 
-Arg:		VarType IDENTIFIER										{  $$ = new ArgAST(*$1, *$2);   }
-			| VarType												{  $$ = new ArgAST(*$1);   }
-			;
-*/
-
 Arg:		Btype IDENTIFIER										{  $$ = new ArgAST(*$1, *$2);   }
-			| Btype												    {  $$ = new ArgAST(*$1);   }
-			;
+			| PtrType IDENTIFIER							        {  $$ = new ArgAST($1, *$2);   }
+			| PtrType 							                    {  $$ = new ArgAST($1);   }
+
 
 /* Block         ::= "{" {BlockItem} "}"; */
 Block
