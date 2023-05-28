@@ -37,19 +37,38 @@ llvm::Value* ToBoolType(llvm::Value* value, IRGenerator& IRContext) {
  * 目前支持：
  * 1. 类型相同
  * 2. 转换成bool
- * 
+ * 3. int char
+ * 4. double int
+ * 5. int double
  */
 llvm::Value* CastType(llvm::Value* value, llvm::Type* type, IRGenerator& IRContext){
 	auto IRBuilder = IRContext.IRBuilder;
 	if(value->getType() == type){
+		std::cout << "cast1" << std::endl;
 		return value;
 	}else if(type == IRBuilder->getInt1Ty()){
+		std::cout << "cast2" << std::endl;
 		return ToBoolType(value, IRContext);
+	}else if(value->getType()->isIntegerTy() && type->isIntegerTy()){
+		std::cout << "cast3" << std::endl;
+		bool flag = !value->getType()->isIntegerTy(1);
+		return IRBuilder->CreateIntCast(value, type, flag);
+	}else if(value->getType()->isIntegerTy() && type->isFloatingPointTy()) {
+		std::cout << "cast4" << std::endl;
+		if(value->getType()->isIntegerTy(1)){
+			return IRBuilder->CreateUIToFP(value, type);
+		}else{
+			return IRBuilder->CreateSIToFP(value, type);
+		}
+	}else if(value->getType()->isFloatingPointTy() && type->isIntegerTy()) {
+		std::cout << "cast5" << std::endl;
+		return IRBuilder->CreateFPToSI(value, type);
+	}else{
+		return NULL;
 	}
-	// else if(value=>get){
-
-	// }
 }
+
+
 /**
  * @brief 
  * 
@@ -60,6 +79,7 @@ VarType::VarType(std::string name) {
 	if (name == "int") type = Int; 
 	else if (name == "char") type = Char; 
 	else if (name == "short") type = Short;
+	else if (name == "double") type = Double;
 } 
 
 llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
@@ -67,7 +87,8 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
 	switch(this->type) {
 		case Int: return IRBuilder->getInt32Ty(); 
 		case Char: return IRBuilder->getInt8Ty(); 
-		case Short: return IRBuilder->getInt16Ty(); 
+		case Short: return IRBuilder->getInt16Ty();
+		case Double: return IRBuilder->getDoubleTy(); 
 		case Ptr: return this->_BaseType_pointer->ToLLVMType(IRContext);
 	}
 }
@@ -145,11 +166,17 @@ llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
 	std::cout << "VarDefAST" << std::endl;
 	
 	if (this->initValue_) {
+		//std::cout << "Have init" << std::endl;
 		return this->initValue_->IRGen(IRContext);
 	}
 	else {
-		auto IRBuilder = IRContext.IRBuilder; 
-		return IRBuilder->getInt8(0);
+		auto IRBuilder = IRContext.IRBuilder;
+		VarType* v = new VarType(this->varName_);
+		switch(v->GetType()) {
+		case Int: return IRBuilder->getInt32(0); 
+		case Char: return IRBuilder->getInt8(0);
+		case Double:return llvm::ConstantFP::get(IRBuilder->getDoubleTy(), 0.0);
+		}
 	}
 }
 
@@ -183,6 +210,8 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 		// //创建变量
 		auto AllocMem = IRBuilder->CreateAlloca(this->arrayType_, 0, this->arrName_);
 
+		this->arrayType_->print(llvm::outs());
+		std::cout << "" << std::endl;
 		//初始化
 		IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true); 
 	}else{
@@ -516,8 +545,12 @@ llvm::Value* MoncPlus::IRGen(IRGenerator& IRContext) {
 llvm::Value* MoncMinus::IRGen(IRGenerator& IRContext) {
 	std::cout << "ExprAST -1" << std::endl;
 	llvm::Value* val = this->RHS_->IRGen(IRContext);
-	auto IRBuilder = IRContext.IRBuilder; 
-	return IRBuilder->CreateNeg(val);
+	auto IRBuilder = IRContext.IRBuilder;
+	if (val->getType()->isIntegerTy())
+		return IRBuilder->CreateNeg(val);
+	else
+		return IRBuilder->CreateFNeg(val); 
+	
 
 }
 
@@ -526,7 +559,10 @@ llvm::Value* Addition::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
 	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
 	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
-	return IRBuilder->CreateAdd(LHS, RHS);
+	if (LHS->getType()->isIntegerTy())
+		return IRBuilder->CreateAdd(LHS, RHS);
+	else
+		return IRBuilder->CreateFAdd(LHS, RHS);
 }
 
 llvm::Value* Subtraction::IRGen(IRGenerator& IRContext) {
@@ -534,7 +570,10 @@ llvm::Value* Subtraction::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
 	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
 	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
-	return IRBuilder->CreateSub(LHS, RHS);
+	if (LHS->getType()->isIntegerTy())
+		return IRBuilder->CreateSub(LHS, RHS);
+	else
+		return IRBuilder->CreateFSub(LHS, RHS);
 }
 
 llvm::Value* Multiplication::IRGen(IRGenerator& IRContext) {
@@ -542,7 +581,12 @@ llvm::Value* Multiplication::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
 	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
 	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
-	return IRBuilder->CreateMul(LHS, RHS);
+	if (LHS->getType()->isIntegerTy())
+		return IRBuilder->CreateMul(LHS, RHS);
+	else
+		RHS = CastType(RHS, 
+	LHS->getType(), IRContext);
+		return IRBuilder->CreateFMul(LHS, RHS);
 }
 
 llvm::Value* Division::IRGen(IRGenerator& IRContext) {
@@ -550,7 +594,14 @@ llvm::Value* Division::IRGen(IRGenerator& IRContext) {
 	auto IRBuilder = IRContext.IRBuilder; 
 	llvm::Value* LHS = this->LHS_->IRGen(IRContext);
 	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
-	return IRBuilder->CreateSDiv(LHS, RHS);
+	if(LHS->getType()->isIntegerTy()){
+		return IRBuilder->CreateSDiv(LHS, RHS);
+	}else{
+		RHS = CastType(RHS, 
+	LHS->getType(), IRContext);
+		return IRBuilder->CreateFDiv(LHS, RHS);
+	}
+	
 }
 
 llvm::Value* Modulation::IRGen(IRGenerator& IRContext) {
@@ -643,6 +694,9 @@ llvm::Value* AssignAST::IRGen(IRGenerator& IRContext){
 	llvm::Value* RHS = this->RHS_->IRGen(IRContext);
 	llvm::Value* LHSPtr = this->LHS_->IRGenPtr(IRContext);
 
+	//对右值进行一个类型转换
+	RHS = CastType(RHS, 
+	LHSPtr->getType()->getNonOpaquePointerElementType(), IRContext);
 	//赋值
 	IRBuilder->CreateStore(RHS, LHSPtr);
 	return RHS; 
@@ -651,8 +705,13 @@ llvm::Value* AssignAST::IRGen(IRGenerator& IRContext){
 
 llvm::Value* Constant::IRGen(IRGenerator& IRContext) {
 	std::cout << "Constant" << std::endl;
-	auto IRBuilder = IRContext.IRBuilder; 
-	return IRBuilder->getInt32(this->int_);
+	auto IRBuilder = IRContext.IRBuilder;
+	VarType* v = new VarType(this->type_);
+	switch(v->GetType()) {
+		case Int: return IRBuilder->getInt32(this->int_); 
+		case Char: return IRBuilder->getInt8(this->character_); 
+		case Double:return llvm::ConstantFP::get(IRBuilder->getDoubleTy(), this->double_);
+	}
 }
 
 llvm::Value* LeftValAST::IRGen(IRGenerator& IRContext) {
@@ -726,15 +785,7 @@ llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
 
 		v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
 
-		// llvm::ConstantInt* constant = llvm::cast<llvm::ConstantInt>(indice);
-		// //转换完之后将int提取出来
-		// int convertedValue = constant->getSExtValue();
-		// std::cout << "IndexValue" << convertedValue << "  " << std::endl;
 	}
-	
-	// llvm::Value* v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
-
-	// llvm::Value* v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indices[0]);
 	
 	return IRBuilder->CreateLoad(v1->getType()->getNonOpaquePointerElementType(), v2);
 
