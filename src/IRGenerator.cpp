@@ -319,3 +319,10 @@ bool IRGenerator::SetFuncDefined(std::string Name) {
 //     throw std::logic_error("Cannot find the function: "+Name);
 //     return NULL;
 // }
+
+void IRGenerator::DumpIRCode(std::string FileName) {
+	if (FileName == "") FileName = "-";
+	std::error_code EC;
+	llvm::raw_fd_ostream Out(FileName, EC);
+	this->Module->print(Out, NULL);
+}

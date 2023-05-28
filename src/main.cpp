@@ -17,6 +17,7 @@ int main(int argc, const char* argv[]) {
     Gen.GenerateCode(Root);
 
     Gen.GenObjectCode("Compiler.o");
+    Gen.DumpIRCode("Compiler.ir");
 
     std::cout << "Hello" << std::endl;
 

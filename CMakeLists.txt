@@ -17,7 +17,7 @@ project(${project_name})
 ###############################################
 
 message("-- Generating lexer and parser codes")
-execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/src
                 COMMAND flex lexer.l
                 COMMAND bison -d parser.y)
 
@@ -44,7 +44,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 # Set project files
 ###############################################
 
-file(GLOB SOURCES ./*.hpp ./*.cpp)
+file(GLOB SOURCES ./src/*.hpp ./src/*.cpp)
 
 add_executable(${project_name} ${SOURCES})
 
