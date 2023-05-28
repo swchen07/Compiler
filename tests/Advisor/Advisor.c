@@ -5,6 +5,8 @@ static char strend = 0;
 static char strnewline = 10; 
 static char strseq = 124; 
 static char strspace = 32; 
+static char strcomma = 44;
+static char strsemicolon = 59; 
 static char str0 = 48; 
 static char str1 = 49; 
 static char str2 = 50; 
@@ -15,6 +17,7 @@ static char gradeA = 65;
 static char gradeB = 66;
 static char gradeC = 67;
 static char gradeD = 68;
+static char gradeE = 69;
 static char gradeF = 70;
 
 int myStrlen(char ptr s) {
@@ -30,6 +33,16 @@ int charAddStr(char chr, char ptr s) {
         s[i] = s[i-1];
     }
     s[0] = chr;
+
+    return 0;
+}
+
+int charLeaveStr(char ptr s) {
+    int i; 
+    int len = myStrlen(s);
+    for (i = 0; i < len; i=i+1) {
+        s[i] = s[i+1];
+    }
 
     return 0;
 }
@@ -83,6 +96,17 @@ int getSubStr(char ptr substr, char ptr str, int index, char seq) {
     }
     substr[i] = strend; 
     return 0;
+}
+
+int getSubCnt(char ptr str, char seq) {
+    int index; 
+    int cnt = 1; 
+    for (index = 0; str[index] != strend; index = index+1){
+        if (str[index] == seq) {
+            cnt = cnt+1;
+        }
+    }
+    return cnt; 
 }
 
 int getStrIndex(char ptr substr, char ptr str, char seq) {
@@ -172,19 +196,65 @@ int main(){
     int gpa = 0; 
     int cnt = 0;
 
-    int cursor; 
-
     char names[1000];
     char pres[1000000];
     int learned[100];
     int learnable[100];
+
+    int i; 
+    int j; 
+    int index; 
+    int cursor; 
+    int orCnt; 
+    int andCnt; 
+    int learn; 
+    char orStr[100];
+    char andStr[6];
 
     // get read
     while(1) {
         // read the line
         scank("%c", &firstchar); 
         if (firstchar == strnewline) {
+            charLeaveStr(names);
+            charLeaveStr(pres); 
+            // printk("%s\n", names);
+            // printk("%s\n", pres);
+
             // read over 
+            for(cursor = 0; cursor < cnt; cursor = cursor+1) {
+                if (learned[cursor]) {
+                    learnable[cursor] = 0; 
+                }
+                else {
+                    learnable[cursor] = 0;
+                    getSubStr(coursepre, pres, cursor, strspace); 
+                    orCnt = getSubCnt(coursepre, strsemicolon); 
+                    for (i = 0; i < orCnt && learnable[cursor]==0; i=i+1) {
+                        learn = 1;
+                        getSubStr(orStr, coursepre, i, strsemicolon);
+                        andCnt = getSubCnt(orStr, strcomma);
+                        for (j = 0; j < andCnt && learn == 1; j=j+1) {
+                            // find out the course name, stored in andStr
+                            getSubStr(andStr, orStr, j, strcomma);
+
+                            index = getStrIndex(andStr, names, strspace); 
+                            printk("%d %d %s\n", cursor, index, andStr);
+                            if (index == 0) {
+                                learn = 0; 
+                            }
+                            else {
+                                index = index-1; 
+                                if (learned[index] == 0) {
+                                    learn = 0;
+                                }
+                            }
+                        }
+                        // can learn
+                        learnable[cursor] = learn;
+                    }
+                }
+            }
 
             // print the result
             printk("GPA: %d\n", gpa);
@@ -194,8 +264,13 @@ int main(){
 
             // print recommended course
             printk("Possible Courses to Take Next\n");
-            if (score_remain) {
-
+            if (score_remain != 0) {
+                for (cursor = 0; cursor < cnt; cursor = cursor+1) {
+                    if (learnable[cursor] == 1) {
+                        getSubStr(coursename, names, cursor, strspace);
+                        printk("\t%s\n", coursename);
+                    }
+                }
             }
             else {
                 printk("\tNone - Congratulations!\n"); 
@@ -240,9 +315,10 @@ int main(){
                 learned[cnt] = 1; 
             }
         }
-        cnt = cnt + 1; 
-
         // record the course
+        cnt = cnt + 1; 
+        appendStr(names, coursename, strspace);
+        appendStr(pres, coursepre, strspace); 
 
     }
     
