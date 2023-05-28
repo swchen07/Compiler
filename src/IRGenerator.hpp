@@ -1,4 +1,16 @@
+/**
+ * @file IRGenerator.hpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-05-17
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #pragma once
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -50,11 +62,40 @@ class IRVarAttr {
 public: 
     VarType type_; 
     std::string name_; 
+    bool isPtr_; 
 
 	//llvm::Function* CurFunc;
     llvm::Value* value_;
 
-    IRVarAttr(VarType type, std::string name, llvm::Value* value):type_(type), name_(name), value_(value){}
+    IRVarAttr(VarType type, std::string name, llvm::Value* value, bool _isPtr_=false):
+        type_(type), name_(name), value_(value), isPtr_(_isPtr_){}
+};
+
+class IRLoopAttr {
+public: 
+    llvm::BasicBlock* condBlock_;
+    llvm::BasicBlock* iterBlock_;
+    llvm::BasicBlock* exitBlock_; 
+
+    IRLoopAttr(llvm::BasicBlock* _condBlock_, llvm::BasicBlock* _iterBlock_, llvm::BasicBlock* _exitBlock_): 
+        condBlock_(_condBlock_), iterBlock_(_iterBlock_), exitBlock_(_exitBlock_){}
+};
+
+class IRFuncAttr {
+public: 
+    llvm::FunctionType* type_; 
+    std::string name_; 
+
+	llvm::Function* func_;
+    bool isDefined_; 
+
+    IRFuncAttr(llvm::FunctionType* type, std::string name, llvm::Function* func, bool isDefined = false):
+        type_(type), name_(name), func_(func), isDefined_(isDefined){}
+
+    std::string getName() {return this->name_;}
+    llvm::Function* getFunc() {return this->func_;}
+    void setDefined() {this->isDefined_ = true;}
+    bool getDefined() {return this->isDefined_; }
 };
 
 class IRGenerator {
@@ -63,10 +104,13 @@ public:
     llvm::IRBuilder<>* IRBuilder;
     llvm::Module* Module;
 
-    std::vector<IRVarAttr*> varList_;
     llvm::Function* curFunc_;
     BlockAST* curBasicBlock_;
     bool bbCreatePreBrSignal_;
+    std::vector<IRVarAttr*> varList_;
+    std::vector<IRFuncAttr*> funcList_;
+    std::vector<IRLoopAttr*> loopLevel_; 
+    std::vector<IRVarAttr*> varListForFuture_;
 
     IRGenerator(){
         Context = new llvm::LLVMContext; 
@@ -86,8 +130,13 @@ public:
     void GenerateCode(BaseAST*);
     void GenObjectCode(std::string);
 
-    void CreateVar(VarType type, std::string name, llvm::Value* value);
+    void CreateVar(VarType type, std::string name, llvm::Value* value, bool isPtr=false);
     void DiscardVar(); 
+	llvm::Value* FindVar(std::string name);
+    bool IsPtrVar(std::string name);
+
+    void RemainFutureVar(VarType type, std::string name, llvm::Value* value, bool isPtr=false); 
+    void CreateFutureVars(); 
 
     void SetCurFunc(llvm::Function* curFunc);
     llvm::Function* GetCurFunc();
@@ -99,5 +148,20 @@ public:
     BlockAST* GetBasicBlock();
     void SetBasicBlock(BlockAST*);
 
-	llvm::Value* FindVar(std::string name);
+    void EnterLoop(llvm::BasicBlock* condBlock, llvm::BasicBlock* iterBlock, llvm::BasicBlock* exitBlock); 
+    void LeaveCurrentLoop(); 
+    llvm::BasicBlock* BreakCurrentLoop(); 
+    llvm::BasicBlock* ContinueCurrentLoop();
+
+    void CreateFunc(llvm::FunctionType*, std::string name, llvm::Function* func, bool isDefined);
+    void DiscardFunc(int cnt);
+    llvm::Function* FindFunction(std::string Name);
+    bool IsFuncDefined(std::string Name);
+    bool SetFuncDefined(std::string Name); 
+    // llvm::Function* CallFunction(std::string Name);
 };
+
+
+llvm::Value* TypeCasting(llvm::Value* Value, llvm::Type* Type, IRGenerator& IRContext);
+
+llvm::Value* TypeUpgrading(llvm::Value* Value, llvm::Type* Type, IRGenerator& IRContext);

@@ -34,6 +34,7 @@ HEXADECIMAL             0[xX][0-9a-fA-F]+
 REAL                    [0-9]+\.[0-9]+
 
 /* 字符串 */
+STRING                  \"(\\.|[^\"\\])*?\"
 
 /* 标识符 */
 IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
@@ -72,10 +73,12 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "^"                     {return BXOR;}
 
     /*分隔符*/
-"("             { return LPAREN; }
-")"             { return RPAREN; }
-"{"             { return LBRACE; }
-"}"             { return RBRACE; }
+"("             		{ return LPAREN; }
+")"             		{ return RPAREN; }
+"{"             		{ return LBRACE; }
+"}"             		{ return RBRACE; }
+"["						{return LBRACKET;}
+"]"						{return RBRACKET;}
 ","                     {return COMMA;}
 ";"                     {return SEMI;}
 
@@ -86,6 +89,8 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "."                     {return DOT;}
 ":"                     {return COLON;}
 "?"                     {return QUES;}
+"..."					{return ELLIPSES;}
+"ptr"				    {return PTR;}
 
     /* 关键字 */
     /* 数据类型 */
@@ -93,6 +98,7 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "short"                 {SAVE_TOKEN; return SHORT;}
 "char"                  {SAVE_TOKEN; return CHAR;}
 "void"                  {SAVE_TOKEN; return VOID;}
+"double"                {SAVE_TOKEN; return DOUBLE;}
 
     /* 跳转结构 */
 "return"                {return RETURN;}
@@ -107,11 +113,27 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "for"                   {SAVE_TOKEN; return FOR;}
 "while"                 {SAVE_TOKEN; return WHILE;}
 
+"static"                {SAVE_TOKEN; return STATIC;}
 
-    /* 暂时参考北大在线文档给的demo */
-    /* 标识符 */
-    /* yylval 用来向 parser 传递 lexer 读取到的内容 */
-    /* 遇到整数字面量, 先把读取到的字符串转换成整数, 然后存起来, 并返回对应的 token. */
+{STRING}                {
+                            yylval.strVal = new std::string("");
+                            for (int i = 1; i <= yyleng-2; i++){
+                                if (yytext[i] == '\\') {
+                                    i ++; 
+                                    switch(yytext[i]) {
+                                        case 'n': yylval.strVal->push_back('\n'); break; 
+                                        case 't': yylval.strVal->push_back('\t'); break; 
+                                        default: yylval.strVal->push_back(yytext[i]);
+                                    }
+                                }
+                                else {
+                                    yylval.strVal->push_back(yytext[i]);
+                                }
+                            }
+                            return CONST_STR;
+                        }
+
+
 {IDENTIFIER}            {SAVE_TOKEN; return IDENTIFIER;}
 
 
@@ -119,7 +141,7 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 {OCTAL}                 { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
 {HEXADECIMAL}           { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
  
-{REAL}                  { yylval.floatVal = strtol(yytext, nullptr, 0); return CONST_FLOAT; }
+{REAL}                  { double tmp; sscanf(yytext, "%lf", &tmp);yylval.douVal = tmp; return CONST_DOUBLE; }
 
 "\'"[^\\']"\'"			{ yylval.charVal = yytext[1]; return CONST_CHAR; }
 

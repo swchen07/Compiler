@@ -36,19 +36,68 @@ void IRGenerator::GenObjectCode(std::string outputfile) {
     Dest.flush();
 }
 
-void IRGenerator::CreateVar(TypeID type, std::string name, llvm::Value* value){
+void IRGenerator::CreateVar(VarType type, std::string name, llvm::Value* value){
     this->varList_.push_back(new IRVarAttr(type, name, value));
+    if (this->curBasicBlock_) this->curBasicBlock_->varCnt_ += 1; 
 }
 
-void IRGenerator::DiscardVar(int cnt) {
-    for (int i = 0; i < cnt; i++) {
-        auto var = this->varList_[this->varList_.size()-1];
-		this->varList_.pop_back();
-        delete var; 
+void IRGenerator::DiscardVar() {
+    if (this->curBasicBlock_)
+        for (int i = 0; i < this->curBasicBlock_->varCnt_; i++) {
+            auto var = this->varList_[this->varList_.size()-1];
+            this->varList_.pop_back();
+            delete var; 
+        }
+}
+
+void IRGenerator::SetCurFunc(llvm::Function* curFunc) {
+    this->curFunc_ = curFunc; 
+}
+
+llvm::Function* IRGenerator::GetCurFunc() {
+    return this->curFunc_; 
+}
+
+void IRGenerator::SetPreBrSignal() {
+    this->bbCreatePreBrSignal_ = true; 
+}
+
+bool IRGenerator::ClearPreBrSignal() {
+    bool bbCreatePreBrSignal = this->bbCreatePreBrSignal_; 
+    this->bbCreatePreBrSignal_ = false;
+    return bbCreatePreBrSignal;
+}
+
+bool IRGenerator::GetPreBrSignal() {
+    return this->bbCreatePreBrSignal_; 
+}
+
+BlockAST* IRGenerator::GetBasicBlock() {
+    return this->curBasicBlock_; 
+}
+
+void IRGenerator::SetBasicBlock(BlockAST* newBasicBlock){
+    this->curBasicBlock_ = newBasicBlock; 
+}
+
+llvm::Value* IRGenerator::FindVar(std::string name){
+	if(this->varList_.size() == 0){
+		return NULL;
+	}
+	for(auto symbol = this->varList_.end() - 1; symbol >= this->varList_.begin(); symbol--){
+		if((*symbol)->name_ == name){
+			return (*symbol)->value_;
+		}
+	}
+	return NULL;
+}
+
+
+
+void IRGenerator::CreateFunc(llvm::FunctionType* type, std::string name, llvm::Function* func){
+    if(this->FindFunction(name)){
+        return;
     }
-}
-
-void IRGenerator::CreateFunc(TypeID type, std::string name, llvm::Function* func){
     this->funcList_.push_back(new IRFuncAttr(type, name, func));
 }
 
@@ -62,32 +111,10 @@ void IRGenerator::DiscardFunc(int cnt) {
 
 llvm::Function* IRGenerator::FindFunction(std::string Name) {
 	if (this->funcList_.size() == 0) return NULL;
-    for (auto iter = this->funcList_.end() - 1; iter >= this->funcList_.begin(); iter--) {
-        if (iter.getName() == Name){
-            return iter.getFunc();
+    for (auto iter = this->funcList_[this->funcList_.size()-1]; iter >= this->funcList_[0]; iter--) {
+        if (iter->getName() == Name){
+            return iter->getFunc();
         }
     }
 	return NULL;
-}
-
-void IRGenerator::SetCurFunc(llvm::Function* curFunc) {
-    this->curFunc_ = curFunc; 
-}
-
-llvm::Function* IRGenerator::GetCurFunc() {
-    return this->curFunc_; 
-}
-
-void IRGenerator::setPreBrSignal() {
-    this->bbCreatePreBrSignal_ = true; 
-}
-
-bool IRGenerator::clearPreBrSignal() {
-    bool bbCreatePreBrSignal = this->bbCreatePreBrSignal_; 
-    this->bbCreatePreBrSignal_ = false;
-    return bbCreatePreBrSignal;
-}
-
-bool IRGenerator::getPreBrSignal() {
-    return this->bbCreatePreBrSignal_; 
 }

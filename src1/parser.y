@@ -31,9 +31,14 @@ using namespace std;
     std::string* strVal;
 	float floatVal;
     int intVal;
+	char charVal;
     BaseAST *astVal;
 	CompUnits *compUnits;
 	Stmts *stmts;
+    ArgAST *argVal;
+    ArgListAST *argList;
+    ExprListAST *exprList;
+    ExprAST *expVal;
 }
 
 /* 终结符 */
@@ -43,9 +48,9 @@ using namespace std;
 %token AND OR NOT
 %token BAND BOR BXOR
 %token LPAREN RPAREN LBRACE RBRACE COMMA SEMI
-%token ASSIGN DOT COLON QUES
+%token ASSIGN DOT COLON QUES ELLIPSES
 
-%token <strVal> INT CHAR SHORT VOID
+%token <strVal> INT CHAR SHORT VOID PTR
 %token RETURN CONTINUE BREAK
 %token IF ELSE
 %token FOR WHILE
@@ -53,25 +58,34 @@ using namespace std;
 %token CONST
 %token <strVal> IDENTIFIER
 %token <intVal> CONST_INT 
-%token CONST_CHAR CONST_FLOAT CONST_STR
+%token <charVal> CONST_CHAR 
+%token <strVal> CONST_FLOAT CONST_STR
 // 非终结符的类型定义
 
 %type <astVal> Program
 %type <compUnits> CompUnit
 %type <astVal> FuncDef
 %type <strVal> FuncType
-%type FuncParaLists
-%type FuncParam
-%type Decl
+%type <astVal> Decl
+
+%type <argList> ArgList
+%type <argList> _ArgList
+%type <argVal> Arg
+
+%type <exprList> ExpList
+%type <exprList> _ExpList
+%type <expVal> Exp
+
 %type ConstDecl
 %type ConstDef
 %type ConstList
 %type ConstExp
 %type ConstInitVal
-%type VarDecl
-%type Btype
+%type <astVal> VarDecl
+%type <strVal> BType
 %type VarList
-%type VarDef
+%type <astVal> VarDef
+%type <astVal> InitVal
 
 %type <astVal> Block
 %type <astVal> BlockItem 
@@ -79,11 +93,10 @@ using namespace std;
 %type <astVal> Stmt
 
 %type <astVal> PrimaryExp
-%type <astVal> Exp
 %type ElseState
 %type <astVal> RetState
 
-%type LVal
+%type <astVal> LVal
 %type <intVal> Number
 %type <astVal> Constant
 
@@ -107,7 +120,7 @@ using namespace std;
 /* 	: FuncDef 											{auto c = new CompUnits(); c->push_back((CompUnitAST*)$1); $$ = new ProgramAST(c); Root = $$;} */
 /*	| CompUnit											{$$ = new ProgramAST($1); Root = $$;} */
 Program							
-	: CompUnit 											{$$ = new ProgramAST((CompUnits*)$1); Root = $$;}
+	: CompUnit 											{ $$ = new ProgramAST((CompUnits*)$1); Root = $$;}
 	;
 
 CompUnit
@@ -118,12 +131,12 @@ CompUnit
 /* Decl          ::= ConstDecl | VarDecl; */
 Decl
     : ConstDecl
-    | VarDecl                                           {}
+    | VarDecl                                           { $$ = $1; }
     ;
 
 /* ConstDecl     ::= "const" BType ConstDef {"," ConstDef} ";"; */
 ConstDecl
-    : CONST Btype ConstDef ConstList SEMI
+    : CONST BType ConstDef ConstList SEMI
     ;
 
 ConstList
@@ -132,11 +145,11 @@ ConstList
     ;
 
 /* BType         ::= "int"; */
-Btype
-    : VOID
-    | INT
-    | SHORT
-    | CHAR
+BType
+    : VOID                          { $$ = $1; }
+    | INT                           { $$ = $1; }
+    | SHORT                         { $$ = $1; }
+    | CHAR                          { $$ = $1; }
     ;
 
 /* ConstDef      ::= IDENT "=" ConstInitVal; */
@@ -151,28 +164,45 @@ ConstInitVal
 
 /* VarDecl       ::= BType VarDef {"," VarDef} ";"; */
 VarDecl
-    : Btype VarDef VarList SEMI
+    : BType VarDef VarList SEMI                     { $$ = new VarDeclAST(*$1, (VarDefAST*)$2);}
     ;
 
 VarList
     : VarList COMMA VarDef
-    |
+    |                                               { ; }
     ;
 
 /* VarDef        ::= IDENT | IDENT "=" InitVal; */
 VarDef
-    : IDENTIFIER
-    | IDENTIFIER ASSIGN InitVal
+    : IDENTIFIER                                    { $$ = new VarDefAST(*$1);}
+    | IDENTIFIER ASSIGN InitVal                     { $$ = new VarDefAST(*$1, (ExprAST*)$3);}
     ;
 
 /* InitVal       ::= Exp; */
 InitVal
-    : Exp
+    : Exp                                           { $$ = $1; }
     ;
+
+
+ArgList:	_ArgList COMMA Arg										{  $$ = $1; $$->push_back($3);   }
+			| _ArgList COMMA ELLIPSES								{  $$ = $1; $$->SetVarArg();   }
+			| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
+			| ELLIPSES												{  $$ = new ArgListAST(); $$->SetVarArg();   }
+			|														{  $$ = new ArgListAST(); }
+			;
+
+_ArgList:	_ArgList COMMA Arg										{  $$ = $1; $$->push_back($3);   }	 
+			| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
+			;
+
+Arg:		BType IDENTIFIER										{  $$ = new ArgAST(*$1, *$2);   }
+			| BType												{  $$ = new ArgAST(*$1);   }
+			;
 
 /* FuncDef       ::= FuncType IDENT "(" [FuncFParams] ")" Block; */
 FuncDef
-    : FuncType IDENTIFIER LPAREN RPAREN Block   { $$ = new FuncDefAST(*$1, *$2, (BlockAST*)$5);}
+    : FuncType IDENTIFIER LPAREN ArgList RPAREN SEMI    { $$ = new FuncDefAST(*$1, *$2, (ArgListAST*)$4); }
+    | FuncType IDENTIFIER LPAREN ArgList RPAREN Block   { $$ = new FuncDefAST(*$1, *$2, (ArgListAST*)$4, (BlockAST*)$6); }
     ;
 
 /* FuncType      ::= "void" | "int"; */
@@ -182,25 +212,10 @@ FuncType
     | CHAR                                      { $$ = $1; }
     ;
 
-/* FuncFParams   ::= FuncFParam {"," FuncFParam}; */
-FuncParaLists
-    : FuncParams 
-    | 
-    ;
-
-FuncParams
-    : FuncParams COMMA FuncParam
-    | FuncParam
-    ;
-
-/* FuncFParam    ::= BType IDENT; */
-FuncParam
-    : Btype IDENTIFIER
-    ;
 
 /* Block         ::= "{" {BlockItem} "}"; */
 Block
-    : LBRACE BlockItemNew RBRACE                {$$ = new BlockAST((Stmts*)$2);}
+    : LBRACE BlockItemNew RBRACE                { $$ = new BlockAST((Stmts*)$2);}
     ;
 
 BlockItemNew
@@ -210,8 +225,8 @@ BlockItemNew
 
 /* BlockItem     ::= Decl | Stmt; */
 BlockItem
-    : Decl
-    | Stmt										{$$ = $1;}
+    : Decl                                      { $$ = $1;}
+    | Stmt										{ $$ = $1;}
     ;
 
 /* Stmt          ::= LVal "=" Exp ";"
@@ -223,7 +238,7 @@ BlockItem
                 | "continue" ";"
                 | "return" [Exp] ";"; */
 Stmt
-    : LVal ASSIGN Exp SEMI
+    : LVal ASSIGN Exp SEMI						{ $$ = new AssignAST((LeftValAST*)$1, (ExprAST*)$3); }
     | Exp SEMI									{ $$ = $1; }
     | SEMI										{ $$ = NULL; }
     | Block										{ $$ = $1; }
@@ -232,11 +247,11 @@ Stmt
     | WHILE LPAREN Exp RPAREN Stmt
     | BREAK SEMI
     | CONTINUE SEMI
-    | RETURN RetState SEMI				{$$ = new ReturnStmtAST((ExprAST*)$2);}
+    | RETURN RetState SEMI						{$$ = new ReturnStmtAST((ExprAST*)$2);}
     ;
 
 LVal
-    : IDENTIFIER
+    : IDENTIFIER								{ $$ = new LeftValAST(*$1); }
     ;
 
 ElseState
@@ -250,21 +265,23 @@ RetState
     ;
 
 PrimaryExp
-    : LPAREN Exp RPAREN
-    | LVal
+    : LPAREN Exp RPAREN                 { $$ = $2; }
+    | LVal								{ $$ = $1; }
     | Constant							{ $$ = $1; }				
     ;
 
 Constant
-    : CONST_INT							{ $$ =  new Constant($1); }
-    | CONST_CHAR
+    : CONST_INT							{ $$ = new Constant($1); }
+    | CONST_CHAR						{ std::cout << "char" << std::endl; $$ = new Constant($1); }
+    | CONST_STR                         { $$ = new StringType(*$1); }
     ;
 
 Exp
-    : PrimaryExp						{ $$ = $1; }						
+    : PrimaryExp						{ $$ = (ExprAST*)$1; }						
     | ADD Exp %prec NOT					{ $$ = new MoncPlus((ExprAST*)$2); }
     | SUB Exp %prec NOT					{ $$ = new MoncMinus((ExprAST*)$2); }
     | NOT Exp							{ $$ = new LogicNot((ExprAST*)$2); }
+    | BAND Exp	%prec NOT			    { $$ = new AddressOf($2); }
 
     | Exp ADD Exp						{$$ = new Addition((ExprAST*)$1, (ExprAST*)$3);}
     | Exp SUB Exp						{$$ = new Subtraction((ExprAST*)$1, (ExprAST*)$3);}
@@ -286,8 +303,17 @@ Exp
     | Exp BOR  Exp
     | Exp BXOR Exp
 
-	| Exp ASSIGN Exp					/*{ $$ = new Assign((ExprAST*)$1, (ExprAST*)$3); }*/
-    ;
+    | IDENTIFIER LPAREN ExpList RPAREN	 {  $$ = new FunctionCallAST(*$1, $3);   }
+	;
+
+ExpList:	_ExpList COMMA Exp									{  $$ = $1; $$->push_back($3);   }
+			| Exp                           					{  $$ = new ExprListAST(); $$->push_back($1);   }
+			|													{  $$ = new ExprListAST();   }
+			;
+
+_ExpList:	_ExpList COMMA Exp 									{  $$ = $1; $$->push_back($3);   }
+			| Exp                       						{  $$ = new ExprListAST(); $$->push_back($1);   }
+			;
 
 ConstExp
 	:

@@ -48,23 +48,23 @@
 
 class IRVarAttr {
 public: 
-    TypeID type_; 
+    VarType type_; 
     std::string name_; 
 
 	//llvm::Function* CurFunc;
     llvm::Value* value_;
 
-    IRVarAttr(TypeID type, std::string name, llvm::Value* value):type_(type), name_(name), value_(value){}
+    IRVarAttr(VarType type, std::string name, llvm::Value* value):type_(type), name_(name), value_(value){}
 };
 
 class IRFuncAttr {
 public: 
-    TypeID type_; 
+    llvm::FunctionType* type_; 
     std::string name_; 
 
 	llvm::Function* func_;
 
-    IRFuncAttr(TypeID type, std::string name, llvm::Function* func):type_(type), name_(name), func_(func){}
+    IRFuncAttr(llvm::FunctionType* type, std::string name, llvm::Function* func):type_(type), name_(name), func_(func){}
 
     std::string getName() {return this->name_;}
     llvm::Function* getFunc() {return this->func_;}
@@ -79,6 +79,7 @@ public:
     std::vector<IRVarAttr*> varList_;
     std::vector<IRFuncAttr*> funcList_;
     llvm::Function* curFunc_;
+    BlockAST* curBasicBlock_;
     bool bbCreatePreBrSignal_;
 
     IRGenerator(){
@@ -97,13 +98,23 @@ public:
     void GenerateCode(BaseAST*);
     void GenObjectCode(std::string);
 
-    void CreateVar(TypeID type, std::string name, llvm::Value* value);
-    void DiscardVar(int cnt); 
+    void CreateVar(VarType type, std::string name, llvm::Value* value);
+    void DiscardVar(); 
 
     void SetCurFunc(llvm::Function* curFunc);
     llvm::Function* GetCurFunc();
 
-    void setPreBrSignal();
-    bool clearPreBrSignal();
-    bool getPreBrSignal();
+    void SetPreBrSignal();
+    bool ClearPreBrSignal();
+    bool GetPreBrSignal();
+
+    BlockAST* GetBasicBlock();
+    void SetBasicBlock(BlockAST*);
+
+	llvm::Value* FindVar(std::string name);
+
+
+    void CreateFunc(llvm::FunctionType*, std::string name, llvm::Function* func);
+    void DiscardFunc(int cnt);
+    llvm::Function* FindFunction(std::string Name);
 };

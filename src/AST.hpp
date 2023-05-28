@@ -18,42 +18,6 @@
 class IRGenerator;
 
 /**
- * @brief type类型的id
- * 
- */
-
-enum TypeID{
-    Int, 
-    Char, 
-	Short,
-	Double
-};
-
-class VarType {
-public:
-    VarType(int) {type=Int;}
-    VarType(char) {type=Char;}
-	VarType(short) {type=Short;}
-    VarType(std::string name);
-    ~VarType(){}
-    TypeID GetType() {return type;}
-	llvm::Type* ToLLVMType(IRGenerator&); 
-private: 
-    TypeID type;
-};
-
-class ArrayType {
-public:
-	VarType* elemType_;
-	size_t size_;
-
-	ArrayType(VarType* _elemType_, size_t _size_) : elemType_(_elemType_), size_(_size_) {}
-	~ArrayType() {}
-
-	llvm::Type* ToLLVMType(IRGenerator& IRContext);
-};
-
-/**
  * @brief 声明所有类
  * 
  */
@@ -74,8 +38,53 @@ class Addition;
 
 class LeftValAST;
 
+class IfElseStmtAST; 
+class ForStmtAST; 
+class WhileStmtAST;
+class BreakStmtAST; 
+class ContinueStmtAST; 
+
+class ArgAST; 
+class ArgListAST; 
+class FuncCallAST; 
+class PointerType;
+
 using CompUnits = std::vector<CompUnitAST*>;
-using Stmts = std::vector<StmtAST*>;
+using Stmts = std::vector<CompUnitAST*>;
+using Exprs = std::vector<ExprAST*>;
+using ExprListAST = std::vector<ExprAST*>;
+
+/**
+ * @brief type类型的id
+ * 
+ */
+
+enum TypeID{
+    Int, 
+    Char, 
+	Short,
+	Double,
+	Ptr
+};
+
+class VarType {
+public:
+	PointerType* _BaseType_pointer;
+
+    VarType(int) {type=Int;}
+    VarType(char) {type=Char;}
+	VarType(short) {type=Short;}
+	VarType(double) {type=Double;}
+	// VarType(ArrayType* __BaseType):_BaseType(__BaseType) {type=Arr;}
+	VarType(PointerType* __BaseType):_BaseType_pointer(__BaseType) {type=Ptr;}
+    VarType(std::string name);
+    ~VarType(){}
+    TypeID GetType() {return type;}
+	llvm::Type* ToLLVMType(IRGenerator&); 
+private: 
+    TypeID type;
+};
+
 /**
  * @brief 构造所有AST节点的基类，其中用指针管理对象
  * 
@@ -96,6 +105,7 @@ public:
     
     ProgramAST(CompUnits* _compUnit_):compUnit_(_compUnit_){}
     ~ProgramAST(){};
+
     llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
@@ -115,12 +125,13 @@ class FuncDefAST : public CompUnitAST {
 public:
 	std::string funcName_; 
     VarType type_; 
+	ArgListAST* _ArgList;
     BlockAST* block_;
 
-	FuncDefAST(std::string _typeName_, std::string _funcName_, BlockAST* _block_):funcName_(_funcName_), 
-	type_(_typeName_), block_(_block_) {}
-
+	FuncDefAST(std::string _typeName_, std::string _funcName_, ArgListAST* _ArgList_, BlockAST* _block_ = NULL):
+		funcName_(_funcName_), type_(_typeName_), block_(_block_) , _ArgList(_ArgList_){}
 	~FuncDefAST(){};
+	
     llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
@@ -132,6 +143,7 @@ public:
     BlockAST(Stmts* _stmts_): stmts_(_stmts_), varCnt_(0){}
     ~BlockAST(){}
 
+	// void CreatePreDefinedVars(IRGenerator& IRContext); 
     llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
@@ -176,18 +188,22 @@ public:
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
-// class VarInitAST : public BaseAST {
-// public:
-// 	std::string varName_;
-// 	ExprAST* initExpr_;
+class ArrDefAST : public BaseAST {
+public:
+	llvm::Type* elementType_;
+	llvm::Type* arrayType_;
+	std::string arrName_;
+	VarType type_;
+	Exprs* exprs_;
 
-// 	VarInitAST(std::string _varName_) : 
-// 		varName_(_varName_) {}
-// 	VarInitAST(std::string _varName_, ExprAST* _initExpr_) : 
-// 		varName_(_varName_), initExpr_(_initExpr_) {}
-// 	~VarInitAST() {}
-// 	llvm::Value* IRGen(IRGenerator& IRContext) {}
-// };
+
+	ArrDefAST(std::string _typeName_, std::string _arrName_, Exprs* _exprs_) :
+	type_(_typeName_), arrName_(_arrName_), exprs_(_exprs_) {}
+	~ArrDefAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+
+};
 
 /**
  * @brief Statement抽象类
@@ -224,6 +240,64 @@ public:
 	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
 };
 
+/**
+ * @brief branch & control
+ * 
+ */
+
+class IfElseStmtAST : public StmtAST {
+public: 
+	ExprAST* cond_; 
+	BlockAST* ifBlock_; 
+	BlockAST* elseBlock_; 
+
+	IfElseStmtAST(ExprAST* _cond_, BlockAST* _ifBlock_, BlockAST* _elseBlock_):cond_(_cond_), ifBlock_(_ifBlock_), elseBlock_(_elseBlock_){}
+	~IfElseStmtAST(){}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class ForStmtAST : public StmtAST {
+public: 
+	StmtAST* initStmt_; 
+	ExprAST* condExpr_; 
+	StmtAST* iterStmt_; 
+	BlockAST* forBody_; 
+
+	ForStmtAST(StmtAST* _initStmt_, ExprAST* _condExpr_, StmtAST* _iterStmt_, BlockAST* _forBody_):
+		initStmt_(_initStmt_), condExpr_(_condExpr_), iterStmt_(_iterStmt_), forBody_(_forBody_){}
+	~ForStmtAST(){}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class WhileStmtAST : public StmtAST {
+public: 
+	ExprAST* condExpr_; 
+	BlockAST* whileBody_; 
+
+	WhileStmtAST(ExprAST* _condExpr_, BlockAST* _whileBody_): 
+		condExpr_(_condExpr_), whileBody_(_whileBody_) {}
+	~WhileStmtAST(){}; 
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class BreakStmtAST : public StmtAST {
+public: 
+	BreakStmtAST(){}
+	~BreakStmtAST(){}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+}; 
+
+class ContinueStmtAST : public StmtAST {
+public: 
+	ContinueStmtAST(){}
+	~ContinueStmtAST(){}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+}; 
 
 /**
  * @brief 算术运算
@@ -422,11 +496,14 @@ public:
 
 class Constant : public ExprAST {
 public:
+	VarType type_; 
 	int int_;
 	char character_;
+	double double_;
 	
-	Constant(int _int_) : int_(_int_) {}
-	Constant(char _character_) : character_(_character_) {}
+	Constant(int _int_) : type_("int"), int_(_int_) {}
+	Constant(char _character_) : type_("char"), character_(_character_) {}
+	Constant(double _double_) : type_("double"), double_(_double_) {}
 	~Constant() {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
@@ -441,4 +518,90 @@ public:
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
 	llvm::Value* IRGenPtr(IRGenerator& IRContext);
+};
+
+//Function argument
+class ArgAST : public BaseAST {
+public:
+	//Its type
+	VarType type_;
+	//Its name (if any)
+	std::string _Name;
+
+	ArgAST(std::string& _typeName_, const std::string& __Name = "") :
+		type_(_typeName_), _Name(__Name) {}
+	ArgAST(PointerType* _typeName_, const std::string& __Name = "") :
+		type_(_typeName_), _Name(__Name) {}
+	~ArgAST(void) {}
+	llvm::Value* IRGen(IRGenerator& IRContext) { return NULL; }
+};
+
+class ArgListAST : public std::vector<ArgAST*>, public BaseAST {
+public:
+	//Set true if the argument list contains "..."
+	bool _VarArgLenth;
+	void SetVarArg(void) { this->_VarArgLenth = true; }
+
+	ArgListAST(void) : _VarArgLenth(false) {}
+	~ArgListAST(void) {}
+	llvm::Value* IRGen(IRGenerator& IRContext) { return NULL; }
+};
+
+class FuncCallAST : public ExprAST {
+public:
+	std::string _FuncName;
+	ExprListAST* _ArgList;
+
+	FuncCallAST(const std::string& __FuncName, ExprListAST* __ArgList) : _FuncName(__FuncName), _ArgList(__ArgList) {}
+	~FuncCallAST(void) {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class StringType : public Constant {
+public:
+	std::string _Content;
+	StringType(const std::string& __Content) : Constant(0), _Content(__Content) {}
+	~StringType(void) {}
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class AddressOf : public ExprAST {
+public:
+	LeftValAST* _Operand;
+	AddressOf(LeftValAST* __Operand) : _Operand(__Operand) {}
+	~AddressOf(void) {}
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class ArrValAST : public ExprAST {
+public:
+	std::string name_;
+	Exprs* exprs_;
+
+	ArrValAST(std::string _name_, Exprs* _exprs_) : name_(_name_), exprs_(_exprs_) {}
+	~ArrValAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+	llvm::Value* IRGenPtr(IRGenerator& IRContext);
+};
+
+class AssignArrAST : public StmtAST {
+	public:
+	ArrValAST* LHS_;
+	ExprAST* RHS_;
+
+	AssignArrAST(ArrValAST* _LHS_, ExprAST* _RHS_) : LHS_(_LHS_), RHS_(_RHS_) {}
+	~AssignArrAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+
+class PointerType{
+public:
+	VarType _BaseType;
+
+	PointerType(VarType __BaseType) : _BaseType(__BaseType) {}
+	~PointerType(void) {}
+	llvm::Type* ToLLVMType(IRGenerator& IRContext);
 };

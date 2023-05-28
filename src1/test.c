@@ -1,21 +1,7 @@
-int main (){
-	;;;;;;;
-	{
-		{}
-		{}
-		{
-			-1;
-			+1;
-			return 1 && 0;
-			return 1;
-		}
-		{{{}}}
-	}
-	
-}
+int printf(char ptr, ...);
 
-int a(){
-	3+4;
-	1+2;
-	return -2;
+int main (){
+	int a;
+	a = a+1;
+	return a;
 }

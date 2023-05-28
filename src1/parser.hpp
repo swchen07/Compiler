@@ -81,23 +81,25 @@ extern int yydebug;
     DOT = 282,                     /* DOT  */
     COLON = 283,                   /* COLON  */
     QUES = 284,                    /* QUES  */
-    INT = 285,                     /* INT  */
-    CHAR = 286,                    /* CHAR  */
-    SHORT = 287,                   /* SHORT  */
-    VOID = 288,                    /* VOID  */
-    RETURN = 289,                  /* RETURN  */
-    CONTINUE = 290,                /* CONTINUE  */
-    BREAK = 291,                   /* BREAK  */
-    IF = 292,                      /* IF  */
-    ELSE = 293,                    /* ELSE  */
-    FOR = 294,                     /* FOR  */
-    WHILE = 295,                   /* WHILE  */
-    CONST = 296,                   /* CONST  */
-    IDENTIFIER = 297,              /* IDENTIFIER  */
-    CONST_INT = 298,               /* CONST_INT  */
-    CONST_CHAR = 299,              /* CONST_CHAR  */
-    CONST_FLOAT = 300,             /* CONST_FLOAT  */
-    CONST_STR = 301                /* CONST_STR  */
+    ELLIPSES = 285,                /* ELLIPSES  */
+    INT = 286,                     /* INT  */
+    CHAR = 287,                    /* CHAR  */
+    SHORT = 288,                   /* SHORT  */
+    VOID = 289,                    /* VOID  */
+    PTR = 290,                     /* PTR  */
+    RETURN = 291,                  /* RETURN  */
+    CONTINUE = 292,                /* CONTINUE  */
+    BREAK = 293,                   /* BREAK  */
+    IF = 294,                      /* IF  */
+    ELSE = 295,                    /* ELSE  */
+    FOR = 296,                     /* FOR  */
+    WHILE = 297,                   /* WHILE  */
+    CONST = 298,                   /* CONST  */
+    IDENTIFIER = 299,              /* IDENTIFIER  */
+    CONST_INT = 300,               /* CONST_INT  */
+    CONST_CHAR = 301,              /* CONST_CHAR  */
+    CONST_FLOAT = 302,             /* CONST_FLOAT  */
+    CONST_STR = 303                /* CONST_STR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -111,11 +113,16 @@ union YYSTYPE
     std::string* strVal;
 	float floatVal;
     int intVal;
+	char charVal;
     BaseAST *astVal;
 	CompUnits *compUnits;
 	Stmts *stmts;
+    ArgAST *argVal;
+    ArgListAST *argList;
+    ExprListAST *exprList;
+    ExprAST *expVal;
 
-#line 119 "parser.hpp"
+#line 126 "parser.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
