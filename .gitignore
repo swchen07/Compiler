@@ -13,4 +13,10 @@ parser.hpp
 test.c
 a.out
 simpledemo.o
+Compiler.o
+quickSort.out
+matrix.out
+courseSelector.out
+Sort_run.sh
+Array_run.sh
 
