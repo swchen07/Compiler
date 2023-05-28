@@ -1,7 +1,7 @@
 int printk(int ptr, ...);
 int scank(char ptr, ...);
 
-static int a[10001];
+static int a[10008];
 int quicksort(int left, int right){
 	int i = left;
 	int	j = right;
@@ -39,12 +39,15 @@ int main(){
     int temp;
 
 	scank("%d", &n);
+
+	// a[6000] = 3;
+	// printk("Test: %d\n", a[6000]);
 	
 	for (i = 0; i < n; i = i + 1){
         scank("%d", &temp);
+		// printk("Read Complete %d %d!\n", i, temp);
         a[i] = temp;
     }
-		
 	quicksort(0, n - 1);
 	for (i = 0; i < n; i=i+1){
 		printk("%d\n", a[i]);

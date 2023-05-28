@@ -173,7 +173,7 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 		//转换完之后将int提取出来
 		int convertedValue = constant->getSExtValue();
 		arrayType = llvm::ArrayType::get(arrayType, convertedValue);
-		// std::cout << convertedValue << "  " << std::endl;
+		std::cout << "convertedValue" << convertedValue << "  " << std::endl;
 	}
 
 	this->arrayType_ = arrayType;
@@ -772,6 +772,11 @@ llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
 		// v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
 
 		v2 = IRBuilder->CreateGEP(v1->getType()->getNonOpaquePointerElementType(), v1, indice);
+
+		// llvm::ConstantInt* constant = llvm::cast<llvm::ConstantInt>(indice);
+		// //转换完之后将int提取出来
+		// int convertedValue = constant->getSExtValue();
+		// std::cout << "IndexValue" << convertedValue << "  " << std::endl;
 	}
 	
 	// llvm::Value* v1 = IRBuilder->CreatePointerCast(arrayPtr, arrayPtr->getType()->getNonOpaquePointerElementType()->getArrayElementType()->getPointerTo());
