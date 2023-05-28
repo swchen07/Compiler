@@ -56,6 +56,7 @@ using namespace std;
 %token RETURN CONTINUE BREAK STATIC
 %token IF ELSE
 %token FOR WHILE
+%token STATIC
 
 %token CONST
 %token <strVal> IDENTIFIER
@@ -95,7 +96,7 @@ using namespace std;
 
 %type <astVal> Block
 %type <astVal> BlockItem 
-%type <stmts> BlockItemNew
+%type <stmts>  BlockItemNew
 %type <astVal> Stmt SmooStmt
 
 %type <astVal> PrimaryExp
@@ -126,18 +127,18 @@ using namespace std;
 %%
 
 /* CompUnit      ::= [CompUnit] (Decl | FuncDef); */
-/* 	: FuncDef 											{auto c = new CompUnits(); c->push_back((CompUnitAST*)$1); $$ = new ProgramAST(c); Root = $$;} */
-/*	| CompUnit											{$$ = new ProgramAST($1); Root = $$;} */
+/* 	: FuncDef 											{ auto c = new CompUnits(); c->push_back((CompUnitAST*)$1); $$ = new ProgramAST(c); Root = $$;} */
+/*	| CompUnit											{ $$ = new ProgramAST($1); Root = $$;} */
 Program							
 	: CompUnit 											{ $$ = new ProgramAST((CompUnits*)$1); Root = $$;}
 	;
 
 CompUnit
-    : CompUnit FuncDef									{ $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
-	| CompUnit STATIC Decl                                     { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
+    : CompUnit FuncDef									        { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
+    | CompUnit STATIC Decl                      { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
+
     | 													{ $$ = new CompUnits(); }
     ;
-/*    | CompUnit Decl                                     { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }*/
 
 /* Decl          ::= ConstDecl | VarDecl; */
 Decl

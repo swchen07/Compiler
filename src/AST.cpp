@@ -155,6 +155,7 @@ llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
 
 llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 	std::cout << "ArrDefAST" << std::endl;
+
 	//获取数组元素
 	this->elementType_ = this->type_.ToLLVMType(IRContext);
 
@@ -172,7 +173,7 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 		//转换完之后将int提取出来
 		int convertedValue = constant->getSExtValue();
 		arrayType = llvm::ArrayType::get(arrayType, convertedValue);
-		std::cout << convertedValue << "  " << std::endl;
+		// std::cout << convertedValue << "  " << std::endl;
 	}
 
 	this->arrayType_ = arrayType;
@@ -201,7 +202,6 @@ llvm::Value* ArrDefAST::IRGen(IRGenerator& IRContext) {
 		
 		IRContext.CreateVar(this->type_, this->arrName_, AllocMem, true);
 	}
-	
 	
 }
 
@@ -743,6 +743,8 @@ llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
 
 	//搜索数组的指针
 	llvm::Value* arrayPtr = IRContext.FindVar(this->name_);
+	// auto* arrayPtr = IRContext.Module->getGlobalVariable(this->name_);
+	std::cout << "Array Ptr " << arrayPtr << std::endl; 
 	
 	//this->exprs_ index索引
 

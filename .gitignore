@@ -11,3 +11,6 @@ lexer.cpp
 parser.cpp
 parser.hpp
 test.c
+a.out
+simpledemo.o
+

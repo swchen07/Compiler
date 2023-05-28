@@ -61,19 +61,19 @@ void printk(const char* format, ...) {
                     case 'd': {
                         int value = va_arg(args, int);
                         printf(formats, value);
-						loop = 0;
+                        loop = 0; 
                         break;
                     }
                     case 's': {
                         char* value = va_arg(args, char*);
                         printf(formats, value);
-						loop = 0;
+                        loop = 0; 
                         break;
                     }
                     case 'c': {
                         int value = va_arg(args, int);
                         printf(formats, value);
-						loop = 0;
+                        loop = 0; 
                         break; 
                     }
                     default:
