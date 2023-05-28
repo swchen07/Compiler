@@ -90,33 +90,34 @@ void IRGenerator::GenerateCode(BaseAST* root) {
 }
 
 void IRGenerator::GenObjectCode(std::string outputfile) {
+	//获取描述编译器的目标平台、操作系统和环境等信息
 	auto TargetTriple = llvm::sys::getDefaultTargetTriple();
+	//根据llvm文档提供的初始化
     llvm::InitializeAllTargetInfos();
     llvm::InitializeAllTargets();
     llvm::InitializeAllTargetMCs();
     llvm::InitializeAllAsmParsers();
     llvm::InitializeAllAsmPrinters();
 
-    auto Features = "";
-    auto CPU = "generic";
+	//根据TargetTriple查找目标平台
     std::string Error;
     auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, Error);
 
     llvm::TargetOptions opt;
     auto RM = llvm::Optional<llvm::Reloc::Model>();
-    auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
+    auto TargetMachine = Target->createTargetMachine(TargetTriple, "", "", opt, RM);
+	//设置数据布局
     Module->setDataLayout(TargetMachine->createDataLayout());
     Module->setTargetTriple(TargetTriple);
 
-    std::error_code EC;
-    llvm::raw_fd_ostream Dest(outputfile, EC, llvm::sys::fs::OF_None);
-
-    auto FileType = llvm::CGFT_ObjectFile;
+	//将数据写入文件
+	std::error_code errCode;
+    llvm::raw_fd_ostream OPFile(outputfile, errCode, llvm::sys::fs::OF_None);
     llvm::legacy::PassManager PM;
-    TargetMachine->addPassesToEmitFile(PM, Dest, nullptr, FileType);
-
+    TargetMachine->addPassesToEmitFile(PM, OPFile, nullptr, llvm::CGFT_ObjectFile);
     PM.run(*Module);
-    Dest.flush();
+
+    OPFile.flush();
 }
 
 void IRGenerator::CreateVar(VarType type, std::string name, llvm::Value* value, bool isPtr){
