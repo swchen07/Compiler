@@ -794,13 +794,13 @@ ConstExp
 
 AST的结构和表示方式可以根据具体的语言和编译器实现而有所不同，但通常包含以下类型的节点：
 
-1. 标识符（Identifier）节点：用于表示变量、函数名等标识符的节点。
-2. 常量（Const）节点：用于表示常量值的节点，如整数、浮点数、字符串等。
-3. 表达式（Expression）节点：用于表示各种表达式，如算术表达式、逻辑表达式、赋值表达式等。
-4. 语句（Statement）节点：用于表示各种语句，如条件语句、循环语句、函数调用语句等。
-5. 声明（Declaration）节点：用于表示变量声明、函数声明等语句。
-6. 类型（Type）节点：用于表示变量或表达式的数据类型。
-7. 控制流（Control Flow）节点：用于表示程序的控制流结构，如条件分支、循环等。
+1. **标识符（Identifier）**节点：用于表示变量、函数名等标识符的节点。
+2. **常量（Const）节点**：用于表示常量值的节点，如整数、浮点数、字符串等。
+3. **表达式（Expression）节点**：用于表示各种表达式，如算术表达式、逻辑表达式、赋值表达式等。
+4. **语句（Statement）节点**：用于表示各种语句，如条件语句、循环语句、函数调用语句等。
+5. **声明（Declaration）节点**：用于表示变量声明、函数声明等语句。
+6. **类型（Type）节点**：用于表示变量或表达式的数据类型。
+7. **控制流（Control Flow）节点**：用于表示程序的控制流结构，如条件分支、循环等。
 
 ![image-20230528194044712](image/image-20230528194044712.png)
 
@@ -808,7 +808,7 @@ AST的结构和表示方式可以根据具体的语言和编译器实现而有�
 
 #### 2.2.4.1 BaseAST类
 
-BaseAST类是抽象语法树每个节点的纯虚类型，包括空的构造、析构函数和纯虚函数`IRGen`
+BaseAST类是抽象语法树每个节点的纯虚类型，包括空的构造、析构函数和纯虚函数`IRGen`。
 
 ```cpp
 // 所有 AST 的基类
@@ -821,42 +821,150 @@ public:
 };
 ```
 
-
-
 #### 2.2.4.2 ProgramAST类
 
-##### Todo
+ProgramAST类是整个程序的根节点，本次使用中是为了将原来EBNF的文法转换成为BNF文法二产生的一个根节点。
+而一个程序是由若干个函数声明（定义）和变量声明（定义组成），在我们的程序中，函数声明（定义）和变量声明（定义）具有共同的抽象类`CompUnitAST`，所以`ProgramAST`具有`std::vector<CompUnitAST*>`类型的成员变量。
 
+```C++
+class ProgramAST : public BaseAST {
+public:
+	CompUnits* compUnit_;
+    
+    ProgramAST(CompUnits* _compUnit_):compUnit_(_compUnit_){}
+    ~ProgramAST(){};
+
+    llvm::Value* IRGen(IRGenerator& IRContext);
+};
+```
 
 
 #### 2.2.4.3 DeclAST类
 
-##### Todo
+Decl类是纯虚类型，是普通变量和数组变量声明的父类。
+1. 所有变量声明的抽象类父类
+```C++
+class DeclAST : public CompUnitAST {
+public:
+	DeclAST() {}
+	~DeclAST() {}
+
+	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+};
+```
+
+2. 变量声明包括了变量定义列表和变量类型。
+```C++
+class VarDeclAST : public DeclAST {
+public:
+	VarDefAST* varDef_;
+    VarType type_; 
+
+	VarDeclAST(std::string _typeName_, VarDefAST* _varDef_) : 
+		varDef_(_varDef_), type_(_typeName_) {}
+	~VarDeclAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+};
+```
+
+3. 数组声明包括了基本元素类型、数组元素类型、数组名、数组索引列表。
+```C++
+class ArrDefAST : public BaseAST {
+public:
+	llvm::Type* elementType_;
+	llvm::Type* arrayType_;
+	std::string arrName_;
+	VarType type_;
+	Exprs* exprs_;
 
 
+	ArrDefAST(std::string _typeName_, std::string _arrName_, Exprs* _exprs_) :
+	type_(_typeName_), arrName_(_arrName_), exprs_(_exprs_) {}
+	~ArrDefAST() {}
+
+	llvm::Value* IRGen(IRGenerator& IRContext);
+
+};
+```
 
 #### 2.2.4.4 StmtAST类
 
-##### Todo
+StmtAST类是无返回值的statement语句，是条件语句、循环语句、选择语句等子类的抽象父类。
+```C++
+class StmtAST: public BaseAST {
+public: 
+	StmtAST() {}
+	~StmtAST() {}
 
+    virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+};
+```
 
 
 #### 2.2.4.5 ExprAST类
 
-##### Todo
+ExprAST类是有返回值的expression语句，是常量表达式、变量表达式和操作符表达式等子类的抽象父类。
+```C++
+class ExprAST : public BaseAST {
+public:
+	ExprAST(void) {}
+	~ExprAST(void) {}
 
+	virtual llvm::Value* IRGen(IRGenerator& IRContext) = 0;
+};
+```
 
 
 #### 2.2.4.6 BlockAST类
 
-##### Todo
+BlockAST类是基本语句块，而基本语句块包括stmt类语句和统计stmt数目。
+```C++
+class BlockAST : public BaseAST {
+public:
+    Stmts* stmts_;
+	int varCnt_;
 
+    BlockAST(Stmts* _stmts_): stmts_(_stmts_), varCnt_(0){}
+    ~BlockAST(){}
+
+	// void CreatePreDefinedVars(IRGenerator& IRContext); 
+    llvm::Value* IRGen(IRGenerator& IRContext);
+};
+```
 
 
 #### 2.2.4.7 VarType类
 
-##### Todo
+Varype是定义在BaseAST之外的类，用来定义和LLVM之间的数据类型链接。
+```C++
+class VarType {
+public:
+	PointerType* _BaseType_pointer;
 
+    VarType(int) {type=Int;}
+    VarType(char) {type=Char;}
+	VarType(short) {type=Short;}
+	VarType(double) {type=Double;}
+	// VarType(ArrayType* __BaseType):_BaseType(__BaseType) {type=Arr;}
+	VarType(PointerType* __BaseType):_BaseType_pointer(__BaseType) {type=Ptr;}
+    VarType(std::string name);
+    ~VarType(){}
+    TypeID GetType() {return type;}
+	llvm::Type* ToLLVMType(IRGenerator&); 
+private: 
+    TypeID type;
+};
+
+enum TypeID{
+    Int, 
+    Char, 
+	Short,
+	Double,
+	Ptr
+};
+
+```
 
 
 #### 2.2.4.5 示例代码及对应AST结构介绍
@@ -940,17 +1048,15 @@ markdownCopy code
 
 ### 2.3.2 语义规则
 
-##### Todo：以下四个模块加详细介绍或者代码
-
 #### 2.3.2.1 类型检查
 
-sysY语言是一种静态类型语言，因此在编译时会进行类型检查以确保操作的正确性。语义分析器将检查每个表达式和语句中的操作数和运算符之间的类型兼容性。例如，对于算术运算符，要求操作数必须具有相同的类型或可以进行隐式类型转换。如果发现类型不匹配或不兼容的情况，语义分析器将生成相应的类型错误。
+sysY语言是一种静态类型语言，因此在编译时会进行类型检查以确保操作的正确性。语义分析器将检查每个表达式和语句中的操作数和运算符之间的类型兼容性。对于算术运算符，要求操作数必须具有相同的类型或可以进行隐式类型转换。如果发现类型不匹配或不兼容的情况，语义分析器将生成相应的类型错误。
 
 
 
 #### 2.3.2.2 符号表和作用域规则
 
-sysY语言使用块作用域规则，即在特定的代码块内声明的变量只在该块及其子块中可见。语义分析器将检查变量的作用域是否正确，并防止在非法的位置引用变量。例如，对于变量的引用，语义分析器会检查变量是否在当前作用域内可见。
+sysY语言使用块作用域规则，即在特定的代码块内声明的变量只在该块及其子块中可见。语义分析器将检查变量的作用域是否正确，并防止在非法的位置引用变量。对于变量的引用，语义分析器会检查变量是否在当前作用域内可见。
 
 
 
@@ -968,29 +1074,74 @@ sysY语言要求在使用变量之前先进行声明。语义分析器将检查�
 
 ### 2.3.3 语义类型
 
+#### 2.3.3.1 Program类
+
 ##### Todo
 
-#### 2.3.3.1 Declare类
+
+
+#### 2.3.3.2 Declare抽象类
+
+##### 2.3.3.2.1 VarDeclAST
+
+##### Todo
 
 
 
+##### 2.3.3.2.2 VarDefAST
 
-
-#### 2.3.3.2 Stmt抽象类
-
-
-
-
-
-#### 2.3.3.3  VarType抽象类
+##### Todo
 
 
 
+##### 2.3.3.2.3 FuncDefAST
+
+##### Todo
 
 
-#### ExprAST
+
+#### 2.3.3.3 Stmt抽象类
+
+##### 2.3.3.3.1 IfElseStmtAST
+
+##### Todo
+
+
+
+##### 2.3.3.3.2 ForStmtAST
+
+##### Todo
+
+
+
+##### 2.3.3.3.3 WhileStmtAST
+
+##### Todo
+
+
+
+##### 2.3.3.3.4 BreakStmtAST
+
+##### Todo
+
+
+
+##### 2.3.3.3.5 ContinueStmtAST
+
+##### Todo
+
+
+
+##### 2.3.3.3.6 ReturnStmtAST
+
+##### Todo
+
+
+
+#### 2.3.3.4 Expr抽象类
 
 ##### 注意点
+
 本次实验中为了方便实验设计，对C语言中的表达式进行了更加严格的限制（参考SysY语言进行设计），具体要求如下：
 
 - 赋值时，表达式左值必须是变量，例如:`a,b,c,d[1][2]`；
@@ -1001,28 +1152,56 @@ sysY语言要求在使用变量之前先进行声明。语义分析器将检查�
 而在LLVM中，所有创建的变量都是通过提供指向这一变量存储空间的指针来实现的，当要获取变量的值时通过`CreateLoad()`进行获取，当要改变变量的值时通过`CreateStore()`来实现。因此在我们实现的编译器中，对上述提到的合法左值提供一个`IRGenPtr()`函数以获取指向存储空间的指针，对所有表达式提供`IRGen()`函数来获取其存储空间内的值。
 
 设计的`ExprAST`抽象类如下：
+
 ```
 
 ```
 
 ##### 支持字面量
+
 我们编译器支持以下字面量：
+
 - INTEGER
 - CHAR
 - REAL
 
 ##### 右值支持类
+
 如上文所说，一般的右值支持类只需要返回结果而不需要提供存储地址，因此只需要实现`IRGen()`函数即可。
 
 ###### 一般运算
 
 ##### 左值支持类
+
 左值在满足其作为右值的基础上，需要提供一个指向存储空间的指针，因此需要设计`IRGenPtr()`函数以获取指向存储空间的指针。
 
 ###### LeftValAST类
+
 `LeftValAST`类表示一般的变量，
+
 ###### ArrValAST类
+
 `ArrValAST`类表示数组类变量。
+
+
+
+##### 2.3.3.4.1 LeftValAST
+
+##### Todo
+
+
+
+2.3.3.4.2 
+
+
+
+#### 2.3.3.5  VarType抽象类
+
+
+
+
+
+
 
 
 

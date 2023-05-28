@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.13.4)
 # Set project_name as the directory name
 ###############################################
 
-# set(LLVM_DIR "/Users/wangzijun/llvm-project/build/lib/cmake/llvm")
+# set(LLVM_DIR "/Users/all/llvm-project/build/lib/cmake/llvm")
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 
