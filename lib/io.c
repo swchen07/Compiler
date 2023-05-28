@@ -28,6 +28,12 @@ void scank(const char* format, ...) {
                     scanf("%c", value);
                     break; 
                 }
+                case 'l': {
+                    format++; 
+                    double* value = va_arg(args, double*);
+                    scanf("%lf", value);
+                    break; 
+                }
                 default:
                     break;
             }
@@ -76,8 +82,14 @@ void printk(const char* format, ...) {
                         loop = 0; 
                         break; 
                     }
+                    case 'f': {
+                        double value = va_arg(args, double);
+                        printf(formats, value);
+                        loop = 0; 
+                        break; 
+                    }
                     default:
-                        if (!(*format >= '0' && *format <= '9')) {
+                        if (!(*format >= '0' && *format <= '9' || *format=='.')) {
                             loop = 0; 
                             putchar(*format);
                         }

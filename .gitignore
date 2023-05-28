@@ -6,6 +6,9 @@
 /.DS_Store
 /tests/Test1/llvm.cpp
 
+src/
+test.c
+
 build/
 lexer.cpp
 parser.cpp
@@ -16,7 +19,9 @@ simpledemo.o
 Compiler.o
 quickSort.out
 matrix.out
-courseSelector.out
+Advisor.out
 Sort_run.sh
 Array_run.sh
+Advisor_run.sh
+Test_run.sh
 

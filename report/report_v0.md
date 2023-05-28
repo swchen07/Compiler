@@ -202,13 +202,156 @@ Lex输入文件由三个部分组成：定义（defination）集，规则（rule
 
 #### 2.1.3.1 定义部分
 
-##### Todo
+```c
+%{
+#include "AST.hpp"
+#include "parser.hpp"
+#include <stdio.h>
+#include <iostream>
+#include <string>
+
+#define SAVE_TOKEN yylval.strVal = new std::string(yytext, yyleng)
+// 因为 Flex 会用到 Bison 中关于 token 的定义
+// 所以需要 include Bison 生成的头文件
+extern "C" int yywrap() {return 1;}
+
+using namespace std;
+
+%}
+```
 
 
 
 #### 2.1.3.2 规则部分
 
-##### Todo
+```c
+/* 空白符和注释 */
+WHTIESPACE              [ \t\n\r]*
+LINECOMMET              "//".*
+BLOCKCOMMET             "/*"[^*]*[*]+([^*/][^*]*[*]+)*"/"
+
+/* 整数字面量 */
+DECIMAL                 [1-9][0-9]*
+OCTAL                   0[0-7]*
+HEXADECIMAL             0[xX][0-9a-fA-F]+
+
+/* 浮点数 */
+REAL                    [0-9]+\.[0-9]+
+
+/* 字符串 */
+STRING                  \"(\\.|[^\"\\])*?\"
+
+/* 标识符 */
+IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
+
+%%
+
+    /* 空白符和注释 */
+{WHTIESPACE}            {;}
+{LINECOMMET}            {;}
+{BLOCKCOMMET}           {;}
+
+    /* 运算符 */
+    /* 关系运算符 */
+"=="                    {return EQU;}
+"!="                    {return NEQ;}
+"<"                     {return LES;}
+"<="                    {return LEQ;}
+">"                     {return GRE;}
+">="                    {return GEQ;}
+
+    /* 算术运算符 */
+"+"                     {return ADD;}
+"-"                     {return SUB;}
+"*"                     {return MUL;}
+"/"                     {return DIV;}
+"%"                     {return MOD;}
+
+    /* 逻辑运算符 */
+"&&"                    {return AND;}
+"||"                    {return OR;}
+"!"                     {return NOT;}
+
+    /* 位运算符 */
+"&"                     {return BAND;}
+"|"                     {return BOR;}
+"^"                     {return BXOR;}
+
+    /*分隔符*/
+"("             		{ return LPAREN; }
+")"             		{ return RPAREN; }
+"{"             		{ return LBRACE; }
+"}"             		{ return RBRACE; }
+"["						{return LBRACKET;}
+"]"						{return RBRACKET;}
+","                     {return COMMA;}
+";"                     {return SEMI;}
+
+    /* 赋值运算符 */
+"="                     {return ASSIGN;}
+
+    /* 特殊符号 */
+"."                     {return DOT;}
+":"                     {return COLON;}
+"?"                     {return QUES;}
+"..."					{return ELLIPSES;}
+"ptr"				    {return PTR;}
+
+    /* 关键字 */
+    /* 数据类型 */
+"int"                   {SAVE_TOKEN; return INT;}
+"short"                 {SAVE_TOKEN; return SHORT;}
+"char"                  {SAVE_TOKEN; return CHAR;}
+"void"                  {SAVE_TOKEN; return VOID;}
+
+    /* 跳转结构 */
+"return"                {return RETURN;}
+"continue"              {SAVE_TOKEN; return CONTINUE;}
+"break"                 {SAVE_TOKEN; return BREAK;}
+
+    /* 分支结构 */
+"if"                    {SAVE_TOKEN; return IF;}
+"else"                  {SAVE_TOKEN; return ELSE;}
+
+    /* 循环结构 */
+"for"                   {SAVE_TOKEN; return FOR;}
+"while"                 {SAVE_TOKEN; return WHILE;}
+
+"static"                {SAVE_TOKEN; return STATIC;}
+
+{STRING}                {
+                            yylval.strVal = new std::string("");
+                            for (int i = 1; i <= yyleng-2; i++){
+                                if (yytext[i] == '\\') {
+                                    i ++; 
+                                    switch(yytext[i]) {
+                                        case 'n': yylval.strVal->push_back('\n'); break; 
+                                        case 't': yylval.strVal->push_back('\t'); break; 
+                                        default: yylval.strVal->push_back(yytext[i]);
+                                    }
+                                }
+                                else {
+                                    yylval.strVal->push_back(yytext[i]);
+                                }
+                            }
+                            return CONST_STR;
+                        }
+
+
+{IDENTIFIER}            {SAVE_TOKEN; return IDENTIFIER;}
+
+
+{DECIMAL}               { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
+{OCTAL}                 { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
+{HEXADECIMAL}           { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
+ 
+{REAL}                  { yylval.floatVal = strtol(yytext, nullptr, 0); return CONST_FLOAT; }
+
+"\'"[^\\']"\'"			{ yylval.charVal = yytext[1]; return CONST_CHAR; }
+
+
+.                       { printf("Unknown token!/n");}
+```
 
 
 
@@ -226,7 +369,7 @@ Lex输入文件由三个部分组成：定义（defination）集，规则（rule
 
 以下是sysY语言的正式语法规范，使用巴科斯范式（BNF）描述语法规则。
 
-##### Todo： 要根据我们的语法规范修改，下面给出模版
+以下为设计过程中的部分规则描述：
 
 ```
 <program> ::= <declaration_list>
@@ -318,11 +461,332 @@ LALR(1)解析算法是一种常用的自底向上解析算法，它使用了向�
 
 #### 2.2.3.1 定义部分
 
-##### Todo
+定义部分定义了CFG语法中`non-terminal`的类型、`terminal`的TOKEN和运算符的优先级。定义优先级时，`%left`，`%right`定义结合性，越后定义的运算优先级高。
+
+```c
+%union {
+    std::string* strVal;
+	float floatVal;
+    int intVal;
+	char charVal;
+    BaseAST *astVal;
+	CompUnits *compUnits;
+	Stmts *stmts;
+	Exprs *exprs;
+    ArgAST *argVal;
+    ArgListAST *argList;
+    ExprListAST *exprList;
+    ExprAST *expVal;
+    PointerType *ptrType;
+}
+
+/* 终结符 */
+// lexer 返回的所有 token 种类的声明
+%token EQU NEQ LES LEQ GRE GEQ
+%token ADD SUB MUL DIV MOD
+%token AND OR NOT
+%token BAND BOR BXOR
+%token LPAREN RPAREN LBRACE RBRACE  LBRACKET RBRACKET COMMA SEMI
+%token ASSIGN DOT COLON QUES ELLIPSES PTR
+
+%token <strVal> INT CHAR SHORT VOID
+%token RETURN CONTINUE BREAK STATIC
+%token IF ELSE
+%token FOR WHILE
+%token STATIC
+
+%token CONST
+%token <strVal> IDENTIFIER
+%token <intVal> CONST_INT 
+%token <charVal> CONST_CHAR 
+%token <strVal> CONST_STR
+%token CONST_FLOAT
+// 非终结符的类型定义
+
+%type <astVal> Program
+%type <compUnits> CompUnit
+%type <astVal> FuncDef
+%type <strVal> FuncType
+
+%type <argList> ArgList
+%type <argList> _ArgList
+%type <argVal> Arg
+%type <ptrType> PtrType
+
+%type <exprList> ExpList
+%type <exprList> _ExpList
+
+%type <astVal> Decl
+%type ConstDecl
+%type ConstDef
+%type ConstList
+%type <astVal> ConstExp
+%type ConstInitVal
+%type <astVal> VarDecl
+%type <strVal> Btype
+%type VarList
+%type <astVal> VarDef
+
+
+%type <exprs> ArrDef ArrVal
+%type <astVal> InitVal
+
+%type <astVal> Block
+%type <astVal> BlockItem 
+%type <stmts>  BlockItemNew
+%type <astVal> Stmt SmooStmt
+
+%type <astVal> PrimaryExp
+%type <astVal> Exp
+%type <astVal> ElseState
+%type <astVal> RetState
+
+%type <astVal> LVal
+%type <intVal> Number
+%type <astVal> Constant
+
+%type <astVal> ArrValF
+
+/* 优先级和结合性定义 */
+%right	ASSIGN
+%left	OR
+%left	AND
+%left	BOR
+%left	BXOR
+%left	BAND
+%left	EQU NEQ
+%left	GEQ GRE LES LEQ
+%left	ADD SUB
+%left	MUL DIV MOD
+```
+
+
 
 #### 2.2.3.2 规则部分
 
-##### Todo
+```c
+Program							
+	: CompUnit 											{ $$ = new ProgramAST((CompUnits*)$1); Root = $$;}
+	;
+
+CompUnit
+    : CompUnit STATIC Decl                      { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
+    | CompUnit FuncDef									        { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
+    | 													{ $$ = new CompUnits(); }
+    ;
+
+/* Decl          ::= ConstDecl | VarDecl; */
+Decl
+    : ConstDecl
+    | VarDecl                                           { $$ = $1; }
+    ;
+
+/* ConstDecl     ::= "const" BType ConstDef {"," ConstDef} ";"; */
+ConstDecl
+    : CONST Btype ConstDef ConstList SEMI
+    ;
+
+ConstList
+    : ConstList COMMA ConstDef
+    |
+    ;
+
+/* BType         ::= "int"; */
+Btype
+    : VOID                          { $$ = $1; }
+    | INT                           { $$ = $1; }
+    | SHORT                         { $$ = $1; }
+    | CHAR                          { $$ = $1; }
+    ;
+
+/* ConstDef      ::= IDENT "=" ConstInitVal; */
+ConstDef
+    : IDENTIFIER ASSIGN ConstInitVal
+    ;
+
+/* ConstInitVal  ::= ConstExp; */
+ConstInitVal
+    : ConstExp
+    ;
+
+/* VarDecl       ::= BType VarDef {"," VarDef} ";"; */
+VarDecl
+    : Btype VarDef VarList SEMI                     { $$ = new VarDeclAST(*$1, (VarDefAST*)$2);}
+	| Btype IDENTIFIER ArrDef SEMI					{ $$ = new ArrDefAST(*$1, *$2, (Exprs*)$3); }
+    ;
+
+VarList
+    : VarList COMMA VarDef
+    |                                               { ; }
+    ;
+
+/* VarDef        ::= IDENT | IDENT "=" InitVal; */
+VarDef
+    : IDENTIFIER                                    { $$ = new VarDefAST(*$1);}
+    | IDENTIFIER ASSIGN InitVal                     { $$ = new VarDefAST(*$1, (ExprAST*)$3);}
+    ;
+
+ArrDef
+	: ArrDef LBRACKET ConstExp RBRACKET 			{ $$ = (Exprs*)$1; $$->push_back((ExprAST*)$3); }
+	| 												{ $$ = new Exprs(); }
+	;
+
+/* InitVal       ::= Exp; */
+InitVal
+    : Exp                                           { $$ = $1; }
+    ;
+
+FuncDef
+    : FuncType IDENTIFIER LPAREN ArgList RPAREN SEMI    { $$ = new FuncDefAST(*$1, *$2, (ArgListAST*)$4); }
+    | FuncType IDENTIFIER LPAREN ArgList RPAREN Block   { $$ = new FuncDefAST(*$1, *$2, (ArgListAST*)$4, (BlockAST*)$6); }
+    ;
+
+
+/* FuncType      ::= "void" | "int"; */
+FuncType
+    : INT                                       { $$ = $1; }
+    | VOID                                      { $$ = $1; }
+    | CHAR                                      { $$ = $1; }
+    ;
+
+
+ArgList
+    : _ArgList COMMA Arg									{  $$ = $1; $$->push_back($3);   }
+	| _ArgList COMMA ELLIPSES								{  $$ = $1; $$->SetVarArg();   }
+	| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
+	| ELLIPSES												{  $$ = new ArgListAST(); $$->SetVarArg();   }
+	|														{  $$ = new ArgListAST(); }
+	;
+
+_ArgList
+    : _ArgList COMMA Arg										{  $$ = $1; $$->push_back($3);   }	 
+	| Arg													{  $$ = new ArgListAST(); $$->push_back($1);   }
+	;
+
+PtrType
+    : Btype PTR                                                     { $$ = new PointerType(*$1); }
+    ;
+
+Arg
+    : Btype IDENTIFIER										{  $$ = new ArgAST(*$1, *$2);   }
+	| PtrType IDENTIFIER							        {  $$ = new ArgAST($1, *$2);   }
+	| PtrType 							                    {  $$ = new ArgAST($1);   }
+
+
+/* Block         ::= "{" {BlockItem} "}"; */
+Block
+    : LBRACE BlockItemNew RBRACE                { $$ = new BlockAST((Stmts*)$2);}
+    ;
+
+BlockItemNew
+    : BlockItemNew BlockItem					{ $$ = (Stmts*)$1; if ($2 != NULL)$$->push_back((CompUnitAST*)$2); }
+    | 											{ $$ = new Stmts(); }
+    ;
+
+/* BlockItem     ::= Decl | Stmt; */
+BlockItem
+    : Decl                                      { $$ = $1;}
+    | Stmt										{ $$ = $1;}
+    ;
+
+SmooStmt
+    : LVal ASSIGN Exp						{ $$ = new AssignAST((LeftValAST*)$1, (ExprAST*)$3); }
+    | Exp								    { $$ = $1; }
+	| ArrValF ASSIGN Exp					{ $$ = new AssignArrAST((ArrValAST*)$1, (ExprAST*)$3); }
+    | 									    { $$ = NULL; }
+    | BREAK                                 { $$ = new BreakStmtAST(); }
+    | CONTINUE                              { $$ = new ContinueStmtAST(); }
+    | RETURN RetState					    { $$ = new ReturnStmtAST((ExprAST*)$2);}
+
+Stmt
+    : SmooStmt SEMI						        { $$ = $1; }
+    | Block										{ $$ = $1; }
+    | FOR LPAREN SmooStmt SEMI Exp SEMI SmooStmt RPAREN Block   { $$ = new ForStmtAST((StmtAST*)$3, (ExprAST*)$5, (StmtAST*)$7, (BlockAST*)$9); }
+    | IF LPAREN Exp RPAREN Block ElseState      { $$ = new IfElseStmtAST((ExprAST*)$3, (BlockAST*)$5, (BlockAST*)$6); }
+    | WHILE LPAREN Exp RPAREN Block             { $$ = new WhileStmtAST((ExprAST*)$3, (BlockAST*)$5); }
+    ;
+
+LVal
+    : IDENTIFIER								{ $$ = new LeftValAST(*$1); }
+    ;
+
+ArrValF
+	: IDENTIFIER ArrVal							{ $$ = new ArrValAST(*$1, (Exprs*)$2); }
+
+ArrVal
+	: ArrVal LBRACKET Exp RBRACKET		{ $$ = (Exprs*)$1; $$->push_back((ExprAST*)$3); }
+	|									{ $$ = new Exprs(); }
+	;
+
+ElseState
+    : ELSE Block                        {$$ = $2; }
+    |                                   {$$ = NULL; }
+    ;
+
+RetState
+    : Exp								{$$ = $1;}
+    |                                   {$$ = NULL; }
+    ;
+
+PrimaryExp
+    : LPAREN Exp RPAREN					{ $$ = $2; }
+    | LVal								{ $$ = $1; }
+    | Constant							{ $$ = $1; }	
+    ;
+
+Constant
+    : CONST_INT							{ $$ = new Constant($1); }
+    | CONST_CHAR						{ $$ = new Constant($1); }
+    | CONST_STR                         { $$ = new StringType(*$1); }
+    ;
+
+Exp
+    : PrimaryExp						{ $$ = $1; }	
+	| ArrValF							{ $$ = (ArrValAST*)$1; }					
+    | ADD Exp %prec NOT					{ $$ = new MoncPlus((ExprAST*)$2); }
+    | SUB Exp %prec NOT					{ $$ = new MoncMinus((ExprAST*)$2); }
+    | NOT Exp							{ $$ = new LogicNot((ExprAST*)$2); }
+    | BAND LVal	%prec NOT			    { $$ = new AddressOf((LeftValAST*)$2); }
+
+    | Exp ADD Exp						{$$ = new Addition((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp SUB Exp						{$$ = new Subtraction((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp MUL Exp						{$$ = new Multiplication((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp DIV Exp						{$$ = new Division((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp MOD Exp						{$$ = new Modulation((ExprAST*)$1, (ExprAST*)$3);}
+
+    | Exp EQU Exp						{$$ = new Equal((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp NEQ Exp						{$$ = new NotEqual((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp LES Exp						{$$ = new LessThan((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp LEQ Exp						{$$ = new LessEqu((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp GRE Exp						{$$ = new GreThan((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp GEQ Exp						{$$ = new GreEqu((ExprAST*)$1, (ExprAST*)$3);}
+
+    | Exp AND Exp						{$$ = new AndOp((ExprAST*)$1, (ExprAST*)$3);}
+    | Exp OR  Exp						{$$ = new OrOp((ExprAST*)$1, (ExprAST*)$3);}
+
+    | Exp BAND Exp
+    | Exp BOR  Exp
+    | Exp BXOR Exp
+
+    | IDENTIFIER LPAREN ExpList RPAREN	 {  $$ = new FuncCallAST(*$1, $3);   }
+	;
+
+ExpList
+    : _ExpList COMMA Exp							    {  $$ = $1; $$->push_back((ExprAST*)$3);   }
+	| Exp                           					{  $$ = new ExprListAST(); $$->push_back((ExprAST*)$1);   }
+	|													{  $$ = new ExprListAST();   }
+	;
+
+_ExpList
+    : _ExpList COMMA Exp 								{  $$ = $1; $$->push_back((ExprAST*)$3);   }
+	| Exp                       						{  $$ = new ExprListAST(); $$->push_back((ExprAST*)$1);   }
+	;
+
+ConstExp
+	: CONST_INT							{ $$ = new Constant($1); }
+	;
+%%
+```
 
 
 
@@ -559,60 +1023,42 @@ sysY语言要求在使用变量之前先进行声明。语义分析器将检查�
 
 首先实例化`llvm::sys::getDefaultTargetTriple`，该对象包含了目标机器的许多参数。然后我们调用`llvm::TargetMachine`的接口即可把LLVM中间代码编译成目标机器的汇编代码。具体请参考LLVM官方文档。
 
-##### Todo 确认下面代码和我们使用的是否是同一份
-
 ```cpp
-//Generate object code
-void CodeGenerator::GenObjectCode(std::string FileName) {
+void IRGenerator::GenObjectCode(std::string outputfile) {
+	//获取描述编译器的目标平台、操作系统和环境等信息
 	auto TargetTriple = llvm::sys::getDefaultTargetTriple();
-	llvm::InitializeAllTargetInfos();
-	llvm::InitializeAllTargets();
-	llvm::InitializeAllTargetMCs();
-	llvm::InitializeAllAsmParsers();
-	llvm::InitializeAllAsmPrinters();
-	std::string Error;
-	auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, Error);
-	if (!Target) {
-		throw std::runtime_error(Error);
-		return;
-	}
-	auto CPU = "generic";
-	auto Features = "";
-	llvm::TargetOptions opt;
-	auto RM = llvm::Optional<llvm::Reloc::Model>();
-	auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
-	Module->setDataLayout(TargetMachine->createDataLayout());
-	Module->setTargetTriple(TargetTriple);
-	std::error_code EC;
-	llvm::raw_fd_ostream Dest(FileName, EC, llvm::sys::fs::OF_None);
-	if (EC) {
-		throw std::runtime_error("Could not open file: " + EC.message());
-		return;
-	}
-	auto FileType = llvm::CGFT_ObjectFile;
-	llvm::legacy::PassManager PM;
-	if (TargetMachine->addPassesToEmitFile(PM, Dest, nullptr, FileType)) {
-		throw std::runtime_error("TargetMachine can't emit a file of this type");
-		return;
-	}
-	PM.run(*Module);
-	Dest.flush();
+	//根据llvm文档提供的初始化
+    llvm::InitializeAllTargetInfos();
+    llvm::InitializeAllTargets();
+    llvm::InitializeAllTargetMCs();
+    llvm::InitializeAllAsmParsers();
+    llvm::InitializeAllAsmPrinters();
+
+	//根据TargetTriple查找目标平台
+    std::string Error;
+    auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, Error);
+
+    llvm::TargetOptions opt;
+    auto RM = llvm::Optional<llvm::Reloc::Model>();
+    auto TargetMachine = Target->createTargetMachine(TargetTriple, "", "", opt, RM);
+	//设置数据布局
+    Module->setDataLayout(TargetMachine->createDataLayout());
+    Module->setTargetTriple(TargetTriple);
+
+	//将数据写入文件
+	std::error_code errCode;
+    llvm::raw_fd_ostream OPFile(outputfile, errCode, llvm::sys::fs::OF_None);
+    llvm::legacy::PassManager PM;
+    TargetMachine->addPassesToEmitFile(PM, OPFile, nullptr, llvm::CGFT_ObjectFile);
+    PM.run(*Module);
+
+    OPFile.flush();
 }
 ```
 
 
 
-
-
 ## 2.6 符号表设计
-
-##### Todo
-
-
-
-
-
-## 2.7 进阶主题设计
 
 ##### Todo
 
@@ -626,7 +1072,674 @@ void CodeGenerator::GenObjectCode(std::string FileName) {
 
 > 请附上你的源语言在你的编译器下的产生二进制或其他东西的过程，以及在第二节功能测试中的结果。
 
-##### Todo
+## 3.1 QuickSort
+
+#### 测试代码：
+
+```c
+int printk(int ptr, ...);
+int scank(char ptr, ...);
+
+int quicksort(int ptr a, int left, int right){
+	//printk("QuickSort\n");
+	int i = left;
+	int	j = right;
+	int temp = i + j;
+	temp = temp/2;
+	//printk(" %d %d %d @@@", temp, left, right);
+	int mid;
+	mid = a[temp];
+	//printk(" %d# ", mid);
+	while (i < j){
+		while (a[i] < mid) {
+            i = i + 1;
+			//printk("What i%d?\n",i);
+        }
+		while (mid < a[j]){
+            j = j - 1;
+			//printk("What j%d?\n",j);
+        }
+		if (i <= j){
+			int temp = a[i];
+			a[i] = a[j];
+			a[j] = temp;
+			i = i + 1;
+            j = j - 1;
+		}
+		//printk("\n");
+	}
+	
+	if (left < j) {
+        quicksort(a, left, j);
+    }
+	if (i < right) {
+        quicksort(a, i, right);
+    }
+
+    return 0;
+}
+
+int main(){
+	int n;
+    int temp;
+	int a[10000];
+	scank("%d", &n);
+    int i;
+	
+	for (i = 0; i < n; i = i + 1){
+        scank("%d", &temp);
+        a[i] = temp;
+    }
+		
+	quicksort(a, 0, n - 1);
+	for (i = 0; i < n; i=i+1){
+		printk("%d\n", a[i]);
+    }
+    
+	return 0;
+}
+```
+
+#### IR代码：
+
+```
+; ModuleID = 'main'
+source_filename = "main"
+
+@0 = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+@1 = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+@2 = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+declare i32 @printk(i32*, ...)
+
+declare i32 @scank(i8*, ...)
+
+define i32 @quicksort(i32* %0, i32 %1, i32 %2) {
+BBEntry:
+  %right = alloca i32, align 4
+  store i32 %2, i32* %right, align 4
+  %left = alloca i32, align 4
+  store i32 %1, i32* %left, align 4
+  %a = alloca i32*, align 8
+  store i32* %0, i32** %a, align 8
+  %i = alloca i32, align 4
+  %3 = load i32, i32* %left, align 4
+  store i32 %3, i32* %i, align 4
+  %j = alloca i32, align 4
+  %4 = load i32, i32* %right, align 4
+  store i32 %4, i32* %j, align 4
+  %temp = alloca i32, align 4
+  %5 = load i32, i32* %i, align 4
+  %6 = load i32, i32* %j, align 4
+  %7 = add i32 %5, %6
+  store i32 %7, i32* %temp, align 4
+  %8 = load i32, i32* %temp, align 4
+  %9 = sdiv i32 %8, 2
+  store i32 %9, i32* %temp, align 4
+  %mid = alloca i32, align 4
+  store i8 0, i32* %mid, align 1
+  %10 = load i32, i32* %temp, align 4
+  %11 = load i32*, i32** %a, align 8
+  %12 = getelementptr i32, i32* %11, i32 %10
+  %13 = load i32, i32* %12, align 4
+  store i32 %13, i32* %mid, align 4
+  br label %WhileCmp
+
+WhileCmp:                                         ; preds = %BBExit, %BBEntry
+  %14 = load i32, i32* %i, align 4
+  %15 = load i32, i32* %j, align 4
+  %16 = icmp slt i32 %14, %15
+  br i1 %16, label %BBEntry1, label %WhileExit
+
+WhileExit:                                        ; preds = %WhileCmp
+  %17 = load i32, i32* %left, align 4
+  %18 = load i32, i32* %j, align 4
+  %19 = icmp slt i32 %17, %18
+  br i1 %19, label %BBEntry10, label %BBExit11
+
+BBEntry1:                                         ; preds = %WhileCmp
+  br label %WhileCmp2
+
+WhileCmp2:                                        ; preds = %BBEntry4, %BBEntry1
+  %20 = load i32, i32* %i, align 4
+  %21 = load i32*, i32** %a, align 8
+  %22 = getelementptr i32, i32* %21, i32 %20
+  %23 = load i32, i32* %22, align 4
+  %24 = load i32, i32* %mid, align 4
+  %25 = icmp slt i32 %23, %24
+  br i1 %25, label %BBEntry4, label %WhileExit3
+
+WhileExit3:                                       ; preds = %WhileCmp2
+  br label %WhileCmp5
+
+BBEntry4:                                         ; preds = %WhileCmp2
+  %26 = load i32, i32* %i, align 4
+  %27 = add i32 %26, 1
+  store i32 %27, i32* %i, align 4
+  br label %WhileCmp2
+
+WhileCmp5:                                        ; preds = %BBEntry7, %WhileExit3
+  %28 = load i32, i32* %mid, align 4
+  %29 = load i32, i32* %j, align 4
+  %30 = load i32*, i32** %a, align 8
+  %31 = getelementptr i32, i32* %30, i32 %29
+  %32 = load i32, i32* %31, align 4
+  %33 = icmp slt i32 %28, %32
+  br i1 %33, label %BBEntry7, label %WhileExit6
+
+WhileExit6:                                       ; preds = %WhileCmp5
+  %34 = load i32, i32* %i, align 4
+  %35 = load i32, i32* %j, align 4
+  %36 = icmp sle i32 %34, %35
+  br i1 %36, label %BBEntry8, label %BBExit
+
+BBEntry7:                                         ; preds = %WhileCmp5
+  %37 = load i32, i32* %j, align 4
+  %38 = sub i32 %37, 1
+  store i32 %38, i32* %j, align 4
+  br label %WhileCmp5
+
+BBEntry8:                                         ; preds = %WhileExit6
+  %temp9 = alloca i32, align 4
+  %39 = load i32, i32* %i, align 4
+  %40 = load i32*, i32** %a, align 8
+  %41 = getelementptr i32, i32* %40, i32 %39
+  %42 = load i32, i32* %41, align 4
+  store i32 %42, i32* %temp9, align 4
+  %43 = load i32, i32* %j, align 4
+  %44 = load i32*, i32** %a, align 8
+  %45 = getelementptr i32, i32* %44, i32 %43
+  %46 = load i32, i32* %45, align 4
+  %47 = load i32, i32* %i, align 4
+  %48 = load i32*, i32** %a, align 8
+  %49 = getelementptr i32, i32* %48, i32 %47
+  store i32 %46, i32* %49, align 4
+  %50 = load i32, i32* %temp9, align 4
+  %51 = load i32, i32* %j, align 4
+  %52 = load i32*, i32** %a, align 8
+  %53 = getelementptr i32, i32* %52, i32 %51
+  store i32 %50, i32* %53, align 4
+  %54 = load i32, i32* %i, align 4
+  %55 = add i32 %54, 1
+  store i32 %55, i32* %i, align 4
+  %56 = load i32, i32* %j, align 4
+  %57 = sub i32 %56, 1
+  store i32 %57, i32* %j, align 4
+  br label %BBExit
+
+BBExit:                                           ; preds = %WhileExit6, %BBEntry8
+  br label %WhileCmp
+
+BBEntry10:                                        ; preds = %WhileExit
+  %58 = load i32*, i32** %a, align 8
+  %59 = load i32, i32* %left, align 4
+  %60 = load i32, i32* %j, align 4
+  %61 = call i32 @quicksort(i32* %58, i32 %59, i32 %60)
+  br label %BBExit11
+
+BBExit11:                                         ; preds = %WhileExit, %BBEntry10
+  %62 = load i32, i32* %i, align 4
+  %63 = load i32, i32* %right, align 4
+  %64 = icmp slt i32 %62, %63
+  br i1 %64, label %BBEntry12, label %BBExit13
+
+BBEntry12:                                        ; preds = %BBExit11
+  %65 = load i32*, i32** %a, align 8
+  %66 = load i32, i32* %i, align 4
+  %67 = load i32, i32* %right, align 4
+  %68 = call i32 @quicksort(i32* %65, i32 %66, i32 %67)
+  br label %BBExit13
+
+BBExit13:                                         ; preds = %BBExit11, %BBEntry12
+  ret i32 0
+}
+
+define i32 @main() {
+BBEntry:
+  %n = alloca i32, align 4
+  store i8 0, i32* %n, align 1
+  %temp = alloca i32, align 4
+  store i8 0, i32* %temp, align 1
+  %a = alloca [10000 x i32], align 4
+  %0 = call i32 (i8*, ...) @scank(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @0, i32 0, i32 0), i32* %n)
+  %i = alloca i32, align 4
+  store i8 0, i32* %i, align 1
+  store i32 0, i32* %i, align 4
+  br label %ForCmp
+
+ForCmp:                                           ; preds = %ForIter, %BBEntry
+  %1 = load i32, i32* %i, align 4
+  %2 = load i32, i32* %n, align 4
+  %3 = icmp slt i32 %1, %2
+  br i1 %3, label %BBEntry1, label %ForExit
+
+ForIter:                                          ; preds = %BBEntry1
+  %4 = load i32, i32* %i, align 4
+  %5 = add i32 %4, 1
+  store i32 %5, i32* %i, align 4
+  br label %ForCmp
+
+ForExit:                                          ; preds = %ForCmp
+  %6 = bitcast [10000 x i32]* %a to i32*
+  %7 = load i32, i32* %n, align 4
+  %8 = sub i32 %7, 1
+  %9 = call i32 @quicksort(i32* %6, i32 0, i32 %8)
+  store i32 0, i32* %i, align 4
+  br label %ForCmp2
+
+BBEntry1:                                         ; preds = %ForCmp
+  %10 = call i32 (i8*, ...) @scank(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @1, i32 0, i32 0), i32* %temp)
+  %11 = load i32, i32* %temp, align 4
+  %12 = load i32, i32* %i, align 4
+  %13 = bitcast [10000 x i32]* %a to i32*
+  %14 = getelementptr i32, i32* %13, i32 %12
+  store i32 %11, i32* %14, align 4
+  br label %ForIter
+
+ForCmp2:                                          ; preds = %ForIter3, %ForExit
+  %15 = load i32, i32* %i, align 4
+  %16 = load i32, i32* %n, align 4
+  %17 = icmp slt i32 %15, %16
+  br i1 %17, label %BBEntry5, label %ForExit4
+
+ForIter3:                                         ; preds = %BBEntry5
+  %18 = load i32, i32* %i, align 4
+  %19 = add i32 %18, 1
+  store i32 %19, i32* %i, align 4
+  br label %ForCmp2
+
+ForExit4:                                         ; preds = %ForCmp2
+  ret i32 0
+
+BBEntry5:                                         ; preds = %ForCmp2
+  %20 = load i32, i32* %i, align 4
+  %21 = bitcast [10000 x i32]* %a to i32*
+  %22 = getelementptr i32, i32* %21, i32 %20
+  %23 = load i32, i32* %22, align 4
+  %24 = call i32 (i32*, ...) @printk(i32* bitcast ([4 x i8]* @2 to i32*), i32 %23)
+  br label %ForIter3
+}
+```
+
+#### 运行结果：
+
+<img src="image/image-20230528184546101.png" alt="image-20230528184546101" style="zoom: 67%;" />
+
+
+
+## 3.2 Matrix
+
+#### 测试代码：
+
+```c
+static int c;
+static int d[100];
+int printk(int ptr, ...);
+int scank(int ptr, ...);
+
+int main(){
+	int a2;
+	int b1;
+	int a1;
+	int b2 =2;
+	d[1] = b2;
+	int Arr1[1000];
+	int Arr2[1000];
+	int Res[1000];
+	int i;
+	int j;
+	int k;
+	int temp1;
+
+
+	scank("%d %d", &a1, &b1);
+
+	for(i = 0;i<a1;i=i+1){
+		for(j=0;j<b1;j=j+1){
+			scank("%d", &temp1);
+			Arr1[i*25+j] = temp1;
+		}
+	}
+
+	scank("%d %d ", &a2, &b2);
+	for(i = 0;i<a2;i=i+1){
+		for(j=0;j<b2;j=j+1){
+			scank("%d", &temp1);
+			Arr2[i*25+j] = temp1;
+		}
+	}
+	
+	if(b1 != a2){
+		printk("Incompatible Dimensions\n");
+		return 0;
+	}
+	for(i = 0;i<a1;i=i+1){
+		for(j=0;j<b2;j=j+1){
+			int sum = 0;
+			for(k=0;k<b1;k=k+1){
+				int temp1 = Arr1[i*25+k];
+				int temp2 = Arr2[k*25+j];
+				sum = sum + temp1 * temp2;
+			}
+			Res[i*25+j] = sum;
+		}
+	}
+	for(i=0;i<a1;i=i+1){
+		for(j=0;j<b2;j=j+1){
+			int temp = Res[i*25+j];
+			printk("%10d",temp);
+		}
+		printk("\n");
+	}
+
+	return 0;
+}
+```
+
+#### IR代码：
+
+```
+; ModuleID = 'main'
+source_filename = "main"
+
+@c = global i32 0
+@d = global [100 x i32] undef
+@0 = private unnamed_addr constant [6 x i8] c"%d %d\00", align 1
+@1 = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+@2 = private unnamed_addr constant [7 x i8] c"%d %d \00", align 1
+@3 = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+@4 = private unnamed_addr constant [25 x i8] c"Incompatible Dimensions\0A\00", align 1
+@5 = private unnamed_addr constant [5 x i8] c"%10d\00", align 1
+@6 = private unnamed_addr constant [2 x i8] c"\0A\00", align 1
+
+declare i32 @printk(i32*, ...)
+
+declare i32 @scank(i32*, ...)
+
+define i32 @main() {
+BBEntry:
+  %a2 = alloca i32, align 4
+  store i8 0, i32* %a2, align 1
+  %b1 = alloca i32, align 4
+  store i8 0, i32* %b1, align 1
+  %a1 = alloca i32, align 4
+  store i8 0, i32* %a1, align 1
+  %b2 = alloca i32, align 4
+  store i32 2, i32* %b2, align 4
+  %0 = load i32, i32* %b2, align 4
+  store i32 %0, i32* getelementptr inbounds ([100 x i32], [100 x i32]* @d, i32 0, i32 1), align 4
+  %Arr1 = alloca [1000 x i32], align 4
+  %Arr2 = alloca [1000 x i32], align 4
+  %Res = alloca [1000 x i32], align 4
+  %i = alloca i32, align 4
+  store i8 0, i32* %i, align 1
+  %j = alloca i32, align 4
+  store i8 0, i32* %j, align 1
+  %k = alloca i32, align 4
+  store i8 0, i32* %k, align 1
+  %temp1 = alloca i32, align 4
+  store i8 0, i32* %temp1, align 1
+  %1 = call i32 (i32*, ...) @scank(i32* bitcast ([6 x i8]* @0 to i32*), i32* %a1, i32* %b1)
+  store i32 0, i32* %i, align 4
+  br label %ForCmp
+
+ForCmp:                                           ; preds = %ForIter, %BBEntry
+  %2 = load i32, i32* %i, align 4
+  %3 = load i32, i32* %a1, align 4
+  %4 = icmp slt i32 %2, %3
+  br i1 %4, label %BBEntry1, label %ForExit
+
+ForIter:                                          ; preds = %ForExit4
+  %5 = load i32, i32* %i, align 4
+  %6 = add i32 %5, 1
+  store i32 %6, i32* %i, align 4
+  br label %ForCmp
+
+ForExit:                                          ; preds = %ForCmp
+  %7 = call i32 (i32*, ...) @scank(i32* bitcast ([7 x i8]* @2 to i32*), i32* %a2, i32* %b2)
+  store i32 0, i32* %i, align 4
+  br label %ForCmp6
+
+BBEntry1:                                         ; preds = %ForCmp
+  store i32 0, i32* %j, align 4
+  br label %ForCmp2
+
+ForCmp2:                                          ; preds = %ForIter3, %BBEntry1
+  %8 = load i32, i32* %j, align 4
+  %9 = load i32, i32* %b1, align 4
+  %10 = icmp slt i32 %8, %9
+  br i1 %10, label %BBEntry5, label %ForExit4
+
+ForIter3:                                         ; preds = %BBEntry5
+  %11 = load i32, i32* %j, align 4
+  %12 = add i32 %11, 1
+  store i32 %12, i32* %j, align 4
+  br label %ForCmp2
+
+ForExit4:                                         ; preds = %ForCmp2
+  br label %ForIter
+
+BBEntry5:                                         ; preds = %ForCmp2
+  %13 = call i32 (i32*, ...) @scank(i32* bitcast ([3 x i8]* @1 to i32*), i32* %temp1)
+  %14 = load i32, i32* %temp1, align 4
+  %15 = load i32, i32* %i, align 4
+  %16 = mul i32 %15, 25
+  %17 = load i32, i32* %j, align 4
+  %18 = add i32 %16, %17
+  %19 = bitcast [1000 x i32]* %Arr1 to i32*
+  %20 = getelementptr i32, i32* %19, i32 %18
+  store i32 %14, i32* %20, align 4
+  br label %ForIter3
+
+ForCmp6:                                          ; preds = %ForIter7, %ForExit
+  %21 = load i32, i32* %i, align 4
+  %22 = load i32, i32* %a2, align 4
+  %23 = icmp slt i32 %21, %22
+  br i1 %23, label %BBEntry9, label %ForExit8
+
+ForIter7:                                         ; preds = %ForExit12
+  %24 = load i32, i32* %i, align 4
+  %25 = add i32 %24, 1
+  store i32 %25, i32* %i, align 4
+  br label %ForCmp6
+
+ForExit8:                                         ; preds = %ForCmp6
+  %26 = load i32, i32* %b1, align 4
+  %27 = load i32, i32* %a2, align 4
+  %28 = icmp ne i32 %26, %27
+  br i1 %28, label %BBEntry14, label %BBExit
+
+BBEntry9:                                         ; preds = %ForCmp6
+  store i32 0, i32* %j, align 4
+  br label %ForCmp10
+
+ForCmp10:                                         ; preds = %ForIter11, %BBEntry9
+  %29 = load i32, i32* %j, align 4
+  %30 = load i32, i32* %b2, align 4
+  %31 = icmp slt i32 %29, %30
+  br i1 %31, label %BBEntry13, label %ForExit12
+
+ForIter11:                                        ; preds = %BBEntry13
+  %32 = load i32, i32* %j, align 4
+  %33 = add i32 %32, 1
+  store i32 %33, i32* %j, align 4
+  br label %ForCmp10
+
+ForExit12:                                        ; preds = %ForCmp10
+  br label %ForIter7
+
+BBEntry13:                                        ; preds = %ForCmp10
+  %34 = call i32 (i32*, ...) @scank(i32* bitcast ([3 x i8]* @3 to i32*), i32* %temp1)
+  %35 = load i32, i32* %temp1, align 4
+  %36 = load i32, i32* %i, align 4
+  %37 = mul i32 %36, 25
+  %38 = load i32, i32* %j, align 4
+  %39 = add i32 %37, %38
+  %40 = bitcast [1000 x i32]* %Arr2 to i32*
+  %41 = getelementptr i32, i32* %40, i32 %39
+  store i32 %35, i32* %41, align 4
+  br label %ForIter11
+
+BBEntry14:                                        ; preds = %ForExit8
+  %42 = call i32 (i32*, ...) @printk(i32* bitcast ([25 x i8]* @4 to i32*))
+  ret i32 0
+  br label %BBExit
+
+BBExit:                                           ; preds = %ForExit8, %BBEntry14
+  store i32 0, i32* %i, align 4
+  br label %ForCmp15
+
+ForCmp15:                                         ; preds = %ForIter16, %BBExit
+  %43 = load i32, i32* %i, align 4
+  %44 = load i32, i32* %a1, align 4
+  %45 = icmp slt i32 %43, %44
+  br i1 %45, label %BBEntry18, label %ForExit17
+
+ForIter16:                                        ; preds = %ForExit21
+  %46 = load i32, i32* %i, align 4
+  %47 = add i32 %46, 1
+  store i32 %47, i32* %i, align 4
+  br label %ForCmp15
+
+ForExit17:                                        ; preds = %ForCmp15
+  store i32 0, i32* %i, align 4
+  br label %ForCmp28
+
+BBEntry18:                                        ; preds = %ForCmp15
+  store i32 0, i32* %j, align 4
+  br label %ForCmp19
+
+ForCmp19:                                         ; preds = %ForIter20, %BBEntry18
+  %48 = load i32, i32* %j, align 4
+  %49 = load i32, i32* %b2, align 4
+  %50 = icmp slt i32 %48, %49
+  br i1 %50, label %BBEntry22, label %ForExit21
+
+ForIter20:                                        ; preds = %ForExit25
+  %51 = load i32, i32* %j, align 4
+  %52 = add i32 %51, 1
+  store i32 %52, i32* %j, align 4
+  br label %ForCmp19
+
+ForExit21:                                        ; preds = %ForCmp19
+  br label %ForIter16
+
+BBEntry22:                                        ; preds = %ForCmp19
+  %sum = alloca i32, align 4
+  store i32 0, i32* %sum, align 4
+  store i32 0, i32* %k, align 4
+  br label %ForCmp23
+
+ForCmp23:                                         ; preds = %ForIter24, %BBEntry22
+  %53 = load i32, i32* %k, align 4
+  %54 = load i32, i32* %b1, align 4
+  %55 = icmp slt i32 %53, %54
+  br i1 %55, label %BBEntry26, label %ForExit25
+
+ForIter24:                                        ; preds = %BBEntry26
+  %56 = load i32, i32* %k, align 4
+  %57 = add i32 %56, 1
+  store i32 %57, i32* %k, align 4
+  br label %ForCmp23
+
+ForExit25:                                        ; preds = %ForCmp23
+  %58 = load i32, i32* %sum, align 4
+  %59 = load i32, i32* %i, align 4
+  %60 = mul i32 %59, 25
+  %61 = load i32, i32* %j, align 4
+  %62 = add i32 %60, %61
+  %63 = bitcast [1000 x i32]* %Res to i32*
+  %64 = getelementptr i32, i32* %63, i32 %62
+  store i32 %58, i32* %64, align 4
+  br label %ForIter20
+
+BBEntry26:                                        ; preds = %ForCmp23
+  %temp127 = alloca i32, align 4
+  %65 = load i32, i32* %i, align 4
+  %66 = mul i32 %65, 25
+  %67 = load i32, i32* %k, align 4
+  %68 = add i32 %66, %67
+  %69 = bitcast [1000 x i32]* %Arr1 to i32*
+  %70 = getelementptr i32, i32* %69, i32 %68
+  %71 = load i32, i32* %70, align 4
+  store i32 %71, i32* %temp127, align 4
+  %temp2 = alloca i32, align 4
+  %72 = load i32, i32* %k, align 4
+  %73 = mul i32 %72, 25
+  %74 = load i32, i32* %j, align 4
+  %75 = add i32 %73, %74
+  %76 = bitcast [1000 x i32]* %Arr2 to i32*
+  %77 = getelementptr i32, i32* %76, i32 %75
+  %78 = load i32, i32* %77, align 4
+  store i32 %78, i32* %temp2, align 4
+  %79 = load i32, i32* %sum, align 4
+  %80 = load i32, i32* %temp127, align 4
+  %81 = load i32, i32* %temp2, align 4
+  %82 = mul i32 %80, %81
+  %83 = add i32 %79, %82
+  store i32 %83, i32* %sum, align 4
+  br label %ForIter24
+
+ForCmp28:                                         ; preds = %ForIter29, %ForExit17
+  %84 = load i32, i32* %i, align 4
+  %85 = load i32, i32* %a1, align 4
+  %86 = icmp slt i32 %84, %85
+  br i1 %86, label %BBEntry31, label %ForExit30
+
+ForIter29:                                        ; preds = %ForExit34
+  %87 = load i32, i32* %i, align 4
+  %88 = add i32 %87, 1
+  store i32 %88, i32* %i, align 4
+  br label %ForCmp28
+
+ForExit30:                                        ; preds = %ForCmp28
+  ret i32 0
+
+BBEntry31:                                        ; preds = %ForCmp28
+  store i32 0, i32* %j, align 4
+  br label %ForCmp32
+
+ForCmp32:                                         ; preds = %ForIter33, %BBEntry31
+  %89 = load i32, i32* %j, align 4
+  %90 = load i32, i32* %b2, align 4
+  %91 = icmp slt i32 %89, %90
+  br i1 %91, label %BBEntry35, label %ForExit34
+
+ForIter33:                                        ; preds = %BBEntry35
+  %92 = load i32, i32* %j, align 4
+  %93 = add i32 %92, 1
+  store i32 %93, i32* %j, align 4
+  br label %ForCmp32
+
+ForExit34:                                        ; preds = %ForCmp32
+  %94 = call i32 (i32*, ...) @printk(i32* bitcast ([2 x i8]* @6 to i32*))
+  br label %ForIter29
+
+BBEntry35:                                        ; preds = %ForCmp32
+  %temp = alloca i32, align 4
+  %95 = load i32, i32* %i, align 4
+  %96 = mul i32 %95, 25
+  %97 = load i32, i32* %j, align 4
+  %98 = add i32 %96, %97
+  %99 = bitcast [1000 x i32]* %Res to i32*
+  %100 = getelementptr i32, i32* %99, i32 %98
+  %101 = load i32, i32* %100, align 4
+  store i32 %101, i32* %temp, align 4
+  %102 = load i32, i32* %temp, align 4
+  %103 = call i32 (i32*, ...) @printk(i32* bitcast ([5 x i8]* @5 to i32*), i32 %102)
+  br label %ForIter33
+}
+```
+
+
+
+#### 运行结果：
+
+<img src="image/image-20230528183946567.png" alt="image-20230528183946567" style="zoom: 67%;" />
+
+
+
+## 3.3 Advisor
 
 
 

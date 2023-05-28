@@ -74,6 +74,7 @@ public:
     VarType(int) {type=Int;}
     VarType(char) {type=Char;}
 	VarType(short) {type=Short;}
+	VarType(double) {type=Double;}
 	// VarType(ArrayType* __BaseType):_BaseType(__BaseType) {type=Arr;}
 	VarType(PointerType* __BaseType):_BaseType_pointer(__BaseType) {type=Ptr;}
     VarType(std::string name);
@@ -495,11 +496,14 @@ public:
 
 class Constant : public ExprAST {
 public:
+	VarType type_; 
 	int int_;
 	char character_;
+	double double_;
 	
-	Constant(int _int_) : int_(_int_) {}
-	Constant(char _character_) : character_(_character_) {}
+	Constant(int _int_) : type_("int"), int_(_int_) {}
+	Constant(char _character_) : type_("char"), character_(_character_) {}
+	Constant(double _double_) : type_("double"), double_(_double_) {}
 	~Constant() {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);

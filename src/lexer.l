@@ -98,6 +98,7 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 "short"                 {SAVE_TOKEN; return SHORT;}
 "char"                  {SAVE_TOKEN; return CHAR;}
 "void"                  {SAVE_TOKEN; return VOID;}
+"double"                {SAVE_TOKEN; return DOUBLE;}
 
     /* 跳转结构 */
 "return"                {return RETURN;}
@@ -140,7 +141,7 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 {OCTAL}                 { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
 {HEXADECIMAL}           { yylval.intVal = strtol(yytext, nullptr, 0); return CONST_INT; }
  
-{REAL}                  { yylval.floatVal = strtol(yytext, nullptr, 0); return CONST_FLOAT; }
+{REAL}                  { double tmp; sscanf(yytext, "%lf", &tmp);yylval.douVal = tmp; return CONST_DOUBLE; }
 
 "\'"[^\\']"\'"			{ yylval.charVal = yytext[1]; return CONST_CHAR; }
 

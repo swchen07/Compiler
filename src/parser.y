@@ -29,7 +29,7 @@ using namespace std;
 
 %union {
     std::string* strVal;
-	float floatVal;
+	double douVal;
     int intVal;
 	char charVal;
     BaseAST *astVal;
@@ -52,7 +52,7 @@ using namespace std;
 %token LPAREN RPAREN LBRACE RBRACE  LBRACKET RBRACKET COMMA SEMI
 %token ASSIGN DOT COLON QUES ELLIPSES PTR
 
-%token <strVal> INT CHAR SHORT VOID
+%token <strVal> INT CHAR SHORT VOID DOUBLE
 %token RETURN CONTINUE BREAK STATIC
 %token IF ELSE
 %token FOR WHILE
@@ -63,6 +63,7 @@ using namespace std;
 %token <intVal> CONST_INT 
 %token <charVal> CONST_CHAR 
 %token <strVal> CONST_STR
+%token <douVal> CONST_DOUBLE
 %token CONST_FLOAT
 // 非终结符的类型定义
 
@@ -134,8 +135,8 @@ Program
 	;
 
 CompUnit
-    : CompUnit STATIC Decl                      { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
-    | CompUnit FuncDef									        { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
+    : CompUnit STATIC Decl                      		{ $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
+    | CompUnit FuncDef									{ $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
     | 													{ $$ = new CompUnits(); }
     ;
 
@@ -161,6 +162,7 @@ Btype
     | INT                           { $$ = $1; }
     | SHORT                         { $$ = $1; }
     | CHAR                          { $$ = $1; }
+	| DOUBLE 						{ $$ = $1; }
     ;
 
 /* ConstDef      ::= IDENT "=" ConstInitVal; */
@@ -316,6 +318,7 @@ Constant
     : CONST_INT							{ $$ = new Constant($1); }
     | CONST_CHAR						{ $$ = new Constant($1); }
     | CONST_STR                         { $$ = new StringType(*$1); }
+	| CONST_DOUBLE						{ std::cout << $1 << std::endl;  $$ = new Constant($1); }
     ;
 
 Exp
