@@ -1,3 +1,3 @@
-./build/Compiler ./tests/Matrix/Matrix.c
-gcc -no-pie Compiler.o lib/io.so -o tests/Matrix/Matrix.out
-../tester/matrix-linux-amd64 ./tests/Matrix/Matrix.out
+./build/zjuc ./tests/Matrix/Matrix.c
+gcc -no-pie io/Matrix.o lib/io.so -o io/Matrix.out
+../tester/matrix-linux-amd64 ./io/Matrix.out

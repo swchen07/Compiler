@@ -16,9 +16,9 @@ parser.hpp
 test.c
 a.out
 simpledemo.o
-Compiler.o
-Compiler.ir
 quickSort.out
-matrix.out
+Matrix.out
 Advisor.out
-
+quickSort.o
+Matrix.o
+Advisor.o

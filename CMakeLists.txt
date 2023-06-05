@@ -46,19 +46,21 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 file(GLOB SOURCES ./src/*.hpp ./src/*.cpp)
 
-add_executable(${project_name} ${SOURCES})
+set(OUTPUT_FILE zjuc)
+
+add_executable(${OUTPUT_FILE} ${SOURCES})
 
 ###############################################
 # Link
 ###############################################
 
 if(WIN32)
-    target_link_libraries(${project_name} ${LLVM_AVAILABLE_LIBS})
+    target_link_libraries(${OUTPUT_FILE} ${LLVM_AVAILABLE_LIBS})
 else()
     # llvm_map_components_to_libnames(llvm_libs support core irreader)
     execute_process(COMMAND llvm-config-14 --libs all
 					OUTPUT_VARIABLE llvm_libs)
 	string(STRIP ${llvm_libs} llvm_libs)
 	string(REPLACE " " ";" llvm_libs ${llvm_libs})
-    target_link_libraries(${project_name} PRIVATE ${llvm_libs})
+    target_link_libraries(${OUTPUT_FILE} PRIVATE ${llvm_libs})
 endif()

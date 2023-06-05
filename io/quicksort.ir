@@ -1,170 +1,7 @@
-ProgramAST
-FunctionAST
-PointerType
-FunctionAST
-PointerType
-FunctionAST
-PointerType
-BlockAST
-PointerType
-VarDeclAST
-VarDefAST
-LeftVal
-VarDeclAST
-VarDefAST
-LeftVal
-VarDeclAST
-VarDefAST
-ExprAST +
-LeftVal
-LeftVal
-Assign
-ExprAST /
-LeftVal
-Constant
-LeftValPtr
-VarDeclAST
-VarDefAST
-Assign
-ArrVal
-Array Ptr 0x564baf6e6140
-LeftVal
-LeftValPtr
-WhileStmtAST
-ExprAST >
-LeftVal
-LeftVal
-BlockAST
-WhileStmtAST
-ExprAST >
-ArrVal
-Array Ptr 0x564baf6e6140
-LeftVal
-LeftVal
-BlockAST
-Assign
-ExprAST +
-LeftVal
-Constant
-LeftValPtr
-WhileStmtAST
-ExprAST >
-LeftVal
-ArrVal
-Array Ptr 0x564baf6e6140
-LeftVal
-BlockAST
-Assign
-ExprAST -
-LeftVal
-Constant
-LeftValPtr
-IfElseStmtAST
-ExprAST >
-LeftVal
-LeftVal
-BlockAST
-VarDeclAST
-VarDefAST
-ArrVal
-Array Ptr 0x564baf6e6140
-LeftVal
-Assign
-ArrVal
-Array Ptr 0x564baf6e6140
-LeftVal
-ArrValPtr
-  %a = alloca i32*, align 8LeftVal
-Assign
-LeftVal
-ArrValPtr
-  %a = alloca i32*, align 8LeftVal
-Assign
-ExprAST +
-LeftVal
-Constant
-LeftValPtr
-Assign
-ExprAST -
-LeftVal
-Constant
-LeftValPtr
-IfElseStmtAST
-ExprAST >
-LeftVal
-LeftVal
-BlockAST
-LeftVal
-LeftVal
-LeftVal
-IfElseStmtAST
-ExprAST >
-LeftVal
-LeftVal
-BlockAST
-LeftVal
-LeftVal
-LeftVal
-ReturnAST
-Constant
-FunctionAST
-BlockAST
-VarDeclAST
-VarDefAST
-VarDeclAST
-VarDefAST
-ArrDefAST
-Constant
-convertedValue10000  
-StringType
-AddressOf
-VarDeclAST
-VarDefAST
-ForStmtAST
-Assign
-Constant
-LeftValPtr
-ExprAST >
-LeftVal
-LeftVal
-BlockAST
-StringType
-AddressOf
-Assign
-LeftVal
-ArrValPtr
-  %a = alloca [10000 x i32], align 4LeftVal
-Assign
-ExprAST +
-LeftVal
-Constant
-LeftValPtr
-LeftVal
-Constant
-ExprAST -
-LeftVal
-Constant
-ForStmtAST
-Assign
-Constant
-LeftValPtr
-ExprAST >
-LeftVal
-LeftVal
-BlockAST
-StringType
-ArrVal
-Array Ptr 0x564baf6ebad0
-LeftVal
-Assign
-ExprAST +
-LeftVal
-Constant
-LeftValPtr
-ReturnAST
-Constant
 ; ModuleID = 'main'
 source_filename = "main"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
 
 @0 = private unnamed_addr constant [3 x i8] c"%d\00", align 1
 @1 = private unnamed_addr constant [3 x i8] c"%d\00", align 1
@@ -197,7 +34,7 @@ BBEntry:
   %9 = sdiv i32 %8, 2
   store i32 %9, i32* %temp, align 4
   %mid = alloca i32, align 4
-  store i8 0, i32* %mid, align 1
+  store i32 0, i32* %mid, align 4
   %10 = load i32, i32* %temp, align 4
   %11 = load i32*, i32** %a, align 8
   %12 = getelementptr i32, i32* %11, i32 %10
@@ -205,7 +42,7 @@ BBEntry:
   store i32 %13, i32* %mid, align 4
   br label %WhileCmp
 
-WhileCmp:                                         ; preds = %BBExit, %BBEntry
+WhileCmp:                                         ; preds = %BBEntry8, %WhileExit6, %BBEntry
   %14 = load i32, i32* %i, align 4
   %15 = load i32, i32* %j, align 4
   %16 = icmp slt i32 %14, %15
@@ -251,7 +88,7 @@ WhileExit6:                                       ; preds = %WhileCmp5
   %34 = load i32, i32* %i, align 4
   %35 = load i32, i32* %j, align 4
   %36 = icmp sle i32 %34, %35
-  br i1 %36, label %BBEntry8, label %BBExit
+  br i1 %36, label %BBEntry8, label %WhileCmp
 
 BBEntry7:                                         ; preds = %WhileCmp5
   %37 = load i32, i32* %j, align 4
@@ -285,9 +122,6 @@ BBEntry8:                                         ; preds = %WhileExit6
   %56 = load i32, i32* %j, align 4
   %57 = sub i32 %56, 1
   store i32 %57, i32* %j, align 4
-  br label %BBExit
-
-BBExit:                                           ; preds = %WhileExit6, %BBEntry8
   br label %WhileCmp
 
 BBEntry10:                                        ; preds = %WhileExit
@@ -317,13 +151,13 @@ BBExit13:                                         ; preds = %BBExit11, %BBEntry1
 define i32 @main() {
 BBEntry:
   %n = alloca i32, align 4
-  store i8 0, i32* %n, align 1
+  store i32 0, i32* %n, align 4
   %temp = alloca i32, align 4
-  store i8 0, i32* %temp, align 1
+  store i32 0, i32* %temp, align 4
   %a = alloca [10000 x i32], align 4
   %0 = call i32 (i8*, ...) @scank(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @0, i32 0, i32 0), i32* %n)
   %i = alloca i32, align 4
-  store i8 0, i32* %i, align 1
+  store i32 0, i32* %i, align 4
   store i32 0, i32* %i, align 4
   br label %ForCmp
 
@@ -379,31 +213,3 @@ BBEntry5:                                         ; preds = %ForCmp2
   %24 = call i32 (i32*, ...) @printk(i32* bitcast ([4 x i8]* @2 to i32*), i32 %23)
   br label %ForIter3
 }
-Hello
-fixed case 0 (size 0)...pass!
-fixed case 1 (size 1)...pass!
-fixed case 2 (size 2)...pass!
-fixed case 3 (size 2)...pass!
-fixed case 4 (size 3)...pass!
-fixed case 5 (size 3)...pass!
-fixed case 6 (size 3)...pass!
-fixed case 7 (size 3)...pass!
-fixed case 8 (size 3)...pass!
-fixed case 9 (size 4)...pass!
-fixed case 10 (size 9)...pass!
-fixed case 11 (size 9)...pass!
-fixed case 12 (size 10000)...pass!
-fixed case 13 (size 10000)...pass!
-fixed case 14 (size 4096)...pass!
-randomly generated case 0 (size 10000)...pass!
-randomly generated case 1 (size 10000)...pass!
-randomly generated case 2 (size 10000)...pass!
-randomly generated case 3 (size 10000)...pass!
-randomly generated case 4 (size 10000)...pass!
-randomly generated case 5 (size 10000)...pass!
-randomly generated case 6 (size 10000)...pass!
-randomly generated case 7 (size 10000)...pass!
-randomly generated case 8 (size 10000)...pass!
-randomly generated case 9 (size 10000)...pass!
-----------------------------------------
-2023-05-28 10:44:21.565

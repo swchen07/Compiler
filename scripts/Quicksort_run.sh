@@ -1,3 +1,3 @@
-./build/Compiler ./tests/QuickSort/quicksort.c
-gcc -no-pie Compiler.o lib/io.so -o tests/QuickSort/quicksort.out
-../tester/quicksort-linux-amd64 ./tests/QuickSort/quicksort.out
+./build/zjuc ./tests/QuickSort/quicksort.c
+gcc -no-pie io/quicksort.o lib/io.so -o io/quicksort.out
+../tester/quicksort-linux-amd64 ./io/quicksort.out

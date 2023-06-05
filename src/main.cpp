@@ -16,10 +16,15 @@ int main(int argc, const char* argv[]) {
     IRGenerator Gen;
     Gen.GenerateCode(Root);
 
-    Gen.GenObjectCode("Compiler.o");
-    Gen.DumpIRCode("Compiler.ir");
+    // get module name
+    int moduleleft = inputfile.rfind("/") + 1;
+    int moduleright = inputfile.rfind(".");
+    std::string modulename = inputfile.substr(moduleleft, moduleright-moduleleft);
 
-    std::cout << "Hello" << std::endl;
+    Gen.GenObjectCode("io/"+modulename+".o");
+    Gen.DumpIRCode("io/"+modulename+".ir");
+
+    std::cout << "Compile Success!" << std::endl;
 
     return 0;
 }
