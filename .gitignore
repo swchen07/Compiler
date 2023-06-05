@@ -6,9 +6,6 @@
 /.DS_Store
 /tests/Test1/llvm.cpp
 
-src/
-test.c
-
 build/
 lexer.cpp
 microlexer.cpp
