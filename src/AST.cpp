@@ -89,7 +89,7 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
 		case Char: return IRBuilder->getInt8Ty(); 
 		case Short: return IRBuilder->getInt16Ty();
 		case Double: return IRBuilder->getDoubleTy(); 
-		case Ptr: return this->_BaseType_pointer->ToLLVMType(IRContext);
+		case Ptr: return this->baseTypePointer->ToLLVMType(IRContext);
 	}
 }
 
@@ -243,7 +243,7 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
 
     std::vector<llvm::Type*> ArgTypes; 
 
-	for (auto ArgType : *(this->_ArgList)) {
+	for (auto ArgType : *(this->argList_)) {
 		llvm::Type* LLVMType = ArgType->type_.ToLLVMType(IRContext);
 		if (!LLVMType) {
 			throw std::logic_error("Defining a function " + this->funcName_ + " using unknown type(s).");
@@ -253,7 +253,7 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
 	}
 	
     //Get function type
-    llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, this->_ArgList->_VarArgLenth);
+    llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, this->argList_->varArgLenth_);
 
 	if (this->block_) {
 		// define function
@@ -272,8 +272,8 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
 
 		int i = 0; 
 		for (auto ArgIter = Func->arg_begin(); ArgIter < Func->arg_end(); ArgIter++) {
-			auto ArgInf = this->_ArgList->at(i);
-			IRContext.RemainFutureVar(ArgInf->type_, ArgInf->_Name, ArgIter);
+			auto ArgInf = this->argList_->at(i);
+			IRContext.RemainFutureVar(ArgInf->type_, ArgInf->name_, ArgIter);
 			i ++; 
 		}
 
@@ -301,42 +301,44 @@ llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
 }
 
 llvm::Value* FuncCallAST::IRGen(IRGenerator& IRContext) {
+	std::cout << "FuncCallAST" << std::endl;
+
+	int i = 0;
+	llvm::Value* Arg; 
+	std::vector<llvm::Value*> ArgList;
 	auto IRBuilder = IRContext.IRBuilder; 
-	llvm::Function* Func = IRContext.FindFunction(this->_FuncName);
-	
+	llvm::Function* Func = IRContext.FindFunction(this->funcName_);
 
 	if (Func == NULL) {
-		throw std::domain_error(this->_FuncName + " is not a defined function.");
+		throw std::invalid_argument(this->funcName_ + " is not defined.");
+		return NULL;
+	}
+	if ((Func->isVarArg() && this->argList_->size() < Func->arg_size()) || (!Func->isVarArg() && this->argList_->size() != Func->arg_size())) {
+		throw std::invalid_argument("Args doesn't match the called function " + this->funcName_ + ".");
 		return NULL;
 	}
 	
-	if (Func->isVarArg() && this->_ArgList->size() < Func->arg_size() ||
-		!Func->isVarArg() && this->_ArgList->size() != Func->arg_size()) {
-		throw std::invalid_argument("Args doesn't match when calling function " + this->_FuncName + ". Expected " + std::to_string(Func->arg_size()) + ", got " + std::to_string(this->_ArgList->size()));
-		return NULL;
-	}
-	
-	std::vector<llvm::Value*> ArgList;
-	size_t Index = 0;
-	for (auto ArgIter = Func->arg_begin(); ArgIter < Func->arg_end(); ArgIter++, Index++) {
-		llvm::Value* Arg = this->_ArgList->at(Index)->IRGen(IRContext);
+	for (auto ArgIter = Func->arg_begin(); ArgIter < Func->arg_end(); ArgIter++) {
+		Arg = this->argList_->at(i)->IRGen(IRContext);
 		Arg = TypeCasting(Arg, ArgIter->getType(), IRContext);
 		if (Arg == NULL) {
-			throw std::invalid_argument(std::to_string(Index) + "-th arg type doesn't match when calling function " + this->_FuncName + ".");
+			throw std::invalid_argument("Type of " + std::to_string(i) + "-th argument doesn't match the called function " + this->funcName_ + ".");
 			return NULL;
 		}
 		ArgList.push_back(Arg);
+		i += 1; 
 	}
 	
-	if (Func->isVarArg())
-		for (; Index < this->_ArgList->size(); Index++) {
-			llvm::Value* Arg = this->_ArgList->at(Index)->IRGen(IRContext);
+	if ( Func->isVarArg() ) {
+		for (; i < this->argList_->size(); i++) {
+			Arg = this->argList_->at(i)->IRGen(IRContext);
 			if (Arg->getType()->isIntegerTy())
 				Arg = TypeUpgrading(Arg, IRBuilder->getInt32Ty(), IRContext);
 			else if (Arg->getType()->isFloatingPointTy())
 				Arg = TypeUpgrading(Arg, IRBuilder->getDoubleTy(), IRContext);
 			ArgList.push_back(Arg);
 		}
+	}
 
 	return IRBuilder->CreateCall(Func, ArgList);
 }
@@ -390,8 +392,8 @@ llvm::Value* BlockAST::IRGen(IRGenerator& IRContext) {
 llvm::Value* ReturnStmtAST::IRGen(IRGenerator& IRContext) {
     std::cout << "ReturnAST" << std::endl;
     auto IRBuilder = IRContext.IRBuilder; 
-	if (this->RetVal_)
-    	IRBuilder->CreateRet(this->RetVal_->IRGen(IRContext));
+	if (this->retVal_)
+    	IRBuilder->CreateRet(this->retVal_->IRGen(IRContext));
 	else
 		IRBuilder->CreateRetVoid();
     return NULL; 
@@ -738,13 +740,13 @@ llvm::Value* LeftValAST::IRGenPtr(IRGenerator& IRContext) {
 llvm::Value* StringType::IRGen(IRGenerator& IRContext) {
     std::cout << "StringType" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder; 
-	return IRBuilder->CreateGlobalStringPtr(this->_Content.c_str());
+	return IRBuilder->CreateGlobalStringPtr(this->content_.c_str());
 }
 
 llvm::Value* AddressOf::IRGen(IRGenerator& IRContext) {
     std::cout << "AddressOf" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder;
-	llvm::Value* VarPtr = IRContext.FindVar(this->_Operand->name_);
+	llvm::Value* VarPtr = IRContext.FindVar(this->oprand_->name_);
 	return VarPtr;
 }
 
@@ -829,6 +831,7 @@ llvm::Value* ArrValAST::IRGenPtr(IRGenerator& IRContext) {
 	}
 	return v2;
 }
+
 llvm::Value* AssignArrAST::IRGen(IRGenerator& IRContext){
 	std::cout << "Assign" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder;
@@ -843,6 +846,6 @@ llvm::Value* AssignArrAST::IRGen(IRGenerator& IRContext){
 llvm::Type* PointerType::ToLLVMType(IRGenerator& IRContext){
 	std::cout << "PointerType" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder;
-	llvm::Type* BaseType = this->_BaseType.ToLLVMType(IRContext);
+	llvm::Type* BaseType = this->baseType_.ToLLVMType(IRContext);
 	return llvm::PointerType::get(BaseType, 0U);
 }
