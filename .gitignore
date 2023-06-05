@@ -11,6 +11,7 @@ test.c
 
 build/
 lexer.cpp
+microlexer.cpp
 parser.cpp
 parser.hpp
 test.c
@@ -19,6 +20,8 @@ simpledemo.o
 quicksort.out
 Matrix.out
 Advisor.out
+MicroDef.out
 quicksort.o
 Matrix.o
 Advisor.o
+MicroDef.o
