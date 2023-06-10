@@ -569,19 +569,19 @@ LALR(1)解析算法是一种常用的自底向上解析算法，它使用了向�
 
 ```c
 Program							
-	: CompUnit 											{ $$ = new ProgramAST((CompUnits*)$1); Root = $$;}
+	: CompUnit									{ $$ = new ProgramAST((CompUnits*)$1); Root = $$;}
 	;
 
 CompUnit
-    : CompUnit STATIC Decl                      { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
-    | CompUnit FuncDef									        { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
-    | 													{ $$ = new CompUnits(); }
+    : CompUnit STATIC Decl						{ $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
+    | CompUnit FuncDef							{ $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
+    | 											{ $$ = new CompUnits(); }
     ;
 
 /* Decl          ::= ConstDecl | VarDecl; */
 Decl
     : ConstDecl
-    | VarDecl                                           { $$ = $1; }
+    | VarDecl                                     { $$ = $1; }
     ;
 
 /* ConstDecl     ::= "const" BType ConstDef {"," ConstDef} ";"; */
@@ -797,7 +797,7 @@ ConstExp
 
 AST的结构和表示方式可以根据具体的语言和编译器实现而有所不同，但通常包含以下类型的节点：
 
-1. **标识符（Identifier）**节点：用于表示变量、函数名等标识符的节点。
+1. **标识符（Identifier）节点**：用于表示变量、函数名等标识符的节点。
 2. **常量（Const）节点**：用于表示常量值的节点，如整数、浮点数、字符串等。
 3. **表达式（Expression）节点**：用于表示各种表达式，如算术表达式、逻辑表达式、赋值表达式等。
 4. **语句（Statement）节点**：用于表示各种语句，如条件语句、循环语句、函数调用语句等。
@@ -972,44 +972,49 @@ enum TypeID{
 
 #### 2.2.4.5 示例代码及对应AST结构介绍
 
-##### Todo： 要根据我们的AST修改，下面给出模版
-
-下面是一个示例代码和其对应的简化的AST结构：
-
 示例代码：
 
 ```
-cssCopy code
-int a = 10;
-int b = 5;
-int result = a + b;
+int main(){
+	int a = 10;
+	int b[100];
+	int c;
+	b[10] = a;
+	c = b[10] + a;
+}
 ```
+
 
 对应的AST结构：
 
 ```
-markdownCopy code
-- Program
-  - DeclarationStatement
-    - TypeNode (int)
-    - IdentifierNode (a)
-    - LiteralNode (10)
-  - DeclarationStatement
-    - TypeNode (int)
-    - IdentifierNode (b)
-    - LiteralNode (5)
-  - DeclarationStatement
-    - TypeNode (int)
-    - IdentifierNode (result)
-    - BinaryExpressionNode (+)
-      - IdentifierNode (a)
-      - IdentifierNode (b)
+- ProgramAST
+  - ValDeclAST
+    - BType         (int)
+    - LeftValAST 	(a)
+    - Constant   	(10)
+  - ArrDeclAST	
+    - BType      	(int)
+	- ArrayType  	(int[])
+	- Constant   	(100)
+    - LeftValAST 	(b)
+  - ValDeclAST	
+    - TypeNode   	(int)
+  - AssignAST
+	- LeftValAST 	(a)
+    - ArrValAST  	(b[])
+  - AssignAST    	(+)
+	- Addition
+	  - LeftValAST  (a)
+      - ArrValAST   (b[])
+	- LeftValAST    (c)
+
+    
 ```
 
 在这个简化的AST中，根节点是Program节点，表示整个程序。每个DeclarationStatement节点表示一个变量的声明语句，包含变量的类型、标识符和初始值（如果有）。BinaryExpressionNode节点表示两个标识符相加的表达式。
 
 通过构建和遍历AST，编译器可以从源代码中提取出语法结构和语义信息，并进行后续的分析和转换操作。
-
 
 
 ### 2.2.5 语法分析器的测试和验证
@@ -1075,32 +1080,174 @@ sysY语言要求在使用变量之前先进行声明。语义分析器将检查�
 
 
 
-### 2.3.3 语义类型
+#### 2.3.3 语义类型
 
 #### 2.3.3.1 Program类
 
-##### Todo
+`Program::IRGen()`的作用是循环调用子结点的`IRGen()`。
+```C++
+llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
 
+	for (auto compUnit : *(this->compUnit_)){
+		if(compUnit){
+			compUnit->IRGen(IRContext);
+		}
+	}
 
+	return NULL;
+}
+```
 
 #### 2.3.3.2 Declare抽象类
 
 ##### 2.3.3.2.1 VarDeclAST
+该类负责变量声明的实现。在我们的实验环境下，变量定义分为全局变量和局部变量两种，结合LLVM的使用方式，需要对全局变量使用`new llvm::GlobalVariable()`进行创建，其中变量的信息则来自成员变量`varDef_`，类型为`VarDef`。
+```C++
+llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 
-##### Todo
+	if (IRContext.GetCurFunc()) {
+		// local variable
 
+		auto IRBuilder = IRContext.IRBuilder; 
 
+		//创建变量
+		auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varDef_->varName_);
+		
+		// llvm::Value* initVal = CastType(this->, IRContext)
+
+		// initialize
+		llvm::Value* value = this->varDef_->IRGen(IRContext);
+
+		// store will always align to 4, even for char, which is because we need a type cast for 'value'
+		IRBuilder->CreateStore(value, AllocMem);
+
+		IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
+	}
+	else {
+		// global variable
+		// initialize
+		std::cout << "VarDeclAST -> global variable" << std::endl;
+
+		llvm::Value* value = this->varDef_->IRGen(IRContext);
+
+		// convert to const
+		llvm::Constant* initializer = llvm::cast<llvm::Constant>(value);
+		if (!initializer) {
+			throw std::logic_error("The initializer is not const type: "+this->varDef_->varName_);
+		}
+
+		//Create a global variable
+		auto AllocMem = new llvm::GlobalVariable(
+			*(IRContext.Module),
+			this->type_.ToLLVMType(IRContext),
+			false,
+			llvm::Function::ExternalLinkage,
+			initializer, 
+			this->varDef_->varName_
+		);
+		
+		IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
+	}
+
+	return NULL;
+}
+```
 
 ##### 2.3.3.2.2 VarDefAST
 
-##### Todo
-
-
+该类主要负责存储和创建变量的具体信息并转换成LLVM提供的变量类型，传给VarDeclAST进行变量声明。
+```C++
+llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
+	if (this->initValue_) {
+		//std::cout << "Have init" << std::endl;
+		return this->initValue_->IRGen(IRContext);
+	}
+	else {
+		auto IRBuilder = IRContext.IRBuilder;
+		VarType* v = new VarType(this->varName_);
+		switch(v->GetType()) {
+		case Int: return IRBuilder->getInt32(0); 
+		case Char: return IRBuilder->getInt8(0);
+		case Double:return llvm::ConstantFP::get(IRBuilder->getDoubleTy(), 0.0);
+		}
+	}
+}
+```
 
 ##### 2.3.3.2.3 FuncDefAST
 
-##### Todo
+`FuncDefAST`涉及到函数声明和函数定义两种，在该类的`IRFen()`函数中，有以下注意事项：
+1. 函数名不能重复；
+2. 区分是声明还是定义；
+3. 确认返回值；
+4. 参数列表的检查；
+5. 构造函数基本块。
+```C++
+llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
+    //Get return type
 
+    auto IRBuilder = IRContext.IRBuilder; 
+    llvm::Type* ReturnType = this->type_.ToLLVMType(IRContext);
+
+    std::vector<llvm::Type*> ArgTypes; 
+
+	for (auto ArgType : *(this->_ArgList)) {
+		llvm::Type* LLVMType = ArgType->type_.ToLLVMType(IRContext);
+		if (!LLVMType) {
+			throw std::logic_error("Defining a function " + this->funcName_ + " using unknown type(s).");
+			return NULL;
+		}
+		ArgTypes.push_back(LLVMType);
+	}
+	
+    //Get function type
+    llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, this->_ArgList->_VarArgLenth);
+
+	if (this->block_) {
+		// define function
+		if (IRContext.IsFuncDefined(this->funcName_)) {
+			throw std::logic_error("Function redeclared: "+this->funcName_);
+		}
+
+		llvm::Function* Func = IRContext.FindFunction(this->funcName_);
+		if (Func) {
+			IRContext.SetFuncDefined(this->funcName_); 
+		}
+		else {
+			Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
+			IRContext.CreateFunc(FuncType, this->funcName_, Func, true);
+		}
+
+		int i = 0; 
+		for (auto ArgIter = Func->arg_begin(); ArgIter < Func->arg_end(); ArgIter++) {
+			auto ArgInf = this->_ArgList->at(i);
+			IRContext.RemainFutureVar(ArgInf->type_, ArgInf->_Name, ArgIter);
+			i ++; 
+		}
+
+		IRContext.SetCurFunc(Func);
+		IRContext.ClearPreBrSignal();
+
+		this->block_->IRGen(IRContext);
+
+		IRContext.SetBasicBlock(NULL); 
+		IRContext.SetCurFunc(NULL); 
+
+	}
+	else {
+		// declare function
+		if (IRContext.FindFunction(this->funcName_)) {
+			// no need to declare again
+			return NULL; 
+		}
+		llvm::Function* Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
+
+		IRContext.CreateFunc(FuncType, this->funcName_, Func, false);
+	}
+	
+    return NULL;
+}
+```
 
 
 #### 2.3.3.3 Stmt抽象类
