@@ -69,20 +69,19 @@ enum TypeID{
 
 class VarType {
 public:
-	PointerType* _BaseType_pointer;
-
     VarType(int) {type=Int;}
     VarType(char) {type=Char;}
 	VarType(short) {type=Short;}
 	VarType(double) {type=Double;}
-	// VarType(ArrayType* __BaseType):_BaseType(__BaseType) {type=Arr;}
-	VarType(PointerType* __BaseType):_BaseType_pointer(__BaseType) {type=Ptr;}
+	VarType(PointerType* baseType):baseTypePointer(baseType) {type=Ptr;}
     VarType(std::string name);
     ~VarType(){}
     TypeID GetType() {return type;}
 	llvm::Type* ToLLVMType(IRGenerator&); 
+	
 private: 
     TypeID type;
+	PointerType* baseTypePointer;
 };
 
 /**
@@ -125,11 +124,11 @@ class FuncDefAST : public CompUnitAST {
 public:
 	std::string funcName_; 
     VarType type_; 
-	ArgListAST* _ArgList;
+	ArgListAST* argList_;
     BlockAST* block_;
 
-	FuncDefAST(std::string _typeName_, std::string _funcName_, ArgListAST* _ArgList_, BlockAST* _block_ = NULL):
-		funcName_(_funcName_), type_(_typeName_), block_(_block_) , _ArgList(_ArgList_){}
+	FuncDefAST(std::string _typeName_, std::string _funcName_, ArgListAST* _argList_, BlockAST* _block_ = NULL):
+		funcName_(_funcName_), type_(_typeName_), block_(_block_) , argList_(_argList_){}
 	~FuncDefAST(){};
 	
     llvm::Value* IRGen(IRGenerator& IRContext);
@@ -219,9 +218,9 @@ public:
 
 class ReturnStmtAST : public StmtAST {
 public:
-	ExprAST* RetVal_;
+	ExprAST* retVal_;
 
-	ReturnStmtAST(ExprAST* _RetVal_ = NULL) : RetVal_(_RetVal_) {}
+	ReturnStmtAST(ExprAST* _retVal_ = NULL) : retVal_(_retVal_) {}
 	~ReturnStmtAST () {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
@@ -526,12 +525,12 @@ public:
 	//Its type
 	VarType type_;
 	//Its name (if any)
-	std::string _Name;
+	std::string name_;
 
-	ArgAST(std::string& _typeName_, const std::string& __Name = "") :
-		type_(_typeName_), _Name(__Name) {}
-	ArgAST(PointerType* _typeName_, const std::string& __Name = "") :
-		type_(_typeName_), _Name(__Name) {}
+	ArgAST(std::string& _typeName_, const std::string& _name_ = "") :
+		type_(_typeName_), name_(_name_) {}
+	ArgAST(PointerType* _typeName_, const std::string& _name_ = "") :
+		type_(_typeName_), name_(_name_) {}
 	~ArgAST(void) {}
 	llvm::Value* IRGen(IRGenerator& IRContext) { return NULL; }
 };
@@ -539,20 +538,20 @@ public:
 class ArgListAST : public std::vector<ArgAST*>, public BaseAST {
 public:
 	//Set true if the argument list contains "..."
-	bool _VarArgLenth;
-	void SetVarArg(void) { this->_VarArgLenth = true; }
+	bool varArgLenth_;
+	void SetVarArg(void) { this->varArgLenth_ = true; }
 
-	ArgListAST(void) : _VarArgLenth(false) {}
+	ArgListAST(void) : varArgLenth_(false) {}
 	~ArgListAST(void) {}
 	llvm::Value* IRGen(IRGenerator& IRContext) { return NULL; }
 };
 
 class FuncCallAST : public ExprAST {
 public:
-	std::string _FuncName;
-	ExprListAST* _ArgList;
+	std::string funcName_;
+	ExprListAST* argList_;
 
-	FuncCallAST(const std::string& __FuncName, ExprListAST* __ArgList) : _FuncName(__FuncName), _ArgList(__ArgList) {}
+	FuncCallAST(const std::string& _funcName_, ExprListAST* _argList_) : funcName_(_funcName_), argList_(_argList_) {}
 	~FuncCallAST(void) {}
 
 	llvm::Value* IRGen(IRGenerator& IRContext);
@@ -560,16 +559,16 @@ public:
 
 class StringType : public Constant {
 public:
-	std::string _Content;
-	StringType(const std::string& __Content) : Constant(0), _Content(__Content) {}
+	std::string content_;
+	StringType(const std::string& _content_) : Constant(0), content_(_content_) {}
 	~StringType(void) {}
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
 
 class AddressOf : public ExprAST {
 public:
-	LeftValAST* _Operand;
-	AddressOf(LeftValAST* __Operand) : _Operand(__Operand) {}
+	LeftValAST* oprand_;
+	AddressOf(LeftValAST* _oprand_) : oprand_(_oprand_) {}
 	~AddressOf(void) {}
 	llvm::Value* IRGen(IRGenerator& IRContext);
 };
@@ -599,9 +598,9 @@ class AssignArrAST : public StmtAST {
 
 class PointerType{
 public:
-	VarType _BaseType;
+	VarType baseType_;
 
-	PointerType(VarType __BaseType) : _BaseType(__BaseType) {}
+	PointerType(VarType _baseType_) : baseType_(_baseType_) {}
 	~PointerType(void) {}
 	llvm::Type* ToLLVMType(IRGenerator& IRContext);
 };

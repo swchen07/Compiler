@@ -6,19 +6,19 @@
 /.DS_Store
 /tests/Test1/llvm.cpp
 
-src/
-test.c
-
 build/
 lexer.cpp
+microlexer.cpp
 parser.cpp
 parser.hpp
 test.c
 a.out
 simpledemo.o
-Compiler.o
-Compiler.ir
-quickSort.out
-matrix.out
+quicksort.out
+Matrix.out
 Advisor.out
-
+MicroDef.out
+quicksort.o
+Matrix.o
+Advisor.o
+MicroDef.o

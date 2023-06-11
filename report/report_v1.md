@@ -2,9 +2,9 @@
 
 
 
-# 一、介绍
+## 一、介绍
 
-## 1.1 sysY介绍
+### 1.1 sysY介绍
 
 本次实验完成了一个sysY语言的编译器，能够分析sysY语言的语法，并将其编译至LLVM IR，最后再编译至目标代码( .o 文件)。
 
@@ -24,20 +24,20 @@ sysY 是一种简单的编程语言，通常用于教学和学术研究目的。
 
 
 
-## 1.2 运行环境说明
+### 1.2 运行环境说明
 
 - Flex & Bison：使用flex和bison生成词法分析器和语法分析器。
 - LLVM-14：基于LLVM标准完成AST的构建、IR代码的生成；同时使用LLVM来完成编译器优化、目标代码生成。
 - CMake：使用CMake来构建工程。
 
-### 1.2.1 安装参考
+#### 1.2.1 安装参考
 1. 安装环境：Ubuntu22.04
 2. `Flex`:`sudo apt-get install flex`
 3. `Bison`:`sudo apt-get install Bison`
 4. `LLVM`:`sudo apt-get install llvm-14`(由于llvm不同版本接口有所变化，在实验中llvm版本在11即以下无法进行工程构建，请尽量和该版本保持一致)
 
 
-### 1.2.2 工程搭建
+#### 1.2.2 工程搭建
 1. 进入工程根目录，工程结构如下：
 ```
 docs/
@@ -65,7 +65,7 @@ CmakeLists.txt
 
 
 
-### 1.2.3 使用说明
+#### 1.2.3 使用说明
 
 测试代码在`tests`文件夹下
 
@@ -90,13 +90,13 @@ bash ./scripts/Advisor_run.sh
 
 
 
-## 1.3 代码规范
+### 1.3 代码规范
 
 详细的代码规范请见`docs/styleGuide.md`。
 
 
 
-## 1.4 分工说明
+### 1.4 分工说明
 
 详见`git_log.txt`
 
@@ -104,17 +104,17 @@ Report
 
 
 
-# 二、实验设计文档
+## 二、实验设计文档
 
-## 2.1 词法分析设计
+### 2.1 词法分析设计
 
-### 2.1.0 介绍
+#### 2.1.0 介绍
 
 在实验报告的词法分析部分，我们将详细介绍sysY语言的词法规范和词法分析器的设计与实现过程。我们将描述sysY语言中各种词法单元的定义和识别规则，以及词法分析器的工作原理和算法。我们还将讨论词法错误处理和测试验证的方法，以确保词法分析器的正确性和鲁棒性。通过深入了解词法分析的重要性和功能，我们可以更好地理解编译器的工作原理和实现过程。
 
 
 
-### 2.1.1 词法单元的定义和识别规则
+#### 2.1.1 词法单元的定义和识别规则
 
 1. 关键字（Keywords）：
 
@@ -167,7 +167,7 @@ Report
 
 
 
-### 2.1.2 词法规范：正则表达式
+#### 2.1.2 词法规范：正则表达式
 
 在Lex中，正则表达式用于描述词法单元的模式。它们指定了需要匹配的字符序列的规则，并可以与特定的动作关联。以下是一些Lex约定用于描述正则表达式的常见语法：
 
@@ -189,7 +189,7 @@ Report
 
 
 
-### 2.1.3 词法分析器设计
+#### 2.1.3 词法分析器设计
 
 在词法分析器设计中，采用词法分析器生成工具（Flex）是一种常见的选择。Flex是一个词法分析器生成器，它可以根据给定的正则表达式规则和相应的动作生成用于词法分析的自动识别器。
 
@@ -203,7 +203,7 @@ Lex输入文件由三个部分组成：定义（defination）集，规则（rule
 {auxiliary routines}
 ```
 
-#### 2.1.3.1 定义部分
+##### 2.1.3.1 定义部分
 
 ```c
 %{
@@ -223,9 +223,7 @@ using namespace std;
 %}
 ```
 
-
-
-#### 2.1.3.2 规则部分
+##### 2.1.3.2 规则部分
 
 ```c
 /* 空白符和注释 */
@@ -358,17 +356,15 @@ IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 
 
 
+### 2.2 语法分析设计
 
-
-## 2.2 语法分析设计
-
-### 2.2.1 介绍
+#### 2.2.1 介绍
 
 语法分析在编译器中扮演着关键的角色，它将源代码转化为抽象语法树表示，为后续的编译器阶段提供了基础。
 
 
 
-### 2.2.2 语法规范
+#### 2.2.2 语法规范
 
 以下是sysY语言的正式语法规范，使用巴科斯范式（BNF）描述语法规则。
 
@@ -446,7 +442,7 @@ sysY语言的语法结构包括：程序（`<program>`）、声明列表（`<dec
 
 
 
-### 2.2.3 语法分析器设计方案
+#### 2.2.3 语法分析器设计方案
 
 在设计sysY编译器的语法分析器时，采用了自底向上的语法分析方法，并选择了LALR(1)解析算法。为了实现语法分析器，使用了Yacc/Bison作为语法分析器生成工具。
 
@@ -462,7 +458,7 @@ LALR(1)解析算法是一种常用的自底向上解析算法，它使用了向�
 
 
 
-#### 2.2.3.1 定义部分
+##### 2.2.3.1 定义部分
 
 定义部分定义了CFG语法中`non-terminal`的类型、`terminal`的TOKEN和运算符的优先级。定义优先级时，`%left`，`%right`定义结合性，越后定义的运算优先级高。
 
@@ -565,23 +561,23 @@ LALR(1)解析算法是一种常用的自底向上解析算法，它使用了向�
 
 
 
-#### 2.2.3.2 规则部分
+##### 2.2.3.2 规则部分
 
 ```c
 Program							
-	: CompUnit 											{ $$ = new ProgramAST((CompUnits*)$1); Root = $$;}
+	: CompUnit									{ $$ = new ProgramAST((CompUnits*)$1); Root = $$;}
 	;
 
 CompUnit
-    : CompUnit STATIC Decl                      { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
-    | CompUnit FuncDef									        { $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
-    | 													{ $$ = new CompUnits(); }
+    : CompUnit STATIC Decl						{ $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$3); }
+    | CompUnit FuncDef							{ $$ = (CompUnits*)$1; $$->push_back((CompUnitAST*)$2); }
+    | 											{ $$ = new CompUnits(); }
     ;
 
 /* Decl          ::= ConstDecl | VarDecl; */
 Decl
     : ConstDecl
-    | VarDecl                                           { $$ = $1; }
+    | VarDecl                                     { $$ = $1; }
     ;
 
 /* ConstDecl     ::= "const" BType ConstDef {"," ConstDef} ";"; */
@@ -793,11 +789,11 @@ ConstExp
 
 
 
-### 2.2.4 抽象语法树（AST）
+#### 2.2.4 抽象语法树（AST）
 
 AST的结构和表示方式可以根据具体的语言和编译器实现而有所不同，但通常包含以下类型的节点：
 
-1. **标识符（Identifier）**节点：用于表示变量、函数名等标识符的节点。
+1. **标识符（Identifier）节点**：用于表示变量、函数名等标识符的节点。
 2. **常量（Const）节点**：用于表示常量值的节点，如整数、浮点数、字符串等。
 3. **表达式（Expression）节点**：用于表示各种表达式，如算术表达式、逻辑表达式、赋值表达式等。
 4. **语句（Statement）节点**：用于表示各种语句，如条件语句、循环语句、函数调用语句等。
@@ -809,7 +805,7 @@ AST的结构和表示方式可以根据具体的语言和编译器实现而有�
 
 
 
-#### 2.2.4.1 BaseAST类
+##### 2.2.4.1 BaseAST类
 
 BaseAST类是抽象语法树每个节点的纯虚类型，包括空的构造、析构函数和纯虚函数`IRGen`。
 
@@ -824,7 +820,7 @@ public:
 };
 ```
 
-#### 2.2.4.2 ProgramAST类
+##### 2.2.4.2 ProgramAST类
 
 ProgramAST类是整个程序的根节点，本次使用中是为了将原来EBNF的文法转换成为BNF文法二产生的一个根节点。
 而一个程序是由若干个函数声明（定义）和变量声明（定义组成），在我们的程序中，函数声明（定义）和变量声明（定义）具有共同的抽象类`CompUnitAST`，所以`ProgramAST`具有`std::vector<CompUnitAST*>`类型的成员变量。
@@ -842,7 +838,7 @@ public:
 ```
 
 
-#### 2.2.4.3 DeclAST类
+##### 2.2.4.3 DeclAST类
 
 Decl类是纯虚类型，是普通变量和数组变量声明的父类。
 1. 所有变量声明的抽象类父类
@@ -891,7 +887,7 @@ public:
 };
 ```
 
-#### 2.2.4.4 StmtAST类
+##### 2.2.4.4 StmtAST类
 
 StmtAST类是无返回值的statement语句，是条件语句、循环语句、选择语句等子类的抽象父类。
 ```C++
@@ -905,7 +901,7 @@ public:
 ```
 
 
-#### 2.2.4.5 ExprAST类
+##### 2.2.4.5 ExprAST类
 
 ExprAST类是有返回值的expression语句，是常量表达式、变量表达式和操作符表达式等子类的抽象父类。
 ```C++
@@ -919,7 +915,7 @@ public:
 ```
 
 
-#### 2.2.4.6 BlockAST类
+##### 2.2.4.6 BlockAST类
 
 BlockAST类是基本语句块，而基本语句块包括stmt类语句和统计stmt数目。
 ```C++
@@ -937,7 +933,7 @@ public:
 ```
 
 
-#### 2.2.4.7 VarType类
+##### 2.2.4.7 VarType类
 
 Varype是定义在BaseAST之外的类，用来定义和LLVM之间的数据类型链接。
 ```C++
@@ -970,40 +966,46 @@ enum TypeID{
 ```
 
 
-#### 2.2.4.5 示例代码及对应AST结构介绍
-
-##### Todo： 要根据我们的AST修改，下面给出模版
-
-下面是一个示例代码和其对应的简化的AST结构：
+##### 2.2.4.8 示例代码及对应AST结构介绍
 
 示例代码：
 
 ```
-cssCopy code
-int a = 10;
-int b = 5;
-int result = a + b;
+int main(){
+	int a = 10;
+	int b[100];
+	int c;
+	b[10] = a;
+	c = b[10] + a;
+}
 ```
+
 
 对应的AST结构：
 
 ```
-markdownCopy code
-- Program
-  - DeclarationStatement
-    - TypeNode (int)
-    - IdentifierNode (a)
-    - LiteralNode (10)
-  - DeclarationStatement
-    - TypeNode (int)
-    - IdentifierNode (b)
-    - LiteralNode (5)
-  - DeclarationStatement
-    - TypeNode (int)
-    - IdentifierNode (result)
-    - BinaryExpressionNode (+)
-      - IdentifierNode (a)
-      - IdentifierNode (b)
+- ProgramAST
+  - ValDeclAST
+    - BType         (int)
+    - LeftValAST 	(a)
+    - Constant   	(10)
+  - ArrDeclAST	
+    - BType      	(int)
+	- ArrayType  	(int[])
+	- Constant   	(100)
+    - LeftValAST 	(b)
+  - ValDeclAST	
+    - TypeNode   	(int)
+  - AssignAST
+	- LeftValAST 	(a)
+    - ArrValAST  	(b[])
+  - AssignAST    	(+)
+	- Addition
+	  - LeftValAST  (a)
+      - ArrValAST   (b[])
+	- LeftValAST    (c)
+
+    
 ```
 
 在这个简化的AST中，根节点是Program节点，表示整个程序。每个DeclarationStatement节点表示一个变量的声明语句，包含变量的类型、标识符和初始值（如果有）。BinaryExpressionNode节点表示两个标识符相加的表达式。
@@ -1011,8 +1013,7 @@ markdownCopy code
 通过构建和遍历AST，编译器可以从源代码中提取出语法结构和语义信息，并进行后续的分析和转换操作。
 
 
-
-### 2.2.5 语法分析器的测试和验证
+#### 2.2.5 语法分析器的测试和验证
 
 ##### Todo
 
@@ -1027,83 +1028,213 @@ markdownCopy code
 
 
 
-### 2.2.6 语法错误处理
+### 2.3 语义分析设计
 
-##### Todo
-
-
-
-### 2.2.7 AST可视化
-
-##### Todo
-
-
-
-## 2.3 语义分析设计
-
-### 2.3.1 介绍
+#### 2.3.1 介绍
 
 语义分析的主要目标是对源代码进行静态检查，发现和修复语义错误，并为后续阶段生成中间表示或目标代码提供准确的语义信息。
 
-我们使用了LLVM的接口，手动将AST转化符合LLVM标准的IR代码
+我们使用了LLVM的接口，手动将AST转化符合LLVM标准的IR代码。
 
 
 
-### 2.3.2 语义规则
+#### 2.3.2 语义规则
 
-#### 2.3.2.1 类型检查
+##### 2.3.2.1 类型检查
 
 sysY语言是一种静态类型语言，因此在编译时会进行类型检查以确保操作的正确性。语义分析器将检查每个表达式和语句中的操作数和运算符之间的类型兼容性。对于算术运算符，要求操作数必须具有相同的类型或可以进行隐式类型转换。如果发现类型不匹配或不兼容的情况，语义分析器将生成相应的类型错误。
 
 
 
-#### 2.3.2.2 符号表和作用域规则
+##### 2.3.2.2 符号表和作用域规则
 
 sysY语言使用块作用域规则，即在特定的代码块内声明的变量只在该块及其子块中可见。语义分析器将检查变量的作用域是否正确，并防止在非法的位置引用变量。对于变量的引用，语义分析器会检查变量是否在当前作用域内可见。
 
 
 
-#### 2.3.2.3  变量声明和使用规则
+##### 2.3.2.3  变量声明和使用规则
 
 sysY语言要求在使用变量之前先进行声明。语义分析器将检查变量是否在使用之前已被声明，并且在同一作用域内不允许重复声明相同名称的变量。此外，语义分析器还会验证变量的类型和作用域等信息。
 
 
 
-#### 2.3.2.4 函数调用和参数匹配
+##### 2.3.2.4 函数调用和参数匹配
 
 在sysY语言中，函数调用要求参数的数量和类型与函数声明中的参数列表匹配。语义分析器将检查函数调用的参数数量和类型是否正确，并匹配对应的函数声明。如果存在参数不匹配的情况，语义分析器将生成相应的错误消息。
 
 
 
-### 2.3.3 语义类型
+##### 2.3.3 语义类型
 
-#### 2.3.3.1 Program类
+##### 2.3.3.1 Program类
 
-##### Todo
+`Program::IRGen()`的作用是循环调用子结点的`IRGen()`。
+```C++
+llvm::Value* ProgramAST::IRGen(IRGenerator& IRContext) {
+
+	for (auto compUnit : *(this->compUnit_)){
+		if(compUnit){
+			compUnit->IRGen(IRContext);
+		}
+	}
+
+	return NULL;
+}
+```
+
+##### 2.3.3.2 Declare抽象类
+
+###### 2.3.3.2.1 VarDeclAST
+该类负责变量声明的实现。在我们的实验环境下，变量定义分为全局变量和局部变量两种，结合LLVM的使用方式，需要对全局变量使用`new llvm::GlobalVariable()`进行创建，其中变量的信息则来自成员变量`varDef_`，类型为`VarDef`。
+```C++
+llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
+
+	if (IRContext.GetCurFunc()) {
+		// local variable
+
+		auto IRBuilder = IRContext.IRBuilder; 
+
+		//创建变量
+		auto AllocMem = IRBuilder->CreateAlloca(this->type_.ToLLVMType(IRContext), 0, this->varDef_->varName_);
+		
+		// llvm::Value* initVal = CastType(this->, IRContext)
+
+		// initialize
+		llvm::Value* value = this->varDef_->IRGen(IRContext);
+
+		// store will always align to 4, even for char, which is because we need a type cast for 'value'
+		IRBuilder->CreateStore(value, AllocMem);
+
+		IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
+	}
+	else {
+		// global variable
+		// initialize
+		std::cout << "VarDeclAST -> global variable" << std::endl;
+
+		llvm::Value* value = this->varDef_->IRGen(IRContext);
+
+		// convert to const
+		llvm::Constant* initializer = llvm::cast<llvm::Constant>(value);
+		if (!initializer) {
+			throw std::logic_error("The initializer is not const type: "+this->varDef_->varName_);
+		}
+
+		//Create a global variable
+		auto AllocMem = new llvm::GlobalVariable(
+			*(IRContext.Module),
+			this->type_.ToLLVMType(IRContext),
+			false,
+			llvm::Function::ExternalLinkage,
+			initializer, 
+			this->varDef_->varName_
+		);
+		
+		IRContext.CreateVar(this->type_, this->varDef_->varName_, AllocMem);
+	}
+
+	return NULL;
+}
+```
+
+###### 2.3.3.2.2 VarDefAST
+
+该类主要负责存储和创建变量的具体信息并转换成LLVM提供的变量类型，传给VarDeclAST进行变量声明。
+```C++
+llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
+	if (this->initValue_) {
+		//std::cout << "Have init" << std::endl;
+		return this->initValue_->IRGen(IRContext);
+	}
+	else {
+		auto IRBuilder = IRContext.IRBuilder;
+		VarType* v = new VarType(this->varName_);
+		switch(v->GetType()) {
+		case Int: return IRBuilder->getInt32(0); 
+		case Char: return IRBuilder->getInt8(0);
+		case Double:return llvm::ConstantFP::get(IRBuilder->getDoubleTy(), 0.0);
+		}
+	}
+}
+```
+
+###### 2.3.3.2.3 FuncDefAST
+
+`FuncDefAST`涉及到函数声明和函数定义两种，在该类的`IRFen()`函数中，有以下注意事项：
+1. 函数名不能重复；
+2. 区分是声明还是定义；
+3. 确认返回值；
+4. 参数列表的检查；
+5. 构造函数基本块。
+```C++
+llvm::Value* FuncDefAST::IRGen(IRGenerator& IRContext) {
+    //Get return type
+
+    auto IRBuilder = IRContext.IRBuilder; 
+    llvm::Type* ReturnType = this->type_.ToLLVMType(IRContext);
+
+    std::vector<llvm::Type*> ArgTypes; 
+
+	for (auto ArgType : *(this->_ArgList)) {
+		llvm::Type* LLVMType = ArgType->type_.ToLLVMType(IRContext);
+		if (!LLVMType) {
+			throw std::logic_error("Defining a function " + this->funcName_ + " using unknown type(s).");
+			return NULL;
+		}
+		ArgTypes.push_back(LLVMType);
+	}
+	
+    //Get function type
+    llvm::FunctionType* FuncType = llvm::FunctionType::get(ReturnType, ArgTypes, this->_ArgList->_VarArgLenth);
+
+	if (this->block_) {
+		// define function
+		if (IRContext.IsFuncDefined(this->funcName_)) {
+			throw std::logic_error("Function redeclared: "+this->funcName_);
+		}
+
+		llvm::Function* Func = IRContext.FindFunction(this->funcName_);
+		if (Func) {
+			IRContext.SetFuncDefined(this->funcName_); 
+		}
+		else {
+			Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
+			IRContext.CreateFunc(FuncType, this->funcName_, Func, true);
+		}
+
+		int i = 0; 
+		for (auto ArgIter = Func->arg_begin(); ArgIter < Func->arg_end(); ArgIter++) {
+			auto ArgInf = this->_ArgList->at(i);
+			IRContext.RemainFutureVar(ArgInf->type_, ArgInf->_Name, ArgIter);
+			i ++; 
+		}
+
+		IRContext.SetCurFunc(Func);
+		IRContext.ClearPreBrSignal();
+
+		this->block_->IRGen(IRContext);
+
+		IRContext.SetBasicBlock(NULL); 
+		IRContext.SetCurFunc(NULL); 
+
+	}
+	else {
+		// declare function
+		if (IRContext.FindFunction(this->funcName_)) {
+			// no need to declare again
+			return NULL; 
+		}
+		llvm::Function* Func = llvm::Function::Create(FuncType, llvm::Function::ExternalLinkage, this->funcName_, IRContext.Module);
+
+		IRContext.CreateFunc(FuncType, this->funcName_, Func, false);
+	}
+	
+    return NULL;
+}
+```
 
 
-
-#### 2.3.3.2 Declare抽象类
-
-##### 2.3.3.2.1 VarDeclAST
-
-##### Todo
-
-
-
-##### 2.3.3.2.2 VarDefAST
-
-##### Todo
-
-
-
-##### 2.3.3.2.3 FuncDefAST
-
-##### Todo
-
-
-
-#### 2.3.3.3 Stmt抽象类
+##### 2.3.3.3 Stmt抽象类
 
 Stmt抽象类被所有语句类继承：
 
@@ -1122,7 +1253,7 @@ Stmt ->			Expr SEMI |
 
 在本节中，我们将对 `if else`, `for`, `while`, `break`, `continue`, `return`语句以及语句块进行语义分析和代码生成的介绍。
 
-##### 2.3.3.3.1 IfElseStmtAST
+###### 2.3.3.3.1 IfElseStmtAST
 
 ```
 IfStmt ->		IF LPAREN Exp RPAREN Block ElseState
@@ -1172,7 +1303,7 @@ llvm::Value* IfElseStmtAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
-##### 2.3.3.3.2 ForStmtAST
+###### 2.3.3.3.2 ForStmtAST
 
 `for`语句的结构如下：
 
@@ -1226,7 +1357,7 @@ llvm::Value* ForStmtAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
-##### 2.3.3.3.3 WhileStmtAST
+###### 2.3.3.3.3 WhileStmtAST
 
 `while`语句的结构如下：
 
@@ -1272,7 +1403,7 @@ llvm::Value* WhileStmtAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
-##### 2.3.3.3.4 BreakStmtAST
+###### 2.3.3.3.4 BreakStmtAST
 
 `break`语句的代码生成如下：
 
@@ -1288,7 +1419,7 @@ llvm::Value* BreakStmtAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
-##### 2.3.3.3.5 ContinueStmtAST
+###### 2.3.3.3.5 ContinueStmtAST
 
 `continue`语句的代码生成如下：
 
@@ -1304,7 +1435,7 @@ llvm::Value* ContinueStmtAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
-##### 2.3.3.3.6 ReturnStmtAST
+###### 2.3.3.3.6 ReturnStmtAST
 
 `return`语句的代码生成如下：
 
@@ -1322,9 +1453,9 @@ llvm::Value* ReturnStmtAST::IRGen(IRGenerator& IRContext) {
 
 
 
-#### 2.3.3.4 Expr抽象类
+##### 2.3.3.4 Expr抽象类
 
-##### 注意点
+###### 注意点
 
 本次实验中为了方便实验设计，对C语言中的表达式进行了更加严格的限制（参考SysY语言进行设计），具体要求如下：
 
@@ -1336,7 +1467,7 @@ llvm::Value* ReturnStmtAST::IRGen(IRGenerator& IRContext) {
 而在LLVM中，所有创建的变量都是通过提供指向这一变量存储空间的指针来实现的，当要获取变量的值时通过`CreateLoad()`进行获取，当要改变变量的值时通过`CreateStore()`来实现。因此在我们实现的编译器中，对上述提到的合法左值提供一个`IRGenPtr()`函数以获取指向存储空间的指针，对所有表达式提供`IRGen()`函数来获取其存储空间内的值。
 
 
-##### 2.3.3.4.1 支持字面量
+###### 2.3.3.4.1 支持字面量
 
 我们编译器支持以下字面量：
 
@@ -1441,7 +1572,7 @@ llvm::Value* FuncCallAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
-##### 左值支持类
+###### 左值支持类
 
 左值在满足其作为右值的基础上，需要提供一个指向存储空间的指针，因此需要设计`IRGenPtr()`函数以获取指向存储空间的指针。
 
@@ -1567,7 +1698,7 @@ llvm::Value* ArrValAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
-#### 2.3.3.5  VarType抽象类
+##### 2.3.3.5  VarType抽象类
 
 本次实验中，我们将`VarType()`类定义独立在`BaseAST()`之外，由于函数类型在lexer和parser中是以字符串的形式传递的，所以需要根据字符串构建出相应的数据类型，同时匹配对应的`LLVM::Type`。
 以下是先根据字符串匹配对应的枚举值。
@@ -1597,13 +1728,13 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
 
 ```
 
-### 2.3.4 语义错误处理
+#### 2.3.4 语义错误处理
 
 > 说明语义分析器如何检测和报告语义错误，包括类型错误、未声明的变量、重复声明等。解释语义错误的分类和处理策略，如报错、警告或修复。
 
-## 2.4 运行环境设计
+### 2.4 运行环境设计
 
-### 2.4.1 IR上下文环境结构体
+#### 2.4.1 IR上下文环境结构体
 
 ~~~C++
     llvm::LLVMContext* Context;
@@ -1619,7 +1750,7 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
     std::vector<IRVarAttr*> varListForFuture_;
 ~~~
 
-### 2.4.2 创建IR模块
+#### 2.4.2 创建IR模块
 
 ~~~C++
     IRGenerator(){
@@ -1633,7 +1764,7 @@ llvm::Type* VarType::ToLLVMType(IRGenerator& IRContext) {
     }
 ~~~
 
-### 2.4.3 符号表
+#### 2.4.3 符号表
 
 ~~~C++
 
@@ -1692,7 +1823,7 @@ bool IRGenerator::IsPtrVar(std::string name) {
 }
 ~~~
 
-### 2.4.4 当前状态设置
+#### 2.4.4 当前状态设置
 
 ~~~C++
 void IRGenerator::SetCurFunc(llvm::Function* curFunc) {
@@ -1726,7 +1857,7 @@ void IRGenerator::SetBasicBlock(BlockAST* newBasicBlock){
 }
 ~~~
 
-### 2.4.5 循环结构
+#### 2.4.5 循环结构
 
 ~~~C++
 void IRGenerator::EnterLoop(llvm::BasicBlock* condBlock, llvm::BasicBlock* iterBlock, llvm::BasicBlock* exitBlock) {
@@ -1748,7 +1879,7 @@ llvm::BasicBlock* IRGenerator::ContinueCurrentLoop() {
 }
 ~~~
 
-### 2.4.6 函数管理
+#### 2.4.6 函数管理
 
 ~~~C++
 void IRGenerator::CreateFunc(llvm::FunctionType* type, std::string name, llvm::Function* func, bool isDefined){
@@ -1799,7 +1930,7 @@ bool IRGenerator::SetFuncDefined(std::string Name) {
 }
 ~~~
 
-## 2.5 代码生成设计
+### 2.5 代码生成设计
 
 首先实例化`llvm::sys::getDefaultTargetTriple`，该对象包含了目标机器的许多参数。然后我们调用`llvm::TargetMachine`的接口即可把LLVM中间代码编译成目标机器的汇编代码。具体请参考LLVM官方文档。
 
@@ -1838,7 +1969,7 @@ void IRGenerator::GenObjectCode(std::string outputfile) {
 
 
 
-## 2.6 符号表设计
+### 2.6 符号表设计
 
 LLVM本身不支持不同作用阈内的变量重名（它会把重名变量自动添加序号），因此在本次实验中，我们通过构造一个栈来实现符号表，以保证变量作用阈的合理性。
 
@@ -1939,11 +2070,11 @@ bool IRGenerator::IsPtrVar(std::string name) {
 
 ```
 
-# 三、运行结果
+## 三、运行结果
 
 > 请附上你的源语言在你的编译器下的产生二进制或其他东西的过程，以及在第二节功能测试中的结果。
 
-## 3.1 QuickSort
+### 3.1 QuickSort
 
 #### 测试代码：
 
@@ -2011,7 +2142,7 @@ int main(){
 }
 ```
 
-#### IR代码：
+##### IR代码：
 
 ```
 ; ModuleID = 'main'
@@ -2232,15 +2363,15 @@ BBEntry5:                                         ; preds = %ForCmp2
 }
 ```
 
-#### 运行结果：
+##### 运行结果：
 
 <img src="image/image-20230528184546101.png" alt="image-20230528184546101" style="zoom: 67%;" />
 
 
 
-## 3.2 Matrix
+### 3.2 Matrix
 
-#### 测试代码：
+##### 测试代码：
 
 ```c
 static int c;
@@ -2307,7 +2438,7 @@ int main(){
 }
 ```
 
-#### IR代码：
+##### IR代码：
 
 ```
 ; ModuleID = 'main'
@@ -2610,7 +2741,7 @@ BBEntry35:                                        ; preds = %ForCmp32
 
 
 
-## 3.3 Advisor
+### 3.3 Advisor
 
 #### 测试代码：
 
@@ -2954,7 +3085,7 @@ int main(){
 }
 ```
 
-#### IR 代码 
+##### IR 代码 
 
 ~~~
 ; ModuleID = 'main'
@@ -4103,9 +4234,7 @@ BBExit39:                                         ; preds = %BBEntry36, %BBEntry
 
 
 
-## 附：提交说明
-
-**提交说明:**
+### 附：提交说明
 
 本次提交主要使用学在浙大进行提交，同时为了避免这个系统出现常见的无法解释的问题(赶在DDL提交 是会出现各种事故的，助教不会视作不可抗力，请同学们自行斟酌)，助教也同时接受钉钉/邮箱提交(这 两个工具都有时间戳)。
 

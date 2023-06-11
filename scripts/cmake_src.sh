@@ -14,4 +14,6 @@ rm -rf build
 mkdir build
 cd build
 cmake ..
+lex ../src/microlexer.l
+g++ microlexer.cpp -o microhandler
 make
