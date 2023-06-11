@@ -4095,9 +4095,13 @@ BBExit39:                                         ; preds = %BBEntry36, %BBEntry
 }
 ~~~
 
+
+
 #### 运行截图 ####
 
-<img src="/Users/wangzijun/Library/Application Support/typora-user-images/image-20230528215926642.png" alt="image-20230528215926642" style="zoom:50%;" />
+<img src="image/image-20230528215926642.png" alt="image-20230528215926642" style="zoom: 67%;" />
+
+
 
 ## 附：提交说明
 
