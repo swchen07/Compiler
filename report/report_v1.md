@@ -86,7 +86,7 @@ bash ./scripts/Matrix_run.sh
 bash ./scripts/Advisor_run.sh 
 ```
 
-以上三个sh文件分别测试三个测试点
+以上三个sh文件分别测试三个测试点。
 
 
 
@@ -917,7 +917,21 @@ public:
 
 ##### 2.2.4.6 BlockAST类
 
-BlockAST类是基本语句块，而基本语句块包括stmt类语句和统计stmt数目。
+BlockAST 类继承自 BaseAST 类，用于表示代码块的抽象语法树（AST）节点。它包含了以下的成员变量：
+
+* stmts_：一个指向 Stmts 类型的指针，表示该代码块内的语句列表；
+* varCnt_：一个整型变量，用于记录在代码块中定义的变量数量。
+
+其成员函数`IRGen(IRGenerator& IRContext)`，用于生成该代码块的 LLVM IR 代码。它接受一个 IRGenerator 类型的引用作为参数，表示 IR 代码生成器的上下文。此函数具体执行流程如下：
+
+1. 首先创建一个新的基本块 newBlock，作为该代码块的入口。
+2. 如果存在前一条控制流的跳转指令（通过 IRContext.ClearPreBrSignal() 返回值判断），则将该基本块连接到前一条控制流的跳转指令所在的基本块。
+3. 设置当前基本块为 newBlock，并在 newBlock 中生成 IR 代码：首先，调用 IRContext.CreateFutureVars() 创建函数参数的变量；然后，遍历代码块中的语句列表，依次调用每个语句节点的 IRGen 函数生成 IR 代码；最后，调用 IRContext.DiscardVar() 丢弃代码块中定义的变量。
+4. 将当前基本块设置为之前的基本块，以保持代码块的控制流正确性。
+5. 如果存在后续的控制流跳转指令（通过 isConn 判断），则创建一个新的基本块 outBlock 作为代码块的出口，并在 newBlock 中创建一条无条件跳转指令（IRBuilder->CreateBr(outBlock)）。
+6. 返回代码块的入口基本块 newBlock
+
+BlockAST 类的作用是表示源代码中的代码块，并提供生成 LLVM IR 代码的功能。它在`IRGen`函数中遍历代码块中的语句，并调用每个语句节点的`IRGen`函数生成相应的 LLVM IR 代码。它还处理代码块的控制流，包括连接到前一条控制流的跳转指令和创建代码块的出口跳转指令（如果需要）。通过 BlockAST 类，可以将源代码的代码块映射到对应的 LLVM IR 代码块，实现代码的编译和执行。
 ```C++
 class BlockAST : public BaseAST {
 public:
@@ -1303,6 +1317,24 @@ llvm::Value* IfElseStmtAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
+IfElseStmtAST 类是一个表示`if-else`条件语句的抽象语法树（AST）节点。它实现了`IRGen`函数用于生成对应的 LLVM IR 代码：
+
+* 获取当前的 IRBuilder 对象：从 IRContext 中获取当前的 IRBuilder 对象，用于生成 LLVM IR 代码。
+* 生成条件表达式的 LLVM IR 代码：通过调用`this->cond_->IRGen(IRContext)`生成条件表达式的 LLVM IR 代码，并获取当前 IRBuilder 的插入基本块。
+* 清除前一次跳转信号：通过调用`IRContext.ClearPreBrSignal()`清除之前的跳转信号，以确保每个分支的跳转指令正确生成。
+* 生成`if`分支的 LLVM IR 代码：通过调用`this->ifBlock_->IRGen(IRContext)`生成`if`分支的 LLVM IR 代码，并获取当前 IRBuilder 的插入基本块。
+* 获取`if`分支结束的基本块：通过调用`IRBuilder->GetInsertBlock()`获取`if`分支结束时的基本块。
+* 生成`else`分支的 LLVM IR 代码（如果存在）：如果存在`else`分支，则通过调用`this->elseBlock_->IRGen(IRContext)`生成`else`分支的 LLVM IR 代码，并获取当前 IRBuilder 的插入基本块。
+* 获取`else`分支结束的基本块（如果存在）：通过调用`IRBuilder->GetInsertBlock()`获取`else`分支结束时的基本块。
+* 设置退出基本块：创建一个用于退出条件语句的基本块。
+* 设置`if`分支的跳转指令：设置 IRBuilder 的插入点为`if`分支结束的基本块，生成无条件跳转指令，将控制流跳转到退出基本块。
+* 如果存在`else`分支，设置`else`分支的跳转指令：设置 IRBuilder 的插入点为`else`分支结束的基本块，生成无条件跳转指令，将控制流跳转到退出基本块。
+* 设置条件分支指令：设置 IRBuilder 的插入点为条件表达式的基本块，生成条件分支指令，根据条件结果将控制流跳转到`if`分支或`else`分支的基本块，或者直接跳转到退出基本块。
+* 设置插入点：设置 IRBuilder 的插入点为退出基本块。
+* 返回空值：由于`if-else`语句不会产生任何值，因此直接返回空指针 NULL。
+
+该函数的功能是将 if-else 条件语句转换为对应的 LLVM IR 代码。它通过设置条件分支和无条件跳转指令来控制程序的执行流程，并根据条件的结果跳转到相应的分支或退出条件语句。
+
 ###### 2.3.3.3.2 ForStmtAST
 
 `for`语句的结构如下：
@@ -1357,6 +1389,23 @@ llvm::Value* ForStmtAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
+ForStmtAST 类是一个表示`for`循环语句的抽象语法树（AST）节点。它实现了`IRGen`函数用于生成对应的 LLVM IR 代码：
+
+* 获取当前的 IRBuilder 对象和函数对象：从 IRContext 中获取当前的 IRBuilder 对象和函数对象，用于生成 LLVM IR 代码。
+* 生成初始化代码：如果有初始化语句，通过调用`this->initStmt_->IRGen(IRContext)`生成对应的 LLVM IR 代码。
+* 创建基本块：创建三个基本块，分别用于比较条件、迭代和循环结束的跳转。
+* 设置跳转指令：通过调用`IRBuilder->CreateBr()`生成无条件跳转指令，将控制流跳转到比较条件的基本块。
+* 进入循环：通过调用`IRContext.EnterLoop()`进入循环，传递比较条件的基本块、迭代的基本块以及循环结束的基本块。
+* 条件生成：设置 IRBuilder 的插入点为比较条件的基本块，生成条件表达式的 LLVM IR 代码。
+* 循环体生成：通过调用`this->forBody_->IRGen(IRContext)`生成循环体的 LLVM IR 代码，并获取循环体的基本块。
+* 迭代生成：设置 IRBuilder 的插入点为迭代的基本块，如果有迭代语句，则生成对应的 LLVM IR 代码。
+* 设置条件分支：设置 IRBuilder 的插入点为比较条件的基本块，根据条件结果生成条件分支指令，将控制流跳转到循环体或循环结束的基本块。
+* 离开循环：通过调用`IRContext.LeaveCurrentLoop()`离开当前循环。
+* 设置插入点：设置 IRBuilder 的插入点为循环结束的基本块。
+* 返回空值：由于`for`循环语句不会产生任何值，因此直接返回空指针 NULL。
+
+该函数的功能是将`for`循环语句转换为对应的 LLVM IR 代码。它通过创建基本块，设置条件分支和迭代指令来实现循环的功能，并在循环体和循环结束的基本块之间跳转。
+
 ###### 2.3.3.3.3 WhileStmtAST
 
 `while`语句的结构如下：
@@ -1403,6 +1452,21 @@ llvm::Value* WhileStmtAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
+WhileStmtAST 类是一个表示`while`循环语句的抽象语法树（AST）节点。它实现了`IRGen`函数用于生成对应的 LLVM IR 代码：
+
+* 获取当前的 IRBuilder 对象和函数对象：从 IRContext 中获取当前的 IRBuilder 对象和函数对象，用于生成 LLVM IR 代码。
+* 创建基本块：创建两个基本块，分别用于比较条件和循环结束的跳转。
+* 设置跳转指令：通过调用`IRBuilder->CreateBr()`生成无条件跳转指令，将控制流跳转到比较条件的基本块。
+* 进入循环：通过调用`IRContext.EnterLoop()`进入循环，传递比较条件的基本块、空指针作为循环体的起始基本块，以及循环结束的基本块。
+* 条件生成：设置 IRBuilder 的插入点为比较条件的基本块，生成条件表达式的 LLVM IR 代码。
+* 循环体生成：通过调用`this->whileBody_->IRGen(IRContext)`生成循环体的 LLVM IR 代码，并获取循环体的基本块。
+* 设置条件分支：设置 IRBuilder 的插入点为比较条件的基本块，根据条件结果生成条件分支指令，将控制流跳转到循环体或循环结束的基本块。
+* 离开循环：通过调用`IRContext.LeaveCurrentLoop()`离开当前循环。
+* 设置插入点：设置 IRBuilder 的插入点为循环结束的基本块。
+* 返回空值：由于`while`循环语句不会产生任何值，因此直接返回空指针 NULL。
+
+该函数的功能是将`while`循环语句转换为对应的 LLVM IR 代码。它通过创建基本块，设置条件分支指令来实现循环的功能，并在循环体的基本块和循环结束的基本块之间跳转。
+
 ###### 2.3.3.3.4 BreakStmtAST
 
 `break`语句的代码生成如下：
@@ -1418,6 +1482,15 @@ llvm::Value* BreakStmtAST::IRGen(IRGenerator& IRContext) {
 	return NULL; 
 }
 ```
+
+BreakStmtAST 类是一个表示`break`语句的抽象语法树（AST）节点。它实现了`IRGen`函数用于生成对应的 LLVM IR 代码：
+
+* 获取当前的 IRBuilder 对象：从 IRContext 中获取当前的 IRBuilder 对象，用于生成 LLVM IR 代码。
+* 获取目标基本块：通过调用`IRContext.BreakCurrentLoop()`获取当前循环的退出基本块，这是为了实现 break 语句的跳出循环。
+* 生成跳转指令：调用`IRBuilder->CreateBr()`生成无条件跳转指令，将控制流跳转到目标基本块。
+* 返回空值：由于`break`语句不会产生任何值，因此直接返回空指针 NULL。
+
+该函数的功能是将`break`语句转换为对应的 LLVM IR 代码，实现跳出当前循环的功能。它通过跳转到循环的退出基本块来实现`break`语句的功能。
 
 ###### 2.3.3.3.5 ContinueStmtAST
 
@@ -1435,6 +1508,15 @@ llvm::Value* ContinueStmtAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
+ContinueStmtAST 类是一个表示`continue`语句的抽象语法树（AST）节点。它实现了`IRGen`函数用于生成对应的 LLVM IR 代码：
+
+* 获取当前的 IRBuilder 对象：从 IRContext 中获取当前的 IRBuilder 对象，用于生成 LLVM IR 代码。
+* 获取目标基本块：通过调用`IRContext.ContinueCurrentLoop()`获取当前循环的目标基本块（即循环体的起始基本块），这是为了实现 continue 语句的跳转到循环的下一次迭代。
+* 生成跳转指令：调用`IRBuilder->CreateBr()`生成无条件跳转指令，将控制流跳转到目标基本块。
+* 返回空值：由于`continue`语句不会产生任何值，因此直接返回空指针 NULL。
+
+该函数的功能是将`continue`语句转换为对应的 LLVM IR 代码，实现循环的下一次迭代。它通过跳转到循环的起始基本块来实现`continue`语句的功能。
+
 ###### 2.3.3.3.6 ReturnStmtAST
 
 `return`语句的代码生成如下：
@@ -1451,6 +1533,13 @@ llvm::Value* ReturnStmtAST::IRGen(IRGenerator& IRContext) {
 }
 ```
 
+ReturnStmtAST 类是一个表示返回语句的抽象语法树（AST）节点。它实现了`IRGen`函数用于生成对应的 LLVM IR 代码：
+
+* 获取当前的 IRBuilder 对象：从 IRContext 中获取当前的 IRBuilder 对象，用于生成 LLVM IR 代码。
+* 生成返回指令：根据返回语句中的返回值表达式（如果存在），调用 IRGen 函数生成相应的 LLVM IR 代码。如果存在返回值表达式，则调用 IRBuilder->CreateRet() 生成返回指令，并将返回值作为参数传递给该指令。如果不存在返回值表达式，则调用 IRBuilder->CreateRetVoid() 生成返回空指令。
+* 返回空值：由于返回语句不会产生任何值，因此直接返回空指针 NULL。
+
+该函数的功能是将返回语句转换为对应的 LLVM IR 代码，实现函数的返回操作。
 
 
 ##### 2.3.3.4 Expr抽象类
