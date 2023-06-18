@@ -82,6 +82,12 @@ int yywrap() {
 
 int main(int argc, const char* argv[]) {
     string inputfile = argv[1], outputfile = argv[2]; 
+
+    cout << "######## Micro Replace ########" << endl;
+    cout << "inputfile: " << inputfile << endl; 
+    cout << "outputfile: " << outputfile << endl;
+    cout << "###############################" << endl;
+
     freopen(inputfile.c_str(), "r", stdin);
     freopen(outputfile.c_str(), "w", stdout);
 
