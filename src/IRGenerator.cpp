@@ -107,6 +107,14 @@ llvm::Function* IRGenerator::GetCurFunc() {
     return this->curFunc_; 
 }
 
+void IRGenerator::SetCurVarType(VarType* curVarType) {
+    this->curVarType_ = curVarType;
+}
+
+VarType* IRGenerator::GetCurVarType() {
+    return this->curVarType_;
+}
+
 void IRGenerator::SetPreBrSignal() {
     this->bbCreatePreBrSignal_ = true; 
 }

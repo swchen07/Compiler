@@ -18,11 +18,11 @@ int main(int argc, const char* argv[]) {
     std::string newmodulename = "io/"+modulename+".temp.c";
 
     // micro
-    // system(("./build/microhandler "+inputfile+" "+newmodulename).c_str());
+    system(("./build/microhandler "+inputfile+" "+newmodulename).c_str());
 
-    // freopen(newmodulename.c_str(), "r", stdin);
+    freopen(newmodulename.c_str(), "r", stdin);
 
-    freopen(inputfile.c_str(), "r", stdin);
+    // freopen(inputfile.c_str(), "r", stdin);
 
     yyparse();
     //Generating code

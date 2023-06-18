@@ -107,6 +107,7 @@ public:
     llvm::Function* curFunc_;
     BlockAST* curBasicBlock_;
     bool bbCreatePreBrSignal_;
+    VarType* curVarType_; 
     std::vector<IRVarAttr*> varList_;
     std::vector<IRFuncAttr*> funcList_;
     std::vector<IRLoopAttr*> loopLevel_; 
@@ -120,6 +121,7 @@ public:
         bbCreatePreBrSignal_ = true; 
         curBasicBlock_ = NULL; 
         curFunc_ = NULL;
+        curVarType_ = NULL; 
     }
     // ~IRGenerator(){
     //     delete Context;
@@ -135,6 +137,9 @@ public:
     void DiscardVar(); 
 	llvm::Value* FindVar(std::string name);
     bool IsPtrVar(std::string name);
+
+    void SetCurVarType(VarType* curVarType);
+    VarType* GetCurVarType();
 
     void RemainFutureVar(VarType type, std::string name, llvm::Value* value, bool isPtr=false); 
     void CreateFutureVars(); 

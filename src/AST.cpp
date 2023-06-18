@@ -126,6 +126,7 @@ llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 		// llvm::Value* initVal = CastType(this->, IRContext)
 
 		// initialize
+		IRContext.SetCurVarType(&(this->type_)); 
 		llvm::Value* value = this->varDef_->IRGen(IRContext);
 
 		// store will always align to 4, even for char, which is because we need a type cast for 'value'
@@ -138,6 +139,7 @@ llvm::Value* VarDeclAST::IRGen(IRGenerator& IRContext) {
 		// initialize
 		std::cout << "VarDeclAST -> global variable" << std::endl;
 
+		IRContext.SetCurVarType(&(this->type_)); 
 		llvm::Value* value = this->varDef_->IRGen(IRContext);
 
 		// convert to const
@@ -166,16 +168,18 @@ llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
 	std::cout << "VarDefAST" << std::endl;
 	
 	if (this->initValue_) {
-		//std::cout << "Have init" << std::endl;
+		// std::cout << "Have init" << std::endl;
 		return this->initValue_->IRGen(IRContext);
 	}
 	else {
+		// std::cout << "No init" << std::endl;
 		auto IRBuilder = IRContext.IRBuilder;
-		VarType* v = new VarType(this->varName_);
+		// VarType* v = new VarType(this->varName_);
+		VarType* v = IRContext.GetCurVarType();
 		switch(v->GetType()) {
-		case Int: return IRBuilder->getInt32(0); 
-		case Char: return IRBuilder->getInt8(0);
-		case Double:return llvm::ConstantFP::get(IRBuilder->getDoubleTy(), 0.0);
+			case Int: return IRBuilder->getInt32(0); 
+			case Char: return IRBuilder->getInt8(0);
+			case Double: return llvm::ConstantFP::get(IRBuilder->getDoubleTy(), 0.0);
 		}
 	}
 }
@@ -708,7 +712,8 @@ llvm::Value* AssignAST::IRGen(IRGenerator& IRContext){
 llvm::Value* Constant::IRGen(IRGenerator& IRContext) {
 	std::cout << "Constant" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder;
-	VarType* v = new VarType(this->type_);
+	// VarType* v = new VarType(this->type_);
+	VarType* v = IRContext.GetCurVarType();
 	switch(v->GetType()) {
 		case Int: return IRBuilder->getInt32(this->int_); 
 		case Char: return IRBuilder->getInt8(this->character_); 

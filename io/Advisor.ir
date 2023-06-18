@@ -4,23 +4,23 @@ target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16
 target triple = "x86_64-pc-linux-gnu"
 
 @strend = global i8 0
-@strnewline = global i8 10
-@strseq = global i8 124
-@strspace = global i8 32
-@strcomma = global i8 44
-@strsemicolon = global i8 59
-@str0 = global i8 48
-@str1 = global i8 49
-@str2 = global i8 50
-@str3 = global i8 51
-@str4 = global i8 52
-@str5 = global i8 53
-@gradeA = global i8 65
-@gradeB = global i8 66
-@gradeC = global i8 67
-@gradeD = global i8 68
-@gradeE = global i8 69
-@gradeF = global i8 70
+@strnewline = global i8 0
+@strseq = global i8 0
+@strspace = global i8 0
+@strcomma = global i8 0
+@strsemicolon = global i8 0
+@str0 = global i8 0
+@str1 = global i8 0
+@str2 = global i8 0
+@str3 = global i8 0
+@str4 = global i8 0
+@str5 = global i8 0
+@gradeA = global i8 0
+@gradeB = global i8 0
+@gradeC = global i8 0
+@gradeD = global i8 0
+@gradeE = global i8 0
+@gradeF = global i8 0
 @0 = private unnamed_addr constant [3 x i8] c"%c\00", align 1
 @1 = private unnamed_addr constant [11 x i8] c"GPA: %.1f\0A\00", align 1
 @2 = private unnamed_addr constant [10 x i8] c"GPA: 0.0\0A\00", align 1
@@ -743,15 +743,15 @@ define i32 @main() {
 BBEntry:
   %coursename = alloca [6 x i8], align 1
   %coursescore = alloca i8, align 1
-  store i32 0, i8* %coursescore, align 4
-  %coursepre = alloca [1000 x i8], align 1
+  store i8 0, i8* %coursescore, align 1
+  %coursepre = alloca [0 x i8], align 1
   %coursegrade = alloca i8, align 1
-  store i32 0, i8* %coursegrade, align 4
-  %oneline = alloca [1000 x i8], align 1
+  store i8 0, i8* %coursegrade, align 1
+  %oneline = alloca [0 x i8], align 1
   %firstchar = alloca i8, align 1
-  store i32 0, i8* %firstchar, align 4
+  store i8 0, i8* %firstchar, align 1
   %tempchar = alloca i8, align 1
-  store i32 0, i8* %tempchar, align 4
+  store i8 0, i8* %tempchar, align 1
   %score = alloca i32, align 4
   store i32 0, i32* %score, align 4
   %grade = alloca i32, align 4
@@ -833,12 +833,12 @@ BBEntry5:                                         ; preds = %BBEntry3
   %21 = bitcast [100 x i32]* %learnable to i32*
   %22 = getelementptr i32, i32* %21, i32 %20
   store i32 0, i32* %22, align 4
-  %23 = bitcast [1000 x i8]* %coursepre to i8*
+  %23 = bitcast [0 x i8]* %coursepre to i8*
   %24 = bitcast [1000000 x i8]* %pres to i8*
   %25 = load i32, i32* %cursor, align 4
   %26 = load i8, i8* @strspace, align 1
   %27 = call i32 @getSubStr(i8* %23, i8* %24, i32 %25, i8 %26)
-  %28 = bitcast [1000 x i8]* %coursepre to i8*
+  %28 = bitcast [0 x i8]* %coursepre to i8*
   %29 = load i8, i8* @strsemicolon, align 1
   %30 = call i32 @getSubCnt(i8* %28, i8 %29)
   store i32 %30, i32* %orCnt, align 4
@@ -872,7 +872,7 @@ ForCmp7:                                          ; preds = %ForExit13, %BBExit
 BBEntry10:                                        ; preds = %ForCmp7
   store i32 1, i32* %learn, align 4
   %45 = bitcast [100 x i8]* %orStr to i8*
-  %46 = bitcast [1000 x i8]* %coursepre to i8*
+  %46 = bitcast [0 x i8]* %coursepre to i8*
   %47 = load i32, i32* %i, align 4
   %48 = load i8, i8* @strsemicolon, align 1
   %49 = call i32 @getSubStr(i8* %45, i8* %46, i32 %47, i8 %48)
@@ -951,65 +951,63 @@ BBExit20:                                         ; preds = %ForCmp7, %BBEntry4
 
 BBEntry21:                                        ; preds = %ForExit
   %87 = load i32, i32* %gpa, align 4
-  %88 = sitofp i32 %87 to double
-  %89 = fmul double 1.000000e+00, %88
-  %90 = load i32, i32* %score_learn, align 4
-  %91 = sitofp i32 %90 to double
-  %92 = fdiv double %89, %91
-  %93 = call i32 (i32*, ...) @printk(i32* bitcast ([11 x i8]* @1 to i32*), double %92)
+  %88 = mul i32 0, %87
+  %89 = load i32, i32* %score_learn, align 4
+  %90 = sdiv i32 %88, %89
+  %91 = call i32 (i32*, ...) @printk(i32* bitcast ([11 x i8]* @1 to i32*), i32 %90)
   br label %BBExit23
 
 BBEntry22:                                        ; preds = %ForExit
-  %94 = call i32 (i32*, ...) @printk(i32* bitcast ([10 x i8]* @2 to i32*))
+  %92 = call i32 (i32*, ...) @printk(i32* bitcast ([10 x i8]* @2 to i32*))
   br label %BBExit23
 
 BBExit23:                                         ; preds = %BBEntry22, %BBEntry21
-  %95 = load i32, i32* %score_learn, align 4
-  %96 = call i32 (i32*, ...) @printk(i32* bitcast ([21 x i8]* @3 to i32*), i32 %95)
-  %97 = load i32, i32* %score_get, align 4
-  %98 = call i32 (i32*, ...) @printk(i32* bitcast ([21 x i8]* @4 to i32*), i32 %97)
-  %99 = load i32, i32* %score_remain, align 4
-  %100 = call i32 (i32*, ...) @printk(i32* bitcast ([24 x i8]* @5 to i32*), i32 %99)
-  %101 = call i32 (i32*, ...) @printk(i32* bitcast ([31 x i8]* @6 to i32*))
-  %102 = load i32, i32* %score_remain, align 4
-  %103 = icmp ne i32 %102, 0
-  br i1 %103, label %BBEntry24, label %BBEntry31
+  %93 = load i32, i32* %score_learn, align 4
+  %94 = call i32 (i32*, ...) @printk(i32* bitcast ([21 x i8]* @3 to i32*), i32 %93)
+  %95 = load i32, i32* %score_get, align 4
+  %96 = call i32 (i32*, ...) @printk(i32* bitcast ([21 x i8]* @4 to i32*), i32 %95)
+  %97 = load i32, i32* %score_remain, align 4
+  %98 = call i32 (i32*, ...) @printk(i32* bitcast ([24 x i8]* @5 to i32*), i32 %97)
+  %99 = call i32 (i32*, ...) @printk(i32* bitcast ([31 x i8]* @6 to i32*))
+  %100 = load i32, i32* %score_remain, align 4
+  %101 = icmp ne i32 %100, 0
+  br i1 %101, label %BBEntry24, label %BBEntry31
 
 BBEntry24:                                        ; preds = %BBExit23
   store i32 0, i32* %cursor, align 4
   br label %ForCmp25
 
 ForCmp25:                                         ; preds = %BBExit30, %BBEntry24
-  %104 = load i32, i32* %cursor, align 4
-  %105 = load i32, i32* %cnt, align 4
-  %106 = icmp slt i32 %104, %105
-  br i1 %106, label %BBEntry28, label %BBExit32
+  %102 = load i32, i32* %cursor, align 4
+  %103 = load i32, i32* %cnt, align 4
+  %104 = icmp slt i32 %102, %103
+  br i1 %104, label %BBEntry28, label %BBExit32
 
 BBEntry28:                                        ; preds = %ForCmp25
-  %107 = load i32, i32* %cursor, align 4
-  %108 = bitcast [100 x i32]* %learnable to i32*
-  %109 = getelementptr i32, i32* %108, i32 %107
-  %110 = load i32, i32* %109, align 4
-  %111 = icmp eq i32 %110, 1
-  br i1 %111, label %BBEntry29, label %BBExit30
+  %105 = load i32, i32* %cursor, align 4
+  %106 = bitcast [100 x i32]* %learnable to i32*
+  %107 = getelementptr i32, i32* %106, i32 %105
+  %108 = load i32, i32* %107, align 4
+  %109 = icmp eq i32 %108, 1
+  br i1 %109, label %BBEntry29, label %BBExit30
 
 BBEntry29:                                        ; preds = %BBEntry28
-  %112 = bitcast [6 x i8]* %coursename to i8*
-  %113 = bitcast [1000 x i8]* %names to i8*
-  %114 = load i32, i32* %cursor, align 4
-  %115 = load i8, i8* @strspace, align 1
-  %116 = call i32 @getSubStr(i8* %112, i8* %113, i32 %114, i8 %115)
-  %117 = call i32 (i32*, ...) @printk(i32* bitcast ([6 x i8]* @7 to i32*), [6 x i8]* %coursename)
+  %110 = bitcast [6 x i8]* %coursename to i8*
+  %111 = bitcast [1000 x i8]* %names to i8*
+  %112 = load i32, i32* %cursor, align 4
+  %113 = load i8, i8* @strspace, align 1
+  %114 = call i32 @getSubStr(i8* %110, i8* %111, i32 %112, i8 %113)
+  %115 = call i32 (i32*, ...) @printk(i32* bitcast ([6 x i8]* @7 to i32*), [6 x i8]* %coursename)
   br label %BBExit30
 
 BBExit30:                                         ; preds = %BBEntry28, %BBEntry29
-  %118 = load i32, i32* %cursor, align 4
-  %119 = add i32 %118, 1
-  store i32 %119, i32* %cursor, align 4
+  %116 = load i32, i32* %cursor, align 4
+  %117 = add i32 %116, 1
+  store i32 %117, i32* %cursor, align 4
   br label %ForCmp25
 
 BBEntry31:                                        ; preds = %BBExit23
-  %120 = call i32 (i32*, ...) @printk(i32* bitcast ([27 x i8]* @8 to i32*))
+  %118 = call i32 (i32*, ...) @printk(i32* bitcast ([27 x i8]* @8 to i32*))
   br label %BBExit32
 
 BBExit32:                                         ; preds = %ForCmp25, %BBEntry31
@@ -1017,120 +1015,120 @@ BBExit32:                                         ; preds = %ForCmp25, %BBEntry3
   br label %BBExit33
 
 BBExit33:                                         ; preds = %WhileCmp, %BBExit32
-  %121 = call i32 (i8*, ...) @scank(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @9, i32 0, i32 0), [1000 x i8]* %oneline)
-  %122 = call i32 (i8*, ...) @scank(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @10, i32 0, i32 0), i8* %tempchar)
-  %123 = load i8, i8* %firstchar, align 1
-  %124 = bitcast [1000 x i8]* %oneline to i8*
-  %125 = call i32 @charAddStr(i8 %123, i8* %124)
+  %119 = call i32 (i8*, ...) @scank(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @9, i32 0, i32 0), [0 x i8]* %oneline)
+  %120 = call i32 (i8*, ...) @scank(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @10, i32 0, i32 0), i8* %tempchar)
+  %121 = load i8, i8* %firstchar, align 1
+  %122 = bitcast [0 x i8]* %oneline to i8*
+  %123 = call i32 @charAddStr(i8 %121, i8* %122)
   store i32 0, i32* %cursor, align 4
-  %126 = bitcast [6 x i8]* %coursename to i8*
-  %127 = bitcast [1000 x i8]* %oneline to i8*
-  %128 = load i32, i32* %cursor, align 4
-  %129 = load i8, i8* @strseq, align 1
-  %130 = call i32 @copyStr(i8* %126, i8* %127, i32 %128, i8 %129)
-  %131 = bitcast [6 x i8]* %coursename to i8*
-  %132 = call i32 @myStrlen(i8* %131)
-  %133 = add i32 %132, 1
-  store i32 %133, i32* %cursor, align 4
-  %134 = load i32, i32* %cursor, align 4
-  %135 = bitcast [1000 x i8]* %oneline to i8*
-  %136 = getelementptr i8, i8* %135, i32 %134
-  %137 = load i8, i8* %136, align 1
-  store i8 %137, i8* %coursescore, align 1
-  %138 = load i32, i32* %cursor, align 4
-  %139 = add i32 %138, 2
-  store i32 %139, i32* %cursor, align 4
-  %140 = bitcast [1000 x i8]* %coursepre to i8*
-  %141 = bitcast [1000 x i8]* %oneline to i8*
-  %142 = load i32, i32* %cursor, align 4
-  %143 = load i8, i8* @strseq, align 1
-  %144 = call i32 @copyStr(i8* %140, i8* %141, i32 %142, i8 %143)
-  %145 = load i32, i32* %cursor, align 4
-  %146 = bitcast [1000 x i8]* %coursepre to i8*
-  %147 = call i32 @myStrlen(i8* %146)
-  %148 = add i32 %145, %147
-  %149 = add i32 %148, 1
-  store i32 %149, i32* %cursor, align 4
-  %150 = load i32, i32* %cursor, align 4
-  %151 = bitcast [1000 x i8]* %oneline to i8*
-  %152 = getelementptr i8, i8* %151, i32 %150
-  %153 = load i8, i8* %152, align 1
-  store i8 %153, i8* %coursegrade, align 1
-  %154 = load i8, i8* %coursescore, align 1
-  %155 = call i32 @charToInt(i8 %154)
-  store i32 %155, i32* %score, align 4
+  %124 = bitcast [6 x i8]* %coursename to i8*
+  %125 = bitcast [0 x i8]* %oneline to i8*
+  %126 = load i32, i32* %cursor, align 4
+  %127 = load i8, i8* @strseq, align 1
+  %128 = call i32 @copyStr(i8* %124, i8* %125, i32 %126, i8 %127)
+  %129 = bitcast [6 x i8]* %coursename to i8*
+  %130 = call i32 @myStrlen(i8* %129)
+  %131 = add i32 %130, 1
+  store i32 %131, i32* %cursor, align 4
+  %132 = load i32, i32* %cursor, align 4
+  %133 = bitcast [0 x i8]* %oneline to i8*
+  %134 = getelementptr i8, i8* %133, i32 %132
+  %135 = load i8, i8* %134, align 1
+  store i8 %135, i8* %coursescore, align 1
+  %136 = load i32, i32* %cursor, align 4
+  %137 = add i32 %136, 2
+  store i32 %137, i32* %cursor, align 4
+  %138 = bitcast [0 x i8]* %coursepre to i8*
+  %139 = bitcast [0 x i8]* %oneline to i8*
+  %140 = load i32, i32* %cursor, align 4
+  %141 = load i8, i8* @strseq, align 1
+  %142 = call i32 @copyStr(i8* %138, i8* %139, i32 %140, i8 %141)
+  %143 = load i32, i32* %cursor, align 4
+  %144 = bitcast [0 x i8]* %coursepre to i8*
+  %145 = call i32 @myStrlen(i8* %144)
+  %146 = add i32 %143, %145
+  %147 = add i32 %146, 1
+  store i32 %147, i32* %cursor, align 4
+  %148 = load i32, i32* %cursor, align 4
+  %149 = bitcast [0 x i8]* %oneline to i8*
+  %150 = getelementptr i8, i8* %149, i32 %148
+  %151 = load i8, i8* %150, align 1
+  store i8 %151, i8* %coursegrade, align 1
+  %152 = load i8, i8* %coursescore, align 1
+  %153 = call i32 @charToInt(i8 %152)
+  store i32 %153, i32* %score, align 4
+  %154 = load i8, i8* %coursegrade, align 1
+  %155 = call i32 @gradeToInt(i8 %154)
+  store i32 %155, i32* %grade, align 4
   %156 = load i8, i8* %coursegrade, align 1
-  %157 = call i32 @gradeToInt(i8 %156)
-  store i32 %157, i32* %grade, align 4
-  %158 = load i8, i8* %coursegrade, align 1
-  %159 = load i8, i8* @gradeF, align 1
-  %160 = icmp eq i8 %158, %159
-  br i1 %160, label %BBEntry34, label %BBEntry35
+  %157 = load i8, i8* @gradeF, align 1
+  %158 = icmp eq i8 %156, %157
+  br i1 %158, label %BBEntry34, label %BBEntry35
 
 BBEntry34:                                        ; preds = %BBExit33
-  %161 = load i32, i32* %score_learn, align 4
-  %162 = load i32, i32* %score, align 4
-  %163 = add i32 %161, %162
-  store i32 %163, i32* %score_learn, align 4
-  %164 = load i32, i32* %score_remain, align 4
-  %165 = load i32, i32* %score, align 4
-  %166 = add i32 %164, %165
-  store i32 %166, i32* %score_remain, align 4
-  %167 = load i32, i32* %cnt, align 4
-  %168 = bitcast [100 x i32]* %learned to i32*
-  %169 = getelementptr i32, i32* %168, i32 %167
-  store i32 0, i32* %169, align 4
+  %159 = load i32, i32* %score_learn, align 4
+  %160 = load i32, i32* %score, align 4
+  %161 = add i32 %159, %160
+  store i32 %161, i32* %score_learn, align 4
+  %162 = load i32, i32* %score_remain, align 4
+  %163 = load i32, i32* %score, align 4
+  %164 = add i32 %162, %163
+  store i32 %164, i32* %score_remain, align 4
+  %165 = load i32, i32* %cnt, align 4
+  %166 = bitcast [100 x i32]* %learned to i32*
+  %167 = getelementptr i32, i32* %166, i32 %165
+  store i32 0, i32* %167, align 4
   br label %BBExit39
 
 BBEntry35:                                        ; preds = %BBExit33
-  %170 = load i8, i8* %coursegrade, align 1
-  %171 = load i8, i8* @strend, align 1
-  %172 = icmp eq i8 %170, %171
-  br i1 %172, label %BBEntry36, label %BBEntry37
+  %168 = load i8, i8* %coursegrade, align 1
+  %169 = load i8, i8* @strend, align 1
+  %170 = icmp eq i8 %168, %169
+  br i1 %170, label %BBEntry36, label %BBEntry37
 
 BBEntry36:                                        ; preds = %BBEntry35
-  %173 = load i32, i32* %score_remain, align 4
-  %174 = load i32, i32* %score, align 4
-  %175 = add i32 %173, %174
-  store i32 %175, i32* %score_remain, align 4
-  %176 = load i32, i32* %cnt, align 4
-  %177 = bitcast [100 x i32]* %learned to i32*
-  %178 = getelementptr i32, i32* %177, i32 %176
-  store i32 0, i32* %178, align 4
+  %171 = load i32, i32* %score_remain, align 4
+  %172 = load i32, i32* %score, align 4
+  %173 = add i32 %171, %172
+  store i32 %173, i32* %score_remain, align 4
+  %174 = load i32, i32* %cnt, align 4
+  %175 = bitcast [100 x i32]* %learned to i32*
+  %176 = getelementptr i32, i32* %175, i32 %174
+  store i32 0, i32* %176, align 4
   br label %BBExit39
 
 BBEntry37:                                        ; preds = %BBEntry35
-  %179 = load i32, i32* %score_learn, align 4
-  %180 = load i32, i32* %score, align 4
-  %181 = add i32 %179, %180
-  store i32 %181, i32* %score_learn, align 4
-  %182 = load i32, i32* %score_get, align 4
-  %183 = load i32, i32* %score, align 4
-  %184 = add i32 %182, %183
-  store i32 %184, i32* %score_get, align 4
-  %185 = load i32, i32* %gpa, align 4
-  %186 = load i32, i32* %grade, align 4
-  %187 = load i32, i32* %score, align 4
-  %188 = mul i32 %186, %187
-  %189 = add i32 %185, %188
-  store i32 %189, i32* %gpa, align 4
-  %190 = load i32, i32* %cnt, align 4
-  %191 = bitcast [100 x i32]* %learned to i32*
-  %192 = getelementptr i32, i32* %191, i32 %190
-  store i32 1, i32* %192, align 4
+  %177 = load i32, i32* %score_learn, align 4
+  %178 = load i32, i32* %score, align 4
+  %179 = add i32 %177, %178
+  store i32 %179, i32* %score_learn, align 4
+  %180 = load i32, i32* %score_get, align 4
+  %181 = load i32, i32* %score, align 4
+  %182 = add i32 %180, %181
+  store i32 %182, i32* %score_get, align 4
+  %183 = load i32, i32* %gpa, align 4
+  %184 = load i32, i32* %grade, align 4
+  %185 = load i32, i32* %score, align 4
+  %186 = mul i32 %184, %185
+  %187 = add i32 %183, %186
+  store i32 %187, i32* %gpa, align 4
+  %188 = load i32, i32* %cnt, align 4
+  %189 = bitcast [100 x i32]* %learned to i32*
+  %190 = getelementptr i32, i32* %189, i32 %188
+  store i32 1, i32* %190, align 4
   br label %BBExit39
 
 BBExit39:                                         ; preds = %BBEntry36, %BBEntry37, %BBEntry34
-  %193 = load i32, i32* %cnt, align 4
-  %194 = add i32 %193, 1
-  store i32 %194, i32* %cnt, align 4
-  %195 = bitcast [1000 x i8]* %names to i8*
-  %196 = bitcast [6 x i8]* %coursename to i8*
-  %197 = load i8, i8* @strspace, align 1
-  %198 = call i32 @appendStr(i8* %195, i8* %196, i8 %197)
-  %199 = bitcast [1000000 x i8]* %pres to i8*
-  %200 = bitcast [1000 x i8]* %coursepre to i8*
-  %201 = load i8, i8* @strspace, align 1
-  %202 = call i32 @appendStr(i8* %199, i8* %200, i8 %201)
+  %191 = load i32, i32* %cnt, align 4
+  %192 = add i32 %191, 1
+  store i32 %192, i32* %cnt, align 4
+  %193 = bitcast [1000 x i8]* %names to i8*
+  %194 = bitcast [6 x i8]* %coursename to i8*
+  %195 = load i8, i8* @strspace, align 1
+  %196 = call i32 @appendStr(i8* %193, i8* %194, i8 %195)
+  %197 = bitcast [1000000 x i8]* %pres to i8*
+  %198 = bitcast [0 x i8]* %coursepre to i8*
+  %199 = load i8, i8* @strspace, align 1
+  %200 = call i32 @appendStr(i8* %197, i8* %198, i8 %199)
   br label %WhileCmp
 }
