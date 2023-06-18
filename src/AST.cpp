@@ -169,7 +169,9 @@ llvm::Value* VarDefAST::IRGen(IRGenerator& IRContext) {
 	
 	if (this->initValue_) {
 		// std::cout << "Have init" << std::endl;
-		return this->initValue_->IRGen(IRContext);
+		auto value = this->initValue_->IRGen(IRContext);
+		VarType* v = IRContext.GetCurVarType();
+		return TypeCasting(value, v->ToLLVMType(IRContext), IRContext);
 	}
 	else {
 		// std::cout << "No init" << std::endl;
@@ -712,9 +714,9 @@ llvm::Value* AssignAST::IRGen(IRGenerator& IRContext){
 llvm::Value* Constant::IRGen(IRGenerator& IRContext) {
 	std::cout << "Constant" << std::endl;
 	auto IRBuilder = IRContext.IRBuilder;
-	// VarType* v = new VarType(this->type_);
-	VarType* v = IRContext.GetCurVarType();
-	switch(v->GetType()) {
+	VarType v(this->type_);
+	// VarType* v = IRContext.GetCurVarType();
+	switch(v.GetType()) {
 		case Int: return IRBuilder->getInt32(this->int_); 
 		case Char: return IRBuilder->getInt8(this->character_); 
 		case Double:return llvm::ConstantFP::get(IRBuilder->getDoubleTy(), this->double_);
