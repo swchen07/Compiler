@@ -20,6 +20,7 @@ public:
 };
 
 vector<microdef> microList; 
+microdef temp; 
 
 %}
 
@@ -33,46 +34,49 @@ BLOCKCOMMET             "/*"[^*]*[*]+([^*/][^*]*[*]+)*"/"
 IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 
 /* 字符串 */
-STRING                  [^\s\t\n\r]*
+STRING                  [a-zA-Z0-9_]*
 
 /* Define */
-MICRODEFINE             #define{WHTIESPACE}{IDENTIFIER}{WHTIESPACE}{STRING}
+DEFINE                  #define
+
+%s MICRODEFINE MICRODEFINE2
 
 %%
 
-{WHTIESPACE}            { cout << yytext;}
-{LINECOMMET}            { cout << yytext;}
-{BLOCKCOMMET}           { cout << yytext;}
+<INITIAL>{WHTIESPACE}               { cout << yytext;}
+<INITIAL>{LINECOMMET}               { cout << yytext;}
+<INITIAL>{BLOCKCOMMET}              { cout << yytext;}
+<MICRODEFINE>{WHTIESPACE}           { }
+<MICRODEFINE2>{WHTIESPACE}          { }
 
-{MICRODEFINE}           { 
-                            microdef temp; 
-                            int i;
-                            char tstr[256]; 
-                            for(i = 0; i < yyleng; i++) {
-                                tstr[i] = yytext[i];
-                            }
-                            tstr[i] = '\0'; 
-                            sscanf(tstr, "#define%s%s", temp.origin, temp.transform);
-                            // cout << "A new micro " << yytext << "###" << endl;
-                            // cout << "[A new micro " << temp.origin << "$" << temp.transform << "###" << strlen(yytext) << " " << yyleng << "]" << endl;
-                            microList.push_back(temp); 
-                        }
+<INITIAL>{DEFINE}                   { BEGIN MICRODEFINE; }
 
-{IDENTIFIER}            {   
-                            int i; 
-                            for(i = 0; i < microList.size(); i++) {
-                                if (!strcmp(yytext, microList[i].origin)) 
-                                    break;
-                            }
-                            if (i == microList.size()) {
-                                cout << yytext; 
-                            }
-                            else {
-                                cout << microList[i].transform;
-                            }
-                        }
+<MICRODEFINE>{IDENTIFIER}           {
+                                        strcpy(temp.origin, yytext);
+                                        BEGIN MICRODEFINE2; 
+                                    }
 
-.                       { cout << yytext;}
+<MICRODEFINE2>{STRING}              {
+                                        strcpy(temp.transform, yytext);
+                                        microList.push_back(temp); 
+                                        BEGIN 0; 
+                                    }
+
+<INITIAL>{IDENTIFIER}               {   
+                                        int i; 
+                                        for(i = 0; i < microList.size(); i++) {
+                                            if (!strcmp(yytext, microList[i].origin)) 
+                                                break;
+                                        }
+                                        if (i == microList.size()) {
+                                            cout << yytext; 
+                                        }
+                                        else {
+                                            cout << microList[i].transform;
+                                        }
+                                    }
+
+<INITIAL>.                          { cout << yytext; }
 
 %%
 

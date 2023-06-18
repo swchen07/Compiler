@@ -2,6 +2,8 @@ int printk(int ptr, ...);
 int scank(char ptr, ...);
 
 #define MAXLEN 10000
+#define SortMethod quicksort
+#define Zero 0
 
 int quicksort(int ptr a, int left, int right){
 	//printk("QuickSort\n");
@@ -39,7 +41,7 @@ int quicksort(int ptr a, int left, int right){
         quicksort(a, i, right);
     }
 
-    return 0;
+    return Zero;
 }
 
 int main(){
@@ -54,10 +56,10 @@ int main(){
         a[i] = temp;
     }
 		
-	quicksort(a, 0, n - 1);
+	SortMethod(a, 0, n - 1);
 	for (i = 0; i < n; i=i+1){
 		printk("%d\n", a[i]);
     }
     
-	return 0;
+	return Zero;
 }

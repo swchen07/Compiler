@@ -2,9 +2,9 @@
 ```
 The final project for Compiler Principle.
 Collaborators:
-- 王子骏
 - 陈绍文
 - 胡梓敬
+- 王子骏
 ```
 Based on flex, bison, LLVM, this project implements a compiler that can compile SysY language into binary codes. 
 

@@ -3,6 +3,8 @@ int scank(char ptr, ...);
 
 
 
+
+
 int quicksort(int ptr a, int left, int right){
 	//printk("QuickSort\n");
 	int i = left;
